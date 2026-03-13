@@ -97,7 +97,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Sistema de Som', price: '3000', tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0.10, showTax: true }, color: '#F59E0B',
   }),
 
   makeTemplate('freelancer-quote', 'Orçamento Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
