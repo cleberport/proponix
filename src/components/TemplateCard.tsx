@@ -1,5 +1,5 @@
 import { Template } from '@/types/template';
-import { FileText, Pencil, Play, Trash2 } from 'lucide-react';
+import { Pencil, Play, Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   onEdit: () => void;
   onGenerate: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
   isSaved?: boolean;
 }
 
@@ -22,30 +23,70 @@ const categoryColors: Record<string, string> = {
   Custom: 'bg-accent text-accent-foreground',
 };
 
-const TemplateCard = ({ template, onEdit, onGenerate, onDelete, isSaved }: Props) => {
+const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate, isSaved }: Props) => {
   return (
     <div className="template-thumbnail group flex flex-col">
-      {/* Thumbnail preview */}
-      <div className="relative flex h-36 items-center justify-center bg-accent/30 p-4">
-        <div className="flex flex-col items-center gap-1.5">
-          <FileText className="h-8 w-8 text-muted-foreground/50" />
-          <span className="text-xs font-medium text-muted-foreground">{template.name}</span>
+      {/* Mini preview of elements */}
+      <div className="relative h-36 bg-white overflow-hidden p-2">
+        <div className="relative w-full h-full" style={{ fontSize: '4px' }}>
+          {template.elements.slice(0, 8).map((el) => (
+            <div
+              key={el.id}
+              className="absolute overflow-hidden"
+              style={{
+                left: `${(el.x / 595) * 100}%`,
+                top: `${(el.y / 842) * 100}%`,
+                width: `${(el.width / 595) * 100}%`,
+                height: `${(el.height / 842) * 100}%`,
+              }}
+            >
+              {el.type === 'divider' ? (
+                <div className="w-full h-px bg-border" />
+              ) : el.type === 'table' ? (
+                <div className="w-full h-full border border-border/50 rounded-[1px]" />
+              ) : (
+                <div
+                  className="truncate leading-tight"
+                  style={{
+                    fontSize: `${Math.max(3, (el.fontSize || 14) * 0.28)}px`,
+                    fontWeight: el.fontWeight,
+                    textAlign: el.alignment,
+                    color: '#334155',
+                  }}
+                >
+                  {el.content || (el.variable ? `{{${el.variable}}}` : '')}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
         {isSaved && (
           <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-semibold text-primary-foreground">
-            SAVED
+            SALVO
           </span>
         )}
-        {onDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute left-2 top-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        )}
+        <div className="absolute left-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive bg-card/80"
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          {onDuplicate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground bg-card/80"
+              onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Info */}
@@ -60,18 +101,18 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, isSaved }: Props
 
         {template.inputFields && (
           <p className="text-[10px] text-muted-foreground">
-            {template.inputFields.length} fields to fill
+            {template.inputFields.length} {template.inputFields.length === 1 ? 'campo' : 'campos'} para preencher
           </p>
         )}
 
         <div className="mt-auto flex gap-1.5 pt-2">
           <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={onEdit}>
             <Pencil className="mr-1 h-3 w-3" />
-            Edit
+            Editar
           </Button>
           <Button size="sm" className="flex-1 text-xs" onClick={onGenerate}>
             <Play className="mr-1 h-3 w-3" />
-            Generate
+            Gerar
           </Button>
         </div>
       </div>

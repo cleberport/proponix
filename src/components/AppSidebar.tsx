@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Painel', url: '/', icon: LayoutDashboard },
   { title: 'Templates', url: '/templates', icon: FolderOpen },
-  { title: 'Documents', url: '/documents', icon: FileText },
-  { title: 'Profile', url: '/profile', icon: User },
-  { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Documentos', url: '/documents', icon: FileText },
+  { title: 'Perfil', url: '/profile', icon: User },
+  { title: 'Configurações', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -39,7 +39,7 @@ export function AppSidebar() {
                 <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
                   <FileText className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
-                <span className="text-xs font-semibold">Budget Builder</span>
+                <span className="text-xs font-semibold">Orçamentos</span>
               </div>
             )}
           </SidebarGroupLabel>

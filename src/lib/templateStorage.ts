@@ -7,19 +7,26 @@ const SETTINGS_KEY = 'budget-template-builder-settings';
 export interface AppSettings {
   profileName: string;
   companyName: string;
+  companyCnpj: string;
   companyEmail: string;
   companyPhone: string;
+  companyWebsite: string;
   companyAddress: string;
-  defaultTaxRate: number;
+  defaultTaxRate: number; // stored as decimal (0.10 = 10%)
   logoUrl: string;
+  logoWidth?: number;
+  logoHeight?: number;
+  logoAspectRatio?: number;
   theme: 'light' | 'dark';
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
   profileName: '',
   companyName: '',
+  companyCnpj: '',
   companyEmail: '',
   companyPhone: '',
+  companyWebsite: '',
   companyAddress: '',
   defaultTaxRate: 0.10,
   logoUrl: '',
@@ -62,6 +69,17 @@ export function saveTemplate(template: Template): SavedTemplate {
   return saved;
 }
 
+export function duplicateTemplate(id: string): SavedTemplate | null {
+  const original = getTemplateById(id);
+  if (!original) return null;
+  const copy: Template = {
+    ...original,
+    id: crypto.randomUUID(),
+    name: `${original.name} (Cópia)`,
+  };
+  return saveTemplate(copy);
+}
+
 export function deleteTemplate(id: string): void {
   const all = getSavedTemplates().filter((t) => t.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
@@ -70,7 +88,6 @@ export function deleteTemplate(id: string): void {
 export function restoreDefaultTemplates(): void {
   const saved = getSavedTemplates();
   const starterIds = starterTemplates.map((t) => t.id);
-  // Remove any saved versions of starter templates
   const filtered = saved.filter((t) => !starterIds.includes(t.id));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
 }

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { getTemplateById } from '@/lib/templateStorage';
-import { resolveAllValues, formatCurrency } from '@/lib/calculations';
+import { resolveAllValues, formatCurrency, formatEventDate, decimalToPercent, percentToDecimal } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -30,14 +30,16 @@ const Generate = () => {
   const [showTax, setShowTax] = useState(template?.settings?.showTax ?? true);
   const [generating, setGenerating] = useState(false);
 
-  // Resolve all values: defaults + user inputs + calculations
   const resolvedValues = useMemo(() => {
     if (!template) return {};
-    const allValues = resolveAllValues(template, userInputs);
-    return allValues;
+    // Format event_date smartly before resolving
+    const inputs = { ...userInputs };
+    if (inputs.event_date) {
+      inputs.event_date = formatEventDate(inputs.event_date);
+    }
+    return resolveAllValues(template, inputs);
   }, [template, userInputs]);
 
-  // For display: format currency fields
   const displayValues = useMemo(() => {
     const display = { ...resolvedValues };
     const currencyFields = ['price', 'subtotal', 'tax', 'total'];
@@ -49,12 +51,10 @@ const Generate = () => {
     return display;
   }, [resolvedValues]);
 
-  // Filter elements based on tax visibility
   const visibleElements = useMemo(() => {
     if (!template) return [];
     if (showTax) return template.elements;
     return template.elements.filter((el) => {
-      // Hide tax line if showTax is false
       if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) {
         return false;
       }
@@ -75,15 +75,15 @@ const Generate = () => {
         useCORS: true,
         backgroundColor: '#FFFFFF',
       });
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const pdf = new jsPDF('p', 'pt', 'a4');
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
-      pdf.save(`${template?.name || 'document'}.pdf`);
-      toast.success('PDF generated successfully!');
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+      pdf.save(`${template?.name || 'documento'}.pdf`);
+      toast.success('PDF gerado com sucesso!');
     } catch {
-      toast.error('Failed to generate PDF');
+      toast.error('Falha ao gerar PDF');
     } finally {
       setGenerating(false);
     }
@@ -93,24 +93,47 @@ const Generate = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-muted-foreground">Template not found</p>
+          <p className="text-muted-foreground">Template não encontrado</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/')}>
-            Go Back
+            Voltar
           </Button>
         </div>
       </div>
     );
   }
 
-  const formatLabel = (v: string) =>
-    v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatLabel = (v: string) => {
+    const labels: Record<string, string> = {
+      client_name: 'Nome do Cliente',
+      event_name: 'Nome do Evento',
+      location: 'Local',
+      event_date: 'Data do Evento',
+      service_name: 'Nome do Serviço',
+      price: 'Preço',
+      tax_rate: 'Taxa de Imposto',
+      subtotal: 'Subtotal',
+      tax: 'Imposto',
+      total: 'Total',
+      notes_text: 'Observações',
+    };
+    return labels[v] || v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const getPlaceholder = (v: string) => {
+    const placeholders: Record<string, string> = {
+      client_name: 'Ex: João Silva',
+      event_name: 'Ex: Casamento',
+      location: 'Ex: São Paulo, SP',
+      event_date: 'Ex: 23/04/2026 ou 23/04/2026 a 25/04/2026',
+    };
+    return placeholders[v] || `Preencha ${formatLabel(v).toLowerCase()}`;
+  };
 
   const defaultValues = template.defaultValues || {};
   const calculatedFields = template.calculatedFields || {};
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
       <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
@@ -123,16 +146,14 @@ const Generate = () => {
         </div>
         <Button size="sm" onClick={handleGeneratePDF} disabled={generating}>
           <Download className="mr-1.5 h-3.5 w-3.5" />
-          {generating ? 'Generating...' : 'Download PDF'}
+          {generating ? 'Gerando...' : 'Baixar PDF'}
         </Button>
       </header>
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-        {/* Left - Form */}
         <aside className="editor-sidebar w-full md:w-80 overflow-y-auto p-4 md:p-5 max-h-[50vh] md:max-h-none">
-          {/* Input Fields */}
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Fill in Details
+            Preencha os Dados
           </h3>
           <div className="flex flex-col gap-4">
             {inputFields.map((v) => (
@@ -141,42 +162,29 @@ const Generate = () => {
                 <Input
                   value={userInputs[v] || ''}
                   onChange={(e) => handleChange(v, e.target.value)}
-                  placeholder={`Enter ${formatLabel(v).toLowerCase()}`}
+                  placeholder={getPlaceholder(v)}
                   className="h-8 text-sm"
                 />
+                {v === 'event_date' && (
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    Aceita data única ou intervalo (ex: 23/05/2026 a 25/05/2026)
+                  </p>
+                )}
               </div>
             ))}
           </div>
 
-          {/* Template Defaults (read-only summary) */}
           {Object.keys(defaultValues).length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Template Defaults
+                Valores Padrão do Template
               </h3>
               <div className="flex flex-col gap-2">
                 {Object.entries(defaultValues).map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between rounded-md bg-accent/50 px-3 py-1.5">
                     <span className="text-xs text-muted-foreground">{formatLabel(k)}</span>
-                    <span className="text-xs font-medium text-foreground">{v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Calculated Summary */}
-          {Object.keys(calculatedFields).length > 0 && (
-            <div className="mt-6">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Calculated Totals
-              </h3>
-              <div className="flex flex-col gap-2">
-                {Object.entries(calculatedFields).map(([field]) => (
-                  <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                    <span className="text-xs font-medium text-foreground">{formatLabel(field)}</span>
-                    <span className="text-sm font-semibold text-primary">
-                      {displayValues[field] || '$0.00'}
+                    <span className="text-xs font-medium text-foreground">
+                      {k === 'tax_rate' ? `${decimalToPercent(parseFloat(v)).toFixed(1)}%` : v}
                     </span>
                   </div>
                 ))}
@@ -184,23 +192,39 @@ const Generate = () => {
             </div>
           )}
 
-          {/* Tax Visibility Toggle */}
+          {Object.keys(calculatedFields).length > 0 && (
+            <div className="mt-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Totais Calculados
+              </h3>
+              <div className="flex flex-col gap-2">
+                {Object.entries(calculatedFields).map(([field]) => (
+                  <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                    <span className="text-xs font-medium text-foreground">{formatLabel(field)}</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {displayValues[field] || 'R$ 0,00'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 flex items-center justify-between rounded-md border border-border px-3 py-2.5">
             <div className="flex items-center gap-2">
               {showTax ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-              <span className="text-xs font-medium text-foreground">Show tax on document</span>
+              <span className="text-xs font-medium text-foreground">Mostrar imposto no documento</span>
             </div>
             <Switch checked={showTax} onCheckedChange={setShowTax} />
           </div>
           {!showTax && (
             <p className="mt-1 text-[10px] text-muted-foreground">
-              Tax is hidden but still included in the total price.
+              O imposto está oculto mas ainda é incluído no total.
             </p>
           )}
         </aside>
 
-        {/* Right - Preview */}
-        <main className="flex flex-1 items-center justify-center overflow-auto bg-background p-8">
+        <main className="flex flex-1 items-center justify-center overflow-auto bg-background p-4 md:p-8">
           <CanvasRenderer
             ref={canvasRef}
             elements={visibleElements}
