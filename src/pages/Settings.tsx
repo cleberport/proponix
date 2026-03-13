@@ -32,7 +32,6 @@ const SettingsPage = () => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const url = ev.target?.result as string;
-      // Get image dimensions to preserve aspect ratio
       const img = new Image();
       img.onload = () => {
         update({
@@ -190,8 +189,8 @@ const SettingsPage = () => {
           />
           {settings.logoUrl ? (
             <div className="flex items-start gap-4">
-              <div className="relative h-20 w-20 overflow-hidden rounded-lg border border-border bg-accent/30">
-                <img src={settings.logoUrl} alt="Logo" className="h-full w-full object-contain" />
+              <div className="relative w-20 overflow-hidden rounded-lg border border-border bg-accent/30">
+                <img src={settings.logoUrl} alt="Logo" className="w-full object-contain" style={{ height: 'auto' }} />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -231,6 +230,23 @@ const SettingsPage = () => {
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               Ex: 10 = 10%, 11.29 = 11,29%
+            </p>
+          </div>
+        </section>
+
+        {/* Nome do PDF */}
+        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Nome Padrão do PDF</h2>
+          <div>
+            <Label className="text-xs text-muted-foreground">Nome base</Label>
+            <Input
+              value={settings.pdfBaseName}
+              onChange={(e) => update({ pdfBaseName: e.target.value })}
+              placeholder="Ex: Orçamento PlayPort"
+              className="mt-1"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              O sistema adiciona numeração automática: {settings.pdfBaseName || 'Orçamento'} 001.pdf, {settings.pdfBaseName || 'Orçamento'} 002.pdf...
             </p>
           </div>
         </section>

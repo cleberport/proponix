@@ -3,6 +3,8 @@ import { starterTemplates } from '@/data/templates';
 
 const STORAGE_KEY = 'budget-template-builder-templates';
 const SETTINGS_KEY = 'budget-template-builder-settings';
+const HISTORY_KEY = 'budget-template-builder-history';
+const PDF_COUNTER_KEY = 'budget-template-builder-pdf-counter';
 
 export interface AppSettings {
   profileName: string;
@@ -12,12 +14,23 @@ export interface AppSettings {
   companyPhone: string;
   companyWebsite: string;
   companyAddress: string;
-  defaultTaxRate: number; // stored as decimal (0.10 = 10%)
+  defaultTaxRate: number;
   logoUrl: string;
   logoWidth?: number;
   logoHeight?: number;
   logoAspectRatio?: number;
   theme: 'light' | 'dark';
+  pdfBaseName: string;
+}
+
+export interface GeneratedDocument {
+  id: string;
+  templateId: string;
+  templateName: string;
+  clientName: string;
+  fileName: string;
+  generatedAt: string;
+  values: Record<string, string>;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -31,6 +44,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   defaultTaxRate: 0.10,
   logoUrl: '',
   theme: 'light',
+  pdfBaseName: 'Orçamento',
 };
 
 export function getSettings(): AppSettings {
@@ -96,4 +110,39 @@ export function getTemplateById(id: string): Template | undefined {
   const saved = getSavedTemplates().find((t) => t.id === id);
   if (saved) return saved;
   return starterTemplates.find((t) => t.id === id);
+}
+
+// Document history
+export function getDocumentHistory(): GeneratedDocument[] {
+  const raw = localStorage.getItem(HISTORY_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export function addDocumentToHistory(doc: GeneratedDocument): void {
+  const history = getDocumentHistory();
+  history.unshift(doc);
+  // Keep max 100
+  if (history.length > 100) history.length = 100;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+export function deleteDocumentFromHistory(id: string): void {
+  const history = getDocumentHistory().filter((d) => d.id !== id);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+// PDF counter for sequential naming
+export function getNextPdfNumber(): number {
+  const raw = localStorage.getItem(PDF_COUNTER_KEY);
+  const current = raw ? parseInt(raw, 10) : 0;
+  const next = current + 1;
+  localStorage.setItem(PDF_COUNTER_KEY, String(next));
+  return next;
+}
+
+export function generatePdfFileName(): string {
+  const settings = getSettings();
+  const baseName = settings.pdfBaseName || 'Orçamento';
+  const num = getNextPdfNumber();
+  return `${baseName} ${String(num).padStart(3, '0')}.pdf`;
 }
