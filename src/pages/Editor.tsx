@@ -37,6 +37,7 @@ const Editor = () => {
   const [inputFields, setInputFields] = useState<string[]>(base?.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
   const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>(base?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
   const [settings, setSettings] = useState<TemplateSettings>(base?.settings || { taxRate: 0.10, showTax: true });
+  const [templateColor, setTemplateColor] = useState(base?.color || TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
 
