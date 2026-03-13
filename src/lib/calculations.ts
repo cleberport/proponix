@@ -23,6 +23,14 @@ export function evaluateFormula(
 }
 
 /**
+ * Get today's date in Brazilian format
+ */
+export function getTodayDate(): string {
+  const d = new Date();
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+/**
  * Given a template and user input values, compute all resolved values
  */
 export function resolveAllValues(
@@ -33,6 +41,9 @@ export function resolveAllValues(
   const calculated = template.calculatedFields || {};
 
   const values: Record<string, string> = { ...defaults };
+
+  // Auto-inject data_de_hoje
+  values['data_de_hoje'] = getTodayDate();
 
   for (const [k, v] of Object.entries(userInputs)) {
     if (v) values[k] = v;
@@ -74,15 +85,11 @@ export function decimalToPercent(decimal: number): number {
 
 /**
  * Format smart event date
- * Single: "23/04/2026" → "23/04/2026"
- * Range same month: "23/05/2026 a 24/05/2026" → "23 a 24/05/2026"
- * Range diff months: "23/05/2026 a 02/06/2026" → "23/05 a 02/06/2026"
  */
 export function formatEventDate(input: string): string {
   if (!input) return '';
   
-  // Check for range with "a" or "to" or "-"
-  const rangeMatch = input.match(/^(\d{2}\/\d{2}\/\d{4})\s*(?:a|to|-)\s*(\d{2}\/\d{2}\/\d{4})$/i);
+  const rangeMatch = input.match(/^(\d{2}\/\d{2}\/\d{4})\s*(?:a|to|-|→)\s*(\d{2}\/\d{2}\/\d{4})$/i);
   if (!rangeMatch) return input;
 
   const [, startStr, endStr] = rangeMatch;

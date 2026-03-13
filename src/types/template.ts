@@ -33,7 +33,7 @@ export interface CanvasElement {
   fieldCategory?: FieldCategory;
   defaultValue?: string;
   isVisible?: boolean;
-  formula?: string; // e.g. "price * tax_rate", "price + tax"
+  formula?: string;
 }
 
 export interface TableRow {
@@ -57,7 +57,7 @@ export interface Template {
   canvasHeight: number;
   defaultValues?: Record<string, string>;
   inputFields?: string[];
-  calculatedFields?: Record<string, string>; // variable -> formula
+  calculatedFields?: Record<string, string>;
   settings?: TemplateSettings;
 }
 
@@ -71,6 +71,7 @@ export const DEFAULT_VARIABLES = [
   'event_name',
   'location',
   'event_date',
+  'data_de_hoje',
   'service_name',
   'price',
   'tax_rate',
@@ -93,19 +94,19 @@ export const DEFAULT_CALCULATED_FIELDS: Record<string, string> = {
 };
 
 export const DEFAULT_TEMPLATE_VALUES: Record<string, string> = {
-  service_name: 'Professional Services',
+  service_name: 'Serviços Profissionais',
   price: '1000',
   tax_rate: '0.10',
 };
 
 export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }[] = [
-  { type: 'text', label: 'Text Block', icon: 'Type' },
-  { type: 'dynamic-field', label: 'Dynamic Field', icon: 'Variable' },
-  { type: 'image', label: 'Image', icon: 'Image' },
+  { type: 'text', label: 'Bloco de Texto', icon: 'Type' },
+  { type: 'dynamic-field', label: 'Campo Dinâmico', icon: 'Variable' },
+  { type: 'image', label: 'Imagem', icon: 'Image' },
   { type: 'logo', label: 'Logo', icon: 'Stamp' },
-  { type: 'divider', label: 'Divider', icon: 'Minus' },
-  { type: 'table', label: 'Table', icon: 'Table' },
-  { type: 'price-field', label: 'Price Field', icon: 'DollarSign' },
+  { type: 'divider', label: 'Divisor', icon: 'Minus' },
+  { type: 'table', label: 'Tabela', icon: 'Table' },
+  { type: 'price-field', label: 'Campo de Preço', icon: 'DollarSign' },
   { type: 'total-calculation', label: 'Total', icon: 'Calculator' },
-  { type: 'notes', label: 'Notes', icon: 'StickyNote' },
+  { type: 'notes', label: 'Observações', icon: 'StickyNote' },
 ];

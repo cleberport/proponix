@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useRef, useCallback, useMemo } from 'react';
-import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
-import { resolveAllValues, formatCurrency, formatEventDate, decimalToPercent } from '@/lib/calculations';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { getTemplateById, generatePdfFileName, addDocumentToHistory, getDocumentById } from '@/lib/templateStorage';
+import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,18 +9,25 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Download, FileText, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { generateVectorPdf } from '@/lib/pdfGenerator';
 
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const template = getTemplateById(id!);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Check if we're editing a previous document
+  const editingDoc = (location.state as { documentId?: string; values?: Record<string, string> }) || {};
 
   const inputFields = template?.inputFields || [];
 
   const [userInputs, setUserInputs] = useState<Record<string, string>>(() => {
+    // Pre-fill from history if editing
+    if (editingDoc.values) {
+      return { ...editingDoc.values };
+    }
     if (!template) return {};
     const init: Record<string, string> = {};
     inputFields.forEach((v) => (init[v] = ''));
@@ -66,22 +73,13 @@ const Generate = () => {
   };
 
   const handleGeneratePDF = useCallback(async () => {
-    if (!canvasRef.current || !template) return;
+    if (!template) return;
     setGenerating(true);
     try {
-      const canvas = await html2canvas(canvasRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#FFFFFF',
-      });
-      const imgData = canvas.toDataURL('image/jpeg', 0.80);
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-
       const fileName = generatePdfFileName();
-      pdf.save(fileName);
+
+      // Use vector PDF generation
+      await generateVectorPdf(visibleElements, displayValues, fileName);
 
       // Save to history
       addDocumentToHistory({
@@ -100,7 +98,7 @@ const Generate = () => {
     } finally {
       setGenerating(false);
     }
-  }, [template, userInputs]);
+  }, [template, userInputs, visibleElements, displayValues]);
 
   if (!template) {
     return (
@@ -121,6 +119,7 @@ const Generate = () => {
       event_name: 'Nome do Evento',
       location: 'Local',
       event_date: 'Data do Evento',
+      data_de_hoje: 'Data de Hoje',
       service_name: 'Nome do Serviço',
       price: 'Preço',
       tax_rate: 'Taxa de Imposto',
@@ -147,17 +146,17 @@ const Generate = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+      <header className="flex items-center justify-between border-b border-border bg-card px-3 py-2 md:px-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 md:h-8 md:w-auto md:px-3" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">{template.name}</span>
+            <FileText className="hidden h-4 w-4 text-primary md:block" />
+            <span className="text-sm font-semibold text-foreground truncate max-w-[150px] md:max-w-none">{template.name}</span>
           </div>
         </div>
-        <Button size="sm" onClick={handleGeneratePDF} disabled={generating}>
+        <Button size="sm" className="h-9 md:h-8" onClick={handleGeneratePDF} disabled={generating}>
           <Download className="mr-1.5 h-3.5 w-3.5" />
           {generating ? 'Gerando...' : 'Baixar PDF'}
         </Button>
@@ -176,7 +175,7 @@ const Generate = () => {
                   value={userInputs[v] || ''}
                   onChange={(e) => handleChange(v, e.target.value)}
                   placeholder={getPlaceholder(v)}
-                  className="h-9 text-sm"
+                  className="h-10 md:h-9 text-sm"
                 />
                 {v === 'event_date' && (
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
@@ -196,7 +195,7 @@ const Generate = () => {
                 {Object.entries(calculatedFields)
                   .filter(([field]) => showTax || field !== 'tax')
                   .map(([field]) => (
-                  <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                  <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2.5 md:py-2">
                     <span className="text-xs font-medium text-foreground">{formatLabel(field)}</span>
                     <span className="text-sm font-semibold text-primary">
                       {displayValues[field] || 'R$ 0,00'}
@@ -207,7 +206,7 @@ const Generate = () => {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+          <div className="mt-6 flex items-center justify-between rounded-md border border-border px-3 py-3 md:py-2.5">
             <div className="flex items-center gap-2">
               {showTax ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
               <span className="text-xs font-medium text-foreground">Mostrar imposto no documento</span>
