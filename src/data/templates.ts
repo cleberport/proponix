@@ -77,7 +77,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Consultoria', price: '5000', tax_rate: '0.10' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0.10, showTax: true }, color: '#6366F1',
   }),
 
   makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Orçamento completo para produção de eventos', [
