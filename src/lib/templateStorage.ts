@@ -72,10 +72,9 @@ export function saveTemplate(template: Template): SavedTemplate {
 export function duplicateTemplate(id: string): SavedTemplate | null {
   const original = getTemplateById(id);
   if (!original) return null;
-  const { v4: uuidv4 } = require('uuid');
   const copy: Template = {
     ...original,
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: `${original.name} (Cópia)`,
   };
   return saveTemplate(copy);

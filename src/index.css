@@ -87,7 +87,7 @@
     --input: 217 33% 20%;
     --ring: 217 91% 60%;
 
-    --canvas: 222 47% 14%;
+    --canvas: 0 0% 100%;
     --canvas-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.4);
     --grid-dot: 217 33% 25%;
     --snap-line: 217 91% 60%;
