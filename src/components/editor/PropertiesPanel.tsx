@@ -22,7 +22,16 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      onUpdate({ imageUrl: ev.target?.result as string });
+      const url = ev.target?.result as string;
+      // Preserve aspect ratio by reading natural dimensions
+      const img = new Image();
+      img.onload = () => {
+        onUpdate({
+          imageUrl: url,
+          objectFit: 'contain',
+        });
+      };
+      img.src = url;
     };
     reader.readAsDataURL(file);
   };
@@ -31,11 +40,23 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     return (
       <div className="flex h-full items-center justify-center p-4">
         <p className="text-center text-sm text-muted-foreground">
-          Select an element to edit its properties
+          Selecione um elemento para editar suas propriedades
         </p>
       </div>
     );
   }
+
+  const typeLabels: Record<string, string> = {
+    'text': 'Bloco de Texto',
+    'dynamic-field': 'Campo Dinâmico',
+    'image': 'Imagem',
+    'logo': 'Logo',
+    'divider': 'Divisor',
+    'table': 'Tabela',
+    'price-field': 'Campo de Preço',
+    'total-calculation': 'Total',
+    'notes': 'Observações',
+  };
 
   const addRow = () => {
     if (!element.rows) return;
@@ -60,7 +81,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     <div className="flex flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Properties
+          Propriedades
         </h3>
         <Button variant="ghost" size="sm" className="h-7 text-destructive" onClick={onDelete}>
           <Trash2 className="h-3.5 w-3.5" />
@@ -68,10 +89,10 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
       </div>
 
       <div className="rounded-md bg-accent/50 px-2 py-1">
-        <span className="text-xs font-medium capitalize text-foreground">{element.type.replace('-', ' ')}</span>
+        <span className="text-xs font-medium text-foreground">{typeLabels[element.type] || element.type}</span>
       </div>
 
-      {/* Position */}
+      {/* Posição */}
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label className="text-xs text-muted-foreground">X</Label>
@@ -82,20 +103,20 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
           <Input type="number" value={element.y} onChange={(e) => onUpdate({ y: +e.target.value })} className="h-7 text-xs" />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Width</Label>
+          <Label className="text-xs text-muted-foreground">Largura</Label>
           <Input type="number" value={element.width} onChange={(e) => onUpdate({ width: +e.target.value })} className="h-7 text-xs" />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Height</Label>
+          <Label className="text-xs text-muted-foreground">Altura</Label>
           <Input type="number" value={element.height} onChange={(e) => onUpdate({ height: +e.target.value })} className="h-7 text-xs" />
         </div>
       </div>
 
-      {/* Image Upload */}
+      {/* Upload de Imagem */}
       {(element.type === 'image' || element.type === 'logo') && (
         <div>
           <Label className="text-xs text-muted-foreground">
-            {element.type === 'logo' ? 'Logo' : 'Image'}
+            {element.type === 'logo' ? 'Logo' : 'Imagem'}
           </Label>
           <input
             ref={fileInputRef}
@@ -124,7 +145,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="mr-1.5 h-3 w-3" />
-                Replace
+                Substituir
               </Button>
             </div>
           ) : (
@@ -135,27 +156,16 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="mr-1.5 h-3 w-3" />
-              Upload {element.type === 'logo' ? 'Logo' : 'Image'}
+              Enviar {element.type === 'logo' ? 'Logo' : 'Imagem'}
             </Button>
           )}
-          <div className="mt-2">
-            <Label className="text-xs text-muted-foreground">Fit</Label>
-            <Select value={element.objectFit || 'contain'} onValueChange={(v) => onUpdate({ objectFit: v as 'cover' | 'contain' | 'fill' })}>
-              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="contain">Contain</SelectItem>
-                <SelectItem value="cover">Cover</SelectItem>
-                <SelectItem value="fill">Fill</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       )}
 
-      {/* Content */}
+      {/* Conteúdo */}
       {element.type !== 'divider' && element.type !== 'image' && element.type !== 'logo' && element.type !== 'table' && (
         <div>
-          <Label className="text-xs text-muted-foreground">Content</Label>
+          <Label className="text-xs text-muted-foreground">Conteúdo</Label>
           {element.type === 'notes' ? (
             <Textarea value={element.content} onChange={(e) => onUpdate({ content: e.target.value })} className="text-xs" rows={3} />
           ) : (
@@ -164,10 +174,10 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
-      {/* Variable */}
+      {/* Variável */}
       {(element.type === 'dynamic-field' || element.type === 'price-field' || element.type === 'total-calculation') && (
         <div>
-          <Label className="text-xs text-muted-foreground">Variable</Label>
+          <Label className="text-xs text-muted-foreground">Variável</Label>
           <Select value={element.variable || ''} onValueChange={(v) => onUpdate({ variable: v })}>
             <SelectTrigger className="h-7 text-xs">
               <SelectValue />
@@ -183,28 +193,28 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
-      {/* Typography */}
+      {/* Tipografia */}
       {element.type !== 'divider' && (
         <>
           <div>
-            <Label className="text-xs text-muted-foreground">Font Size</Label>
+            <Label className="text-xs text-muted-foreground">Tamanho da Fonte</Label>
             <Input type="number" value={element.fontSize || 14} onChange={(e) => onUpdate({ fontSize: +e.target.value })} className="h-7 text-xs" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Font Weight</Label>
+            <Label className="text-xs text-muted-foreground">Peso da Fonte</Label>
             <Select value={element.fontWeight || '400'} onValueChange={(v) => onUpdate({ fontWeight: v })}>
               <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="300">Light</SelectItem>
-                <SelectItem value="400">Regular</SelectItem>
-                <SelectItem value="500">Medium</SelectItem>
-                <SelectItem value="600">Semibold</SelectItem>
-                <SelectItem value="700">Bold</SelectItem>
+                <SelectItem value="300">Leve</SelectItem>
+                <SelectItem value="400">Normal</SelectItem>
+                <SelectItem value="500">Médio</SelectItem>
+                <SelectItem value="600">Semi-negrito</SelectItem>
+                <SelectItem value="700">Negrito</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Font Family</Label>
+            <Label className="text-xs text-muted-foreground">Família da Fonte</Label>
             <Select value={element.fontFamily || 'Inter'} onValueChange={(v) => onUpdate({ fontFamily: v })}>
               <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -215,18 +225,18 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             </Select>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Alignment</Label>
+            <Label className="text-xs text-muted-foreground">Alinhamento</Label>
             <Select value={element.alignment || 'left'} onValueChange={(v) => onUpdate({ alignment: v as 'left' | 'center' | 'right' })}>
               <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="left">Left</SelectItem>
-                <SelectItem value="center">Center</SelectItem>
-                <SelectItem value="right">Right</SelectItem>
+                <SelectItem value="left">Esquerda</SelectItem>
+                <SelectItem value="center">Centro</SelectItem>
+                <SelectItem value="right">Direita</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Color</Label>
+            <Label className="text-xs text-muted-foreground">Cor</Label>
             <div className="flex gap-2">
               <input type="color" value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
               <Input value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
@@ -235,13 +245,13 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </>
       )}
 
-      {/* Table editor */}
+      {/* Editor de Tabela */}
       {element.type === 'table' && element.rows && (
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">Table Cells</Label>
+            <Label className="text-xs text-muted-foreground">Células da Tabela</Label>
             <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={addRow}>
-              <Plus className="mr-1 h-3 w-3" /> Row
+              <Plus className="mr-1 h-3 w-3" /> Linha
             </Button>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -254,7 +264,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
                       value={cell}
                       onChange={(e) => updateCell(ri, ci, e.target.value)}
                       className="h-6 text-[10px]"
-                      placeholder={ri === 0 ? 'Header' : 'Cell'}
+                      placeholder={ri === 0 ? 'Cabeçalho' : 'Célula'}
                     />
                   ))}
                 </div>
