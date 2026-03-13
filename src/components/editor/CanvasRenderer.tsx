@@ -22,8 +22,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     const [resizing, setResizing] = useState<string | null>(null);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
 
-    const handleMouseDown = useCallback(
-      (e: React.MouseEvent, el: CanvasElement, mode: 'drag' | 'resize') => {
+    const handlePointerDown = useCallback(
+      (e: React.PointerEvent, el: CanvasElement, mode: 'drag' | 'resize') => {
         if (readOnly) return;
         e.stopPropagation();
         e.preventDefault();
@@ -32,7 +32,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         if (mode === 'drag') setDragging(el.id);
         else setResizing(el.id);
 
-        const handleMove = (ev: MouseEvent) => {
+        const handleMove = (ev: PointerEvent) => {
           const dx = ev.clientX - startPos.current.x;
           const dy = ev.clientY - startPos.current.y;
           if (mode === 'drag') {
@@ -51,12 +51,12 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const handleUp = () => {
           setDragging(null);
           setResizing(null);
-          document.removeEventListener('mousemove', handleMove);
-          document.removeEventListener('mouseup', handleUp);
+          document.removeEventListener('pointermove', handleMove);
+          document.removeEventListener('pointerup', handleUp);
         };
 
-        document.addEventListener('mousemove', handleMove);
-        document.addEventListener('mouseup', handleUp);
+        document.addEventListener('pointermove', handleMove);
+        document.addEventListener('pointerup', handleUp);
       },
       [onSelect, onUpdate, readOnly]
     );
