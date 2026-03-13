@@ -224,4 +224,5 @@ export async function generateVectorPdf(
   }
 
   pdf.save(fileName);
+  return pdf.output('blob');
 }
