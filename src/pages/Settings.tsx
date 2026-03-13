@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 const SettingsPage = () => {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const allTemplates = [...getStarterTemplates(), ...getSavedTemplates()];
 
   const update = (partial: Partial<AppSettings>) => {
@@ -21,11 +20,8 @@ const SettingsPage = () => {
 
   const handleSave = () => {
     saveSettings(settings);
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    if (settings.theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
     toast.success('Configurações salvas');
   };
 
@@ -37,12 +33,7 @@ const SettingsPage = () => {
       const url = ev.target?.result as string;
       const img = new Image();
       img.onload = () => {
-        update({
-          logoUrl: url,
-          logoWidth: img.naturalWidth,
-          logoHeight: img.naturalHeight,
-          logoAspectRatio: img.naturalWidth / img.naturalHeight,
-        });
+        update({ logoUrl: url, logoWidth: img.naturalWidth, logoHeight: img.naturalHeight, logoAspectRatio: img.naturalWidth / img.naturalHeight });
       };
       img.src = url;
     };
@@ -52,243 +43,132 @@ const SettingsPage = () => {
   const toggleTheme = () => {
     const newTheme = settings.theme === 'light' ? 'dark' : 'light';
     update({ theme: newTheme });
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    if (newTheme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
     saveSettings({ ...settings, theme: newTheme });
   };
 
-  const handleRestore = () => {
-    restoreDefaultTemplates();
-    toast.success('Templates padrão restaurados');
-  };
-
   return (
-    <div className="p-4 md:p-8 max-w-2xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Configurações</h1>
-          <p className="text-sm text-muted-foreground">Gerencie suas preferências e informações da empresa</p>
-        </div>
-        <Button size="sm" className="h-9 md:h-8" onClick={handleSave}>
-          <Save className="mr-1.5 h-3.5 w-3.5" />
+    <div className="p-4 md:p-8 max-w-2xl mx-auto">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-foreground md:text-2xl">Configurações</h1>
+        <Button size="sm" className="h-10 md:h-9" onClick={handleSave}>
+          <Save className="mr-1.5 h-4 w-4" />
           Salvar
         </Button>
       </div>
 
-      <div className="flex flex-col gap-8">
-        {/* Aparência */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Aparência</h2>
+      <div className="flex flex-col gap-5">
+        {/* Theme */}
+        <section className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {settings.theme === 'dark' ? (
-                <Moon className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <Sun className="h-5 w-5 text-muted-foreground" />
-              )}
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {settings.theme === 'dark' ? 'Modo Escuro' : 'Modo Claro'}
-                </p>
-                <p className="text-xs text-muted-foreground">Alternar entre tema claro e escuro</p>
-              </div>
+              {settings.theme === 'dark' ? <Moon className="h-5 w-5 text-muted-foreground" /> : <Sun className="h-5 w-5 text-muted-foreground" />}
+              <span className="text-sm font-medium text-foreground">{settings.theme === 'dark' ? 'Modo Escuro' : 'Modo Claro'}</span>
             </div>
             <Switch checked={settings.theme === 'dark'} onCheckedChange={toggleTheme} />
           </div>
         </section>
 
-        {/* Template Padrão */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">
-            <Star className="mr-1.5 inline h-4 w-4 text-warning" />
-            Template Padrão
-          </h2>
-          <p className="mb-3 text-xs text-muted-foreground">
-            O template padrão abre automaticamente a tela de geração ao acessar /quick
-          </p>
-          <Select
-            value={settings.defaultTemplateId || 'none'}
-            onValueChange={(v) => update({ defaultTemplateId: v === 'none' ? '' : v })}
-          >
-            <SelectTrigger className="h-9 md:h-8">
-              <SelectValue placeholder="Selecione um template" />
-            </SelectTrigger>
+        {/* Default template */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="h-4 w-4 text-warning" />
+            <h2 className="text-sm font-semibold text-foreground">Template Padrão</h2>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Abre automaticamente na tela de geração</p>
+          <Select value={settings.defaultTemplateId || 'none'} onValueChange={(v) => update({ defaultTemplateId: v === 'none' ? '' : v })}>
+            <SelectTrigger className="h-11 md:h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Nenhum</SelectItem>
-              {allTemplates.map((t) => (
-                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-              ))}
+              {allTemplates.map((t) => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}
             </SelectContent>
           </Select>
         </section>
 
-        {/* Perfil */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Perfil</h2>
-          <div>
-            <Label className="text-xs text-muted-foreground">Nome</Label>
-            <Input
-              value={settings.profileName}
-              onChange={(e) => update({ profileName: e.target.value })}
-              placeholder="Seu nome"
-              className="mt-1 h-10 md:h-9"
-            />
-          </div>
-        </section>
-
-        {/* Empresa */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Informações da Empresa</h2>
-          <div className="flex flex-col gap-4">
+        {/* Company */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Empresa</h2>
+          <div className="flex flex-col gap-3">
             <div>
-              <Label className="text-xs text-muted-foreground">Nome da Empresa</Label>
-              <Input
-                value={settings.companyName}
-                onChange={(e) => update({ companyName: e.target.value })}
-                placeholder="Nome da empresa"
-                className="mt-1 h-10 md:h-9"
-              />
+              <Label className="text-xs text-muted-foreground">Nome</Label>
+              <Input value={settings.companyName} onChange={(e) => update({ companyName: e.target.value })} placeholder="Nome da empresa" className="mt-1 h-11 md:h-9" />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">CNPJ</Label>
-              <Input
-                value={settings.companyCnpj}
-                onChange={(e) => update({ companyCnpj: e.target.value })}
-                placeholder="00.000.000/0000-00"
-                className="mt-1 h-10 md:h-9"
-              />
+              <Input value={settings.companyCnpj} onChange={(e) => update({ companyCnpj: e.target.value })} placeholder="00.000.000/0000-00" className="mt-1 h-11 md:h-9" />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <Label className="text-xs text-muted-foreground">Email</Label>
-                <Input
-                  value={settings.companyEmail}
-                  onChange={(e) => update({ companyEmail: e.target.value })}
-                  placeholder="contato@empresa.com"
-                  className="mt-1 h-10 md:h-9"
-                />
+                <Input value={settings.companyEmail} onChange={(e) => update({ companyEmail: e.target.value })} placeholder="contato@empresa.com" className="mt-1 h-11 md:h-9" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Telefone</Label>
-                <Input
-                  value={settings.companyPhone}
-                  onChange={(e) => update({ companyPhone: e.target.value })}
-                  placeholder="(11) 99999-0000"
-                  className="mt-1 h-10 md:h-9"
-                />
+                <Input value={settings.companyPhone} onChange={(e) => update({ companyPhone: e.target.value })} placeholder="(11) 99999-0000" className="mt-1 h-11 md:h-9" />
               </div>
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Website</Label>
-              <Input
-                value={settings.companyWebsite}
-                onChange={(e) => update({ companyWebsite: e.target.value })}
-                placeholder="https://www.empresa.com"
-                className="mt-1 h-10 md:h-9"
-              />
+              <Input value={settings.companyWebsite} onChange={(e) => update({ companyWebsite: e.target.value })} placeholder="https://www.empresa.com" className="mt-1 h-11 md:h-9" />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Endereço</Label>
-              <Input
-                value={settings.companyAddress}
-                onChange={(e) => update({ companyAddress: e.target.value })}
-                placeholder="Endereço completo"
-                className="mt-1 h-10 md:h-9"
-              />
+              <Input value={settings.companyAddress} onChange={(e) => update({ companyAddress: e.target.value })} placeholder="Endereço completo" className="mt-1 h-11 md:h-9" />
             </div>
           </div>
         </section>
 
         {/* Logo */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Logo da Empresa</h2>
-          <p className="mb-3 text-xs text-muted-foreground">
-            Faça upload uma vez. O logo será inserido automaticamente nos templates.
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleLogoUpload}
-            className="hidden"
-          />
+        <section className="rounded-xl border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Logo</h2>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
           {settings.logoUrl ? (
-            <div className="flex items-start gap-4">
-              <div className="relative w-20 overflow-hidden rounded-lg border border-border bg-accent/30">
+            <div className="flex items-center gap-3">
+              <div className="relative w-16 rounded-lg border border-border bg-accent/30 overflow-hidden">
                 <img src={settings.logoUrl} alt="Logo" className="w-full object-contain" style={{ height: 'auto' }} />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-6 w-6 rounded-full bg-card/80 p-0"
-                  onClick={() => update({ logoUrl: '', logoWidth: undefined, logoHeight: undefined, logoAspectRatio: undefined })}
-                >
+                <button className="absolute top-0 right-0 p-0.5 bg-card/80 rounded-bl" onClick={() => update({ logoUrl: '', logoWidth: undefined, logoHeight: undefined, logoAspectRatio: undefined })}>
                   <X className="h-3 w-3" />
-                </Button>
+                </button>
               </div>
-              <Button variant="outline" size="sm" className="h-9 md:h-8" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                Substituir
+              <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> Substituir
               </Button>
             </div>
           ) : (
-            <Button variant="outline" size="sm" className="h-9 md:h-8" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="mr-1.5 h-3.5 w-3.5" />
-              Enviar Logo
+            <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-1.5 h-3.5 w-3.5" /> Enviar Logo
             </Button>
           )}
         </section>
 
-        {/* Taxa de Imposto */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Taxa de Imposto Padrão</h2>
-          <div>
-            <Label className="text-xs text-muted-foreground">Taxa (%)</Label>
-            <div className="flex items-center gap-2 mt-1">
-              <Input
-                type="number"
-                step="0.01"
-                value={decimalToPercent(settings.defaultTaxRate)}
-                onChange={(e) => update({ defaultTaxRate: percentToDecimal(parseFloat(e.target.value) || 0) })}
-                className="max-w-xs h-10 md:h-9"
-              />
-              <span className="text-sm text-muted-foreground">%</span>
-            </div>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              Ex: 10 = 10%, 11.29 = 11,29%
-            </p>
-          </div>
-        </section>
-
-        {/* Nome do PDF */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Nome Padrão do PDF</h2>
-          <div>
-            <Label className="text-xs text-muted-foreground">Nome base</Label>
+        {/* Tax rate */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Taxa de Imposto Padrão</h2>
+          <div className="flex items-center gap-2">
             <Input
-              value={settings.pdfBaseName}
-              onChange={(e) => update({ pdfBaseName: e.target.value })}
-              placeholder="Ex: Orçamento PlayPort"
-              className="mt-1 h-10 md:h-9"
+              type="number" step="0.01"
+              value={decimalToPercent(settings.defaultTaxRate)}
+              onChange={(e) => update({ defaultTaxRate: percentToDecimal(parseFloat(e.target.value) || 0) })}
+              className="h-11 md:h-9 max-w-[120px]"
             />
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              O sistema adiciona numeração automática: {settings.pdfBaseName || 'Orçamento'} 001.pdf, {settings.pdfBaseName || 'Orçamento'} 002.pdf...
-            </p>
+            <span className="text-sm text-muted-foreground">%</span>
           </div>
+          <p className="mt-1 text-[10px] text-muted-foreground">Ex: 10 = 10%, 11.29 = 11,29%</p>
         </section>
 
-        {/* Restaurar Templates */}
-        <section className="rounded-lg border border-border bg-card p-4 md:p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Templates</h2>
-          <Button variant="outline" size="sm" className="h-9 md:h-8" onClick={handleRestore}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            Restaurar Templates Padrão
+        {/* PDF name */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Nome Padrão do PDF</h2>
+          <Input value={settings.pdfBaseName} onChange={(e) => update({ pdfBaseName: e.target.value })} placeholder="Ex: Orçamento PlayPort" className="h-11 md:h-9" />
+          <p className="mt-1 text-[10px] text-muted-foreground">{settings.pdfBaseName || 'Orçamento'} 001.pdf, {settings.pdfBaseName || 'Orçamento'} 002.pdf...</p>
+        </section>
+
+        {/* Restore */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => { restoreDefaultTemplates(); toast.success('Templates restaurados'); }}>
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restaurar Templates Padrão
           </Button>
-          <p className="mt-2 text-[10px] text-muted-foreground">
-            Recria os templates originais do sistema.
-          </p>
         </section>
       </div>
     </div>
