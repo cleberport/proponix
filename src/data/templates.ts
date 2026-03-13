@@ -43,6 +43,7 @@ function makeTemplate(
     category,
     description,
     thumbnail: '',
+    color: overrides?.color,
     elements,
     variables: [...new Set([...variables, 'data_de_hoje'])],
     canvasWidth: CANVAS_W,
