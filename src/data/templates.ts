@@ -115,7 +115,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Desenvolvimento Web', price: '2500', tax_rate: '0' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0, showTax: false },
+    settings: { taxRate: 0, showTax: false }, color: '#10B981',
   }),
 
   makeTemplate('creative-proposal', 'Proposta Criativa', 'Criativo', 'Template ousado para projetos criativos', [
