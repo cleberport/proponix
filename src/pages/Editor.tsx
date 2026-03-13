@@ -132,7 +132,7 @@ const Editor = () => {
           <Input
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
-            className="h-8 w-56 border-none bg-transparent text-sm font-semibold focus-visible:ring-1"
+            className="h-8 w-32 md:w-56 border-none bg-transparent text-sm font-semibold focus-visible:ring-1"
           />
         </div>
         <div className="flex items-center gap-2">
