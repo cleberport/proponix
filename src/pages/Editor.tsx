@@ -270,6 +270,23 @@ const Editor = () => {
       <TabsContent value="settings" className="flex-1 overflow-y-auto p-3">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Configurações do Template</h3>
         <div className="flex flex-col gap-4">
+          {/* Template color */}
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Cor do Template</Label>
+            <div className="flex flex-wrap gap-2">
+              {TEMPLATE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setTemplateColor(c)}
+                  className="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                  style={{
+                    backgroundColor: c,
+                    borderColor: templateColor === c ? 'hsl(var(--foreground))' : 'transparent',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground">Taxa de Imposto Padrão (%)</Label>
             <div className="flex items-center gap-1">
