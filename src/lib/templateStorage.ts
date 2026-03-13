@@ -5,6 +5,7 @@ const STORAGE_KEY = 'budget-template-builder-templates';
 const SETTINGS_KEY = 'budget-template-builder-settings';
 const HISTORY_KEY = 'budget-template-builder-history';
 const PDF_COUNTER_KEY = 'budget-template-builder-pdf-counter';
+const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
 
 export interface AppSettings {
   profileName: string;
@@ -58,8 +59,27 @@ export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+export function getHiddenStarterIds(): string[] {
+  const raw = localStorage.getItem(HIDDEN_STARTERS_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export function hideStarterTemplate(id: string): void {
+  const hidden = getHiddenStarterIds();
+  if (!hidden.includes(id)) {
+    hidden.push(id);
+    localStorage.setItem(HIDDEN_STARTERS_KEY, JSON.stringify(hidden));
+  }
+}
+
+export function hideAllStarterTemplates(): void {
+  const ids = starterTemplates.map((t) => t.id);
+  localStorage.setItem(HIDDEN_STARTERS_KEY, JSON.stringify(ids));
+}
+
 export function getStarterTemplates(): Template[] {
-  return starterTemplates;
+  const hidden = getHiddenStarterIds();
+  return starterTemplates.filter((t) => !hidden.includes(t.id));
 }
 
 export function getSavedTemplates(): SavedTemplate[] {
@@ -106,6 +126,7 @@ export function restoreDefaultTemplates(): void {
   const starterIds = starterTemplates.map((t) => t.id);
   const filtered = saved.filter((t) => !starterIds.includes(t.id));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  localStorage.removeItem(HIDDEN_STARTERS_KEY);
 }
 
 export function getTemplateById(id: string): Template | undefined {
