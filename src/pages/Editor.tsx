@@ -338,7 +338,7 @@ const Editor = () => {
         </main>
 
         {/* Right sidebar - Properties */}
-        <aside className="editor-sidebar w-64 overflow-y-auto">
+        <aside className="editor-sidebar w-full md:w-64 overflow-y-auto max-h-[30vh] md:max-h-none">
           <PropertiesPanel
             element={selectedElement}
             variables={variables}
