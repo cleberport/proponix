@@ -2,10 +2,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getTemplateById, saveTemplate } from '@/lib/templateStorage';
-import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template } from '@/types/template';
+import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template, TemplateSettings, DEFAULT_TEMPLATE_VALUES, DEFAULT_CALCULATED_FIELDS } from '@/types/template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, Play, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -24,6 +27,10 @@ const Editor = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [variables, setVariables] = useState<string[]>(base?.variables || [...DEFAULT_VARIABLES]);
   const [newVar, setNewVar] = useState('');
+  const [defaultValues, setDefaultValues] = useState<Record<string, string>>(base?.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
+  const [inputFields, setInputFields] = useState<string[]>(base?.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
+  const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>(base?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
+  const [settings, setSettings] = useState<TemplateSettings>(base?.settings || { taxRate: 0.10, showTax: true });
 
   const selectedElement = elements.find((e) => e.id === selectedId) || null;
 
@@ -43,6 +50,8 @@ const Editor = () => {
       color: '#0F172A',
       alignment: 'left',
       rows: type === 'table' ? [{ cells: ['Column 1', 'Column 2', 'Column 3'] }, { cells: ['', '', ''] }] : undefined,
+      isVisible: true,
+      fieldCategory: type === 'dynamic-field' ? 'input' : type === 'price-field' || type === 'total-calculation' ? 'calculated' : 'default',
     };
     setElements((prev) => [...prev, newEl]);
     setSelectedId(newEl.id);
@@ -68,6 +77,10 @@ const Editor = () => {
       variables,
       canvasWidth: 595,
       canvasHeight: 842,
+      defaultValues,
+      inputFields,
+      calculatedFields,
+      settings,
     };
     const saved = saveTemplate(template);
     toast.success('Template saved!');
@@ -80,6 +93,20 @@ const Editor = () => {
       setVariables((prev) => [...prev, v]);
       setNewVar('');
     }
+  };
+
+  const toggleInputField = (v: string) => {
+    setInputFields((prev) =>
+      prev.includes(v) ? prev.filter((f) => f !== v) : [...prev, v]
+    );
+  };
+
+  const updateDefaultValue = (key: string, value: string) => {
+    setDefaultValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateCalculatedFormula = (field: string, formula: string) => {
+    setCalculatedFields((prev) => ({ ...prev, [field]: formula }));
   };
 
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -121,55 +148,182 @@ const Editor = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar - Elements */}
-        <aside className="editor-sidebar flex w-56 flex-col overflow-y-auto">
-          <div className="border-b border-border p-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Elements</h3>
-          </div>
-          <div className="flex flex-col gap-1 p-2">
-            {ELEMENT_PALETTE.map((item) => {
-              const Icon = iconMap[item.icon];
-              return (
-                <button
-                  key={item.type}
-                  onClick={() => addElement(item.type)}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent"
-                >
-                  {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Left sidebar */}
+        <aside className="editor-sidebar flex w-64 flex-col overflow-y-auto">
+          <Tabs defaultValue="elements" className="flex flex-1 flex-col">
+            <TabsList className="mx-2 mt-2 grid w-auto grid-cols-3">
+              <TabsTrigger value="elements" className="text-xs">Elements</TabsTrigger>
+              <TabsTrigger value="data" className="text-xs">Data</TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs">
+                <Settings2 className="h-3 w-3" />
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Variables */}
-          <div className="border-t border-border p-3">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Variables</h3>
-            <div className="flex flex-col gap-1">
-              {variables.map((v) => (
-                <div
-                  key={v}
-                  className="drag-handle flex items-center gap-1.5 rounded bg-accent px-2 py-1 text-xs text-foreground"
-                  draggable
-                >
-                  <GripVertical className="h-3 w-3 text-muted-foreground" />
-                  <code className="font-mono">{`{{${v}}}`}</code>
+            {/* Elements tab */}
+            <TabsContent value="elements" className="flex-1 overflow-y-auto">
+              <div className="border-b border-border p-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Add Elements</h3>
+              </div>
+              <div className="flex flex-col gap-1 p-2">
+                {ELEMENT_PALETTE.map((item) => {
+                  const Icon = iconMap[item.icon];
+                  return (
+                    <button
+                      key={item.type}
+                      onClick={() => addElement(item.type)}
+                      className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent"
+                    >
+                      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Variables */}
+              <div className="border-t border-border p-3">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Variables</h3>
+                <div className="flex flex-col gap-1">
+                  {variables.map((v) => (
+                    <div
+                      key={v}
+                      className="drag-handle flex items-center gap-1.5 rounded bg-accent px-2 py-1 text-xs text-foreground"
+                      draggable
+                    >
+                      <GripVertical className="h-3 w-3 text-muted-foreground" />
+                      <code className="font-mono">{`{{${v}}}`}</code>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="mt-2 flex gap-1">
-              <Input
-                value={newVar}
-                onChange={(e) => setNewVar(e.target.value)}
-                placeholder="new_variable"
-                className="h-7 text-xs"
-                onKeyDown={(e) => e.key === 'Enter' && addVariable()}
-              />
-              <Button variant="ghost" size="sm" className="h-7 px-2" onClick={addVariable}>
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
+                <div className="mt-2 flex gap-1">
+                  <Input
+                    value={newVar}
+                    onChange={(e) => setNewVar(e.target.value)}
+                    placeholder="new_variable"
+                    className="h-7 text-xs"
+                    onKeyDown={(e) => e.key === 'Enter' && addVariable()}
+                  />
+                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={addVariable}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Data tab - defaults, inputs, formulas */}
+            <TabsContent value="data" className="flex-1 overflow-y-auto">
+              {/* Input Fields Selection */}
+              <div className="border-b border-border p-3">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Input Fields
+                </h3>
+                <p className="mb-3 text-[10px] text-muted-foreground">
+                  Fields users must fill when generating a document
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {variables.map((v) => (
+                    <label key={v} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-accent/50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={inputFields.includes(v)}
+                        onChange={() => toggleInputField(v)}
+                        className="h-3 w-3 rounded border-border"
+                      />
+                      <span className="text-foreground">{v.replace(/_/g, ' ')}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Default Values */}
+              <div className="border-b border-border p-3">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Default Values
+                </h3>
+                <p className="mb-3 text-[10px] text-muted-foreground">
+                  Pre-filled values saved with the template
+                </p>
+                <div className="flex flex-col gap-2">
+                  {variables
+                    .filter((v) => !inputFields.includes(v) && !Object.keys(calculatedFields).includes(v))
+                    .map((v) => (
+                      <div key={v}>
+                        <Label className="text-[10px] text-muted-foreground">{v.replace(/_/g, ' ')}</Label>
+                        <Input
+                          value={defaultValues[v] || ''}
+                          onChange={(e) => updateDefaultValue(v, e.target.value)}
+                          placeholder={`Default for ${v}`}
+                          className="h-7 text-xs"
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Calculated Fields */}
+              <div className="p-3">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Calculated Fields
+                </h3>
+                <p className="mb-3 text-[10px] text-muted-foreground">
+                  Auto-calculated from other values (e.g. price * tax_rate)
+                </p>
+                <div className="flex flex-col gap-2">
+                  {Object.entries(calculatedFields).map(([field, formula]) => (
+                    <div key={field}>
+                      <Label className="text-[10px] text-muted-foreground">{field}</Label>
+                      <Input
+                        value={formula}
+                        onChange={(e) => updateCalculatedFormula(field, e.target.value)}
+                        placeholder="e.g. price * tax_rate"
+                        className="h-7 font-mono text-xs"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Settings tab */}
+            <TabsContent value="settings" className="flex-1 overflow-y-auto p-3">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Template Settings
+              </h3>
+
+              <div className="flex flex-col gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Default Tax Rate</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={settings.taxRate}
+                    onChange={(e) => {
+                      const rate = parseFloat(e.target.value) || 0;
+                      setSettings((prev) => ({ ...prev, taxRate: rate }));
+                      updateDefaultValue('tax_rate', String(rate));
+                    }}
+                    className="h-7 text-xs"
+                  />
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    e.g. 0.10 = 10%
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                  <span className="text-xs font-medium text-foreground">Show tax on document</span>
+                  <Switch
+                    checked={settings.showTax}
+                    onCheckedChange={(checked) => setSettings((prev) => ({ ...prev, showTax: checked }))}
+                  />
+                </div>
+                {!settings.showTax && (
+                  <p className="text-[10px] text-muted-foreground">
+                    Tax will be hidden from the document but still included in the total.
+                  </p>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </aside>
 
         {/* Canvas */}

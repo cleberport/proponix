@@ -9,6 +9,8 @@ export type ElementType =
   | 'total-calculation'
   | 'notes';
 
+export type FieldCategory = 'default' | 'input' | 'calculated';
+
 export interface CanvasElement {
   id: string;
   type: ElementType;
@@ -26,10 +28,21 @@ export interface CanvasElement {
   rows?: TableRow[];
   imageUrl?: string;
   objectFit?: 'cover' | 'contain' | 'fill';
+
+  // 3-layer data model
+  fieldCategory?: FieldCategory;
+  defaultValue?: string;
+  isVisible?: boolean;
+  formula?: string; // e.g. "price * tax_rate", "price + tax"
 }
 
 export interface TableRow {
   cells: string[];
+}
+
+export interface TemplateSettings {
+  taxRate: number;
+  showTax: boolean;
 }
 
 export interface Template {
@@ -42,6 +55,10 @@ export interface Template {
   variables: string[];
   canvasWidth: number;
   canvasHeight: number;
+  defaultValues?: Record<string, string>;
+  inputFields?: string[];
+  calculatedFields?: Record<string, string>; // variable -> formula
+  settings?: TemplateSettings;
 }
 
 export interface SavedTemplate extends Template {
@@ -56,10 +73,30 @@ export const DEFAULT_VARIABLES = [
   'event_date',
   'service_name',
   'price',
+  'tax_rate',
   'subtotal',
   'tax',
   'total',
 ];
+
+export const DEFAULT_INPUT_FIELDS = [
+  'client_name',
+  'event_name',
+  'location',
+  'event_date',
+];
+
+export const DEFAULT_CALCULATED_FIELDS: Record<string, string> = {
+  subtotal: 'price',
+  tax: 'price * tax_rate',
+  total: 'price + tax',
+};
+
+export const DEFAULT_TEMPLATE_VALUES: Record<string, string> = {
+  service_name: 'Professional Services',
+  price: '1000',
+  tax_rate: '0.10',
+};
 
 export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }[] = [
   { type: 'text', label: 'Text Block', icon: 'Type' },

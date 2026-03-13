@@ -1,10 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { getTemplateById } from '@/lib/templateStorage';
+import { resolveAllValues, formatCurrency } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Download, FileText } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Download, FileText, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import html2canvas from 'html2canvas';
@@ -16,17 +18,52 @@ const Generate = () => {
   const template = getTemplateById(id!);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const [values, setValues] = useState<Record<string, string>>(() => {
+  const inputFields = template?.inputFields || template?.variables || [];
+
+  const [userInputs, setUserInputs] = useState<Record<string, string>>(() => {
     if (!template) return {};
     const init: Record<string, string> = {};
-    template.variables.forEach((v) => (init[v] = ''));
+    inputFields.forEach((v) => (init[v] = ''));
     return init;
   });
 
+  const [showTax, setShowTax] = useState(template?.settings?.showTax ?? true);
   const [generating, setGenerating] = useState(false);
 
+  // Resolve all values: defaults + user inputs + calculations
+  const resolvedValues = useMemo(() => {
+    if (!template) return {};
+    const allValues = resolveAllValues(template, userInputs);
+    return allValues;
+  }, [template, userInputs]);
+
+  // For display: format currency fields
+  const displayValues = useMemo(() => {
+    const display = { ...resolvedValues };
+    const currencyFields = ['price', 'subtotal', 'tax', 'total'];
+    for (const f of currencyFields) {
+      if (display[f] && !isNaN(parseFloat(display[f]))) {
+        display[f] = formatCurrency(display[f]);
+      }
+    }
+    return display;
+  }, [resolvedValues]);
+
+  // Filter elements based on tax visibility
+  const visibleElements = useMemo(() => {
+    if (!template) return [];
+    if (showTax) return template.elements;
+    return template.elements.filter((el) => {
+      // Hide tax line if showTax is false
+      if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) {
+        return false;
+      }
+      return el.isVisible !== false;
+    });
+  }, [template, showTax]);
+
   const handleChange = (key: string, val: string) => {
-    setValues((prev) => ({ ...prev, [key]: val }));
+    setUserInputs((prev) => ({ ...prev, [key]: val }));
   };
 
   const handleGeneratePDF = useCallback(async () => {
@@ -68,6 +105,9 @@ const Generate = () => {
   const formatLabel = (v: string) =>
     v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
+  const defaultValues = template.defaultValues || {};
+  const calculatedFields = template.calculatedFields || {};
+
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
@@ -90,15 +130,16 @@ const Generate = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Left - Form */}
         <aside className="editor-sidebar w-80 overflow-y-auto p-5">
+          {/* Input Fields */}
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Fill in Details
           </h3>
           <div className="flex flex-col gap-4">
-            {template.variables.map((v) => (
+            {inputFields.map((v) => (
               <div key={v}>
                 <Label className="mb-1 text-xs font-medium text-foreground">{formatLabel(v)}</Label>
                 <Input
-                  value={values[v] || ''}
+                  value={userInputs[v] || ''}
                   onChange={(e) => handleChange(v, e.target.value)}
                   placeholder={`Enter ${formatLabel(v).toLowerCase()}`}
                   className="h-8 text-sm"
@@ -106,18 +147,68 @@ const Generate = () => {
               </div>
             ))}
           </div>
+
+          {/* Template Defaults (read-only summary) */}
+          {Object.keys(defaultValues).length > 0 && (
+            <div className="mt-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Template Defaults
+              </h3>
+              <div className="flex flex-col gap-2">
+                {Object.entries(defaultValues).map(([k, v]) => (
+                  <div key={k} className="flex items-center justify-between rounded-md bg-accent/50 px-3 py-1.5">
+                    <span className="text-xs text-muted-foreground">{formatLabel(k)}</span>
+                    <span className="text-xs font-medium text-foreground">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Calculated Summary */}
+          {Object.keys(calculatedFields).length > 0 && (
+            <div className="mt-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Calculated Totals
+              </h3>
+              <div className="flex flex-col gap-2">
+                {Object.entries(calculatedFields).map(([field]) => (
+                  <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                    <span className="text-xs font-medium text-foreground">{formatLabel(field)}</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {displayValues[field] || '$0.00'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tax Visibility Toggle */}
+          <div className="mt-6 flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              {showTax ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+              <span className="text-xs font-medium text-foreground">Show tax on document</span>
+            </div>
+            <Switch checked={showTax} onCheckedChange={setShowTax} />
+          </div>
+          {!showTax && (
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Tax is hidden but still included in the total price.
+            </p>
+          )}
         </aside>
 
         {/* Right - Preview */}
         <main className="flex flex-1 items-center justify-center overflow-auto bg-background p-8">
           <CanvasRenderer
             ref={canvasRef}
-            elements={template.elements}
+            elements={visibleElements}
             selectedId={null}
             onSelect={() => {}}
             onUpdate={() => {}}
             readOnly
-            variableValues={values}
+            variableValues={displayValues}
           />
         </main>
       </div>
