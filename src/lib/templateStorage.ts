@@ -59,8 +59,27 @@ export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+export function getHiddenStarterIds(): string[] {
+  const raw = localStorage.getItem(HIDDEN_STARTERS_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export function hideStarterTemplate(id: string): void {
+  const hidden = getHiddenStarterIds();
+  if (!hidden.includes(id)) {
+    hidden.push(id);
+    localStorage.setItem(HIDDEN_STARTERS_KEY, JSON.stringify(hidden));
+  }
+}
+
+export function hideAllStarterTemplates(): void {
+  const ids = starterTemplates.map((t) => t.id);
+  localStorage.setItem(HIDDEN_STARTERS_KEY, JSON.stringify(ids));
+}
+
 export function getStarterTemplates(): Template[] {
-  return starterTemplates;
+  const hidden = getHiddenStarterIds();
+  return starterTemplates.filter((t) => !hidden.includes(t.id));
 }
 
 export function getSavedTemplates(): SavedTemplate[] {
