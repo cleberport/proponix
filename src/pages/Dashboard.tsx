@@ -7,11 +7,22 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import TemplateCard from '@/components/TemplateCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const starters = getStarterTemplates();
   const [saved, setSaved] = useState(getSavedTemplates());
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleSelect = (template: Template) => {
     navigate(`/editor/${template.id}`);
@@ -21,10 +32,12 @@ const Dashboard = () => {
     navigate(`/generate/${template.id}`);
   };
 
-  const handleDelete = (id: string) => {
-    deleteTemplate(id);
+  const confirmDelete = () => {
+    if (!deleteId) return;
+    deleteTemplate(deleteId);
     setSaved(getSavedTemplates());
     toast.success('Template excluído');
+    setDeleteId(null);
   };
 
   const handleDuplicate = (id: string) => {
@@ -65,7 +78,7 @@ const Dashboard = () => {
                   template={t}
                   onEdit={() => handleSelect(t)}
                   onGenerate={() => handleGenerate(t)}
-                  onDelete={() => handleDelete(t.id)}
+                  onDelete={() => setDeleteId(t.id)}
                   onDuplicate={() => handleDuplicate(t.id)}
                   isSaved
                 />
@@ -100,6 +113,23 @@ const Dashboard = () => {
           ))}
         </div>
       </section>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja apagar este template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O template será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { getTemplateById } from '@/lib/templateStorage';
-import { resolveAllValues, formatCurrency, formatEventDate, decimalToPercent, percentToDecimal } from '@/lib/calculations';
+import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
+import { resolveAllValues, formatCurrency, formatEventDate, decimalToPercent } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ const Generate = () => {
   const template = getTemplateById(id!);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const inputFields = template?.inputFields || template?.variables || [];
+  const inputFields = template?.inputFields || [];
 
   const [userInputs, setUserInputs] = useState<Record<string, string>>(() => {
     if (!template) return {};
@@ -32,7 +32,6 @@ const Generate = () => {
 
   const resolvedValues = useMemo(() => {
     if (!template) return {};
-    // Format event_date smartly before resolving
     const inputs = { ...userInputs };
     if (inputs.event_date) {
       inputs.event_date = formatEventDate(inputs.event_date);
@@ -67,7 +66,7 @@ const Generate = () => {
   };
 
   const handleGeneratePDF = useCallback(async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !template) return;
     setGenerating(true);
     try {
       const canvas = await html2canvas(canvasRef.current, {
@@ -75,19 +74,33 @@ const Generate = () => {
         useCORS: true,
         backgroundColor: '#FFFFFF',
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      const imgData = canvas.toDataURL('image/jpeg', 0.80);
       const pdf = new jsPDF('p', 'pt', 'a4');
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-      pdf.save(`${template?.name || 'documento'}.pdf`);
+
+      const fileName = generatePdfFileName();
+      pdf.save(fileName);
+
+      // Save to history
+      addDocumentToHistory({
+        id: crypto.randomUUID(),
+        templateId: template.id,
+        templateName: template.name,
+        clientName: userInputs.client_name || '',
+        fileName,
+        generatedAt: new Date().toISOString(),
+        values: { ...userInputs },
+      });
+
       toast.success('PDF gerado com sucesso!');
     } catch {
       toast.error('Falha ao gerar PDF');
     } finally {
       setGenerating(false);
     }
-  }, [template?.name]);
+  }, [template, userInputs]);
 
   if (!template) {
     return (
@@ -125,11 +138,11 @@ const Generate = () => {
       event_name: 'Ex: Casamento',
       location: 'Ex: São Paulo, SP',
       event_date: 'Ex: 23/04/2026 ou 23/04/2026 a 25/04/2026',
+      price: 'Ex: 5000',
     };
     return placeholders[v] || `Preencha ${formatLabel(v).toLowerCase()}`;
   };
 
-  const defaultValues = template.defaultValues || {};
   const calculatedFields = template.calculatedFields || {};
 
   return (
@@ -163,7 +176,7 @@ const Generate = () => {
                   value={userInputs[v] || ''}
                   onChange={(e) => handleChange(v, e.target.value)}
                   placeholder={getPlaceholder(v)}
-                  className="h-8 text-sm"
+                  className="h-9 text-sm"
                 />
                 {v === 'event_date' && (
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
@@ -174,31 +187,15 @@ const Generate = () => {
             ))}
           </div>
 
-          {Object.keys(defaultValues).length > 0 && (
-            <div className="mt-6">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Valores Padrão do Template
-              </h3>
-              <div className="flex flex-col gap-2">
-                {Object.entries(defaultValues).map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between rounded-md bg-accent/50 px-3 py-1.5">
-                    <span className="text-xs text-muted-foreground">{formatLabel(k)}</span>
-                    <span className="text-xs font-medium text-foreground">
-                      {k === 'tax_rate' ? `${decimalToPercent(parseFloat(v)).toFixed(1)}%` : v}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {Object.keys(calculatedFields).length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Totais Calculados
               </h3>
               <div className="flex flex-col gap-2">
-                {Object.entries(calculatedFields).map(([field]) => (
+                {Object.entries(calculatedFields)
+                  .filter(([field]) => showTax || field !== 'tax')
+                  .map(([field]) => (
                   <div key={field} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
                     <span className="text-xs font-medium text-foreground">{formatLabel(field)}</span>
                     <span className="text-sm font-semibold text-primary">

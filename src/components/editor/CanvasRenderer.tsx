@@ -32,6 +32,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         if (mode === 'drag') setDragging(el.id);
         else setResizing(el.id);
 
+        const isLogo = el.type === 'logo';
+        const aspectRatio = isLogo && el.height > 0 ? el.width / el.height : 0;
+
         const handleMove = (ev: PointerEvent) => {
           const dx = ev.clientX - startPos.current.x;
           const dy = ev.clientY - startPos.current.y;
@@ -41,10 +44,17 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               y: snap(Math.max(0, Math.min(CANVAS_H - el.height, startPos.current.elY + dy))),
             });
           } else {
-            onUpdate(el.id, {
-              width: snap(Math.max(40, startPos.current.elW + dx)),
-              height: snap(Math.max(10, startPos.current.elH + dy)),
-            });
+            if (isLogo && aspectRatio > 0) {
+              // Proportional resize for logos
+              const newW = snap(Math.max(40, startPos.current.elW + dx));
+              const newH = Math.round(newW / aspectRatio);
+              onUpdate(el.id, { width: newW, height: newH });
+            } else {
+              onUpdate(el.id, {
+                width: snap(Math.max(40, startPos.current.elW + dx)),
+                height: snap(Math.max(10, startPos.current.elH + dy)),
+              });
+            }
           }
         };
 
@@ -84,7 +94,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         left: el.x,
         top: el.y,
         width: el.width,
-        height: el.type === 'divider' ? undefined : el.height,
         fontSize: el.fontSize,
         fontWeight: el.fontWeight,
         fontFamily: el.fontFamily,
@@ -93,6 +102,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         cursor: readOnly ? 'default' : 'grab',
         userSelect: 'none',
       };
+
+      // Logo/image: height auto, never fixed h+w simultaneously
+      if (el.type === 'logo' || el.type === 'image') {
+        // Don't set height in style — let object-fit handle it
+      } else if (el.type !== 'divider') {
+        style.height = el.height;
+      }
 
       const selectedClass = isSelected ? 'element-selected' : '';
       const hoverClass = readOnly ? '' : 'hover:element-hover';
@@ -151,11 +167,16 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           );
 
         case 'image':
-        case 'logo':
+        case 'logo': {
+          const imgStyle: React.CSSProperties = {
+            ...style,
+            height: 'auto',
+            minHeight: 20,
+          };
           return (
             <div
               key={el.id}
-              style={style}
+              style={imgStyle}
               className={`flex items-center justify-center rounded ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
@@ -164,12 +185,12 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <img
                   src={el.imageUrl}
                   alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
-                  className="h-full w-full rounded"
-                  style={{ objectFit: 'contain' }}
+                  className="w-full rounded"
+                  style={{ objectFit: 'contain', height: 'auto', maxHeight: el.height || 200 }}
                   draggable={false}
                 />
               ) : (
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-1 py-4">
                   <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Imagem'}</span>
                   <span className="text-[10px] text-muted-foreground">Selecione para enviar</span>
                 </div>
@@ -177,12 +198,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               {resizeHandle}
             </div>
           );
+        }
 
         case 'table':
           return (
             <div
               key={el.id}
-              style={{ ...style, overflow: 'hidden' }}
+              style={{ ...style, height: el.height, overflow: 'hidden' }}
               className={`rounded border border-border ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}

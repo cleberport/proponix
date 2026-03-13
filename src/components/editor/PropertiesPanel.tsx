@@ -2,8 +2,8 @@ import { CanvasElement } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, Plus, Upload, X } from 'lucide-react';
 import { useRef } from 'react';
 
@@ -23,12 +23,15 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const url = ev.target?.result as string;
-      // Preserve aspect ratio by reading natural dimensions
       const img = new Image();
       img.onload = () => {
+        // For logos, calculate proportional height
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        const newHeight = Math.round((element?.width || 150) / aspectRatio);
         onUpdate({
           imageUrl: url,
           objectFit: 'contain',
+          height: newHeight,
         });
       };
       img.src = url;
@@ -77,6 +80,8 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     onUpdate({ rows: element.rows.filter((_, i) => i !== ri) });
   };
 
+  const isLogoOrImage = element.type === 'logo' || element.type === 'image';
+
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
@@ -104,16 +109,31 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
         <div>
           <Label className="text-xs text-muted-foreground">Largura</Label>
-          <Input type="number" value={element.width} onChange={(e) => onUpdate({ width: +e.target.value })} className="h-7 text-xs" />
+          <Input
+            type="number"
+            value={element.width}
+            onChange={(e) => {
+              const newW = +e.target.value;
+              if (isLogoOrImage && element.height > 0) {
+                const ar = element.width / element.height;
+                onUpdate({ width: newW, height: Math.round(newW / ar) });
+              } else {
+                onUpdate({ width: newW });
+              }
+            }}
+            className="h-7 text-xs"
+          />
         </div>
-        <div>
-          <Label className="text-xs text-muted-foreground">Altura</Label>
-          <Input type="number" value={element.height} onChange={(e) => onUpdate({ height: +e.target.value })} className="h-7 text-xs" />
-        </div>
+        {!isLogoOrImage && (
+          <div>
+            <Label className="text-xs text-muted-foreground">Altura</Label>
+            <Input type="number" value={element.height} onChange={(e) => onUpdate({ height: +e.target.value })} className="h-7 text-xs" />
+          </div>
+        )}
       </div>
 
       {/* Upload de Imagem */}
-      {(element.type === 'image' || element.type === 'logo') && (
+      {isLogoOrImage && (
         <div>
           <Label className="text-xs text-muted-foreground">
             {element.type === 'logo' ? 'Logo' : 'Imagem'}
@@ -128,7 +148,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
           {element.imageUrl ? (
             <div className="mt-1 space-y-2">
               <div className="relative overflow-hidden rounded border border-border">
-                <img src={element.imageUrl} alt="Preview" className="h-24 w-full object-contain bg-accent/30" />
+                <img src={element.imageUrl} alt="Preview" className="w-full object-contain bg-accent/30" style={{ height: 'auto' }} />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -162,12 +182,17 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
-      {/* Conteúdo */}
-      {element.type !== 'divider' && element.type !== 'image' && element.type !== 'logo' && element.type !== 'table' && (
+      {/* Conteúdo - use Textarea for text blocks to preserve formatting */}
+      {element.type !== 'divider' && !isLogoOrImage && element.type !== 'table' && (
         <div>
           <Label className="text-xs text-muted-foreground">Conteúdo</Label>
-          {element.type === 'notes' ? (
-            <Textarea value={element.content} onChange={(e) => onUpdate({ content: e.target.value })} className="text-xs" rows={3} />
+          {element.type === 'notes' || element.type === 'text' ? (
+            <Textarea
+              value={element.content}
+              onChange={(e) => onUpdate({ content: e.target.value })}
+              className="text-xs"
+              rows={3}
+            />
           ) : (
             <Input value={element.content} onChange={(e) => onUpdate({ content: e.target.value })} className="h-7 text-xs" />
           )}
@@ -194,7 +219,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
       )}
 
       {/* Tipografia */}
-      {element.type !== 'divider' && (
+      {element.type !== 'divider' && !isLogoOrImage && (
         <>
           <div>
             <Label className="text-xs text-muted-foreground">Tamanho da Fonte</Label>
