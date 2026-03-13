@@ -15,6 +15,18 @@ interface Props {
 }
 
 const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      onUpdate({ imageUrl: ev.target?.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (!element) {
     return (
       <div className="flex h-full items-center justify-center p-4">
