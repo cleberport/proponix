@@ -91,6 +91,67 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       </div>
 
+      {/* Image Upload */}
+      {(element.type === 'image' || element.type === 'logo') && (
+        <div>
+          <Label className="text-xs text-muted-foreground">
+            {element.type === 'logo' ? 'Logo' : 'Image'}
+          </Label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          {element.imageUrl ? (
+            <div className="mt-1 space-y-2">
+              <div className="relative overflow-hidden rounded border border-border">
+                <img src={element.imageUrl} alt="Preview" className="h-24 w-full object-contain bg-accent/30" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 h-6 w-6 rounded-full bg-card/80 p-0"
+                  onClick={() => onUpdate({ imageUrl: undefined })}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="mr-1.5 h-3 w-3" />
+                Replace
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-1 w-full text-xs"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="mr-1.5 h-3 w-3" />
+              Upload {element.type === 'logo' ? 'Logo' : 'Image'}
+            </Button>
+          )}
+          <div className="mt-2">
+            <Label className="text-xs text-muted-foreground">Fit</Label>
+            <Select value={element.objectFit || 'contain'} onValueChange={(v) => onUpdate({ objectFit: v as 'cover' | 'contain' | 'fill' })}>
+              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="contain">Contain</SelectItem>
+                <SelectItem value="cover">Cover</SelectItem>
+                <SelectItem value="fill">Fill</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       {element.type !== 'divider' && element.type !== 'image' && element.type !== 'logo' && element.type !== 'table' && (
         <div>
