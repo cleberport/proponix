@@ -136,7 +136,7 @@ const Editor = () => {
     const template: Template = {
       id: isNew ? uuidv4() : id!,
       name: templateName, category: base?.category || 'Custom', description: base?.description || 'Template personalizado',
-      thumbnail: '', elements, variables, canvasWidth: 595, canvasHeight: 842,
+      thumbnail: '', color: templateColor, elements, variables, canvasWidth: 595, canvasHeight: 842,
       defaultValues, inputFields, calculatedFields, settings,
     };
     const saved = saveTemplate(template);
