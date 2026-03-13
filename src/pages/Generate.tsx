@@ -127,9 +127,9 @@ const Generate = () => {
         </Button>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Left - Form */}
-        <aside className="editor-sidebar w-80 overflow-y-auto p-5">
+        <aside className="editor-sidebar w-full md:w-80 overflow-y-auto p-4 md:p-5 max-h-[50vh] md:max-h-none">
           {/* Input Fields */}
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Fill in Details
