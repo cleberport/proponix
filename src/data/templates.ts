@@ -34,6 +34,7 @@ function makeTemplate(
     inputFields?: string[];
     calculatedFields?: Record<string, string>;
     settings?: { taxRate: number; showTax: boolean };
+    color?: string;
   }
 ): Template {
   return {
