@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 const SettingsPage = () => {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const allTemplates = [...getStarterTemplates(), ...getSavedTemplates()];
+  const allTemplates = [...getSavedTemplates(), ...getStarterTemplates()];
 
   const update = (partial: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
