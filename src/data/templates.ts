@@ -152,7 +152,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Serviços Gerais', price: '1500', tax_rate: '0.08' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.08, showTax: true },
+    settings: { taxRate: 0.08, showTax: true }, color: '#3B82F6',
   }),
 
 ];
