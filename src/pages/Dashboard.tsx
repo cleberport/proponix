@@ -92,7 +92,7 @@ const Dashboard = () => {
           <Sparkles className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Templates Iniciais</h2>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {starters.map((t, i) => (
             <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
               <TemplateCard template={t} onEdit={() => navigate(`/editor/${t.id}`)} onGenerate={() => navigate(`/generate/${t.id}`)} onDuplicate={() => handleDuplicate(t.id)} />

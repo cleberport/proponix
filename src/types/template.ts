@@ -45,12 +45,26 @@ export interface TemplateSettings {
   showTax: boolean;
 }
 
+export const TEMPLATE_COLORS = [
+  '#6366F1', // indigo
+  '#EC4899', // pink
+  '#F59E0B', // amber
+  '#10B981', // emerald
+  '#3B82F6', // blue
+  '#8B5CF6', // violet
+  '#EF4444', // red
+  '#14B8A6', // teal
+  '#F97316', // orange
+  '#06B6D4', // cyan
+];
+
 export interface Template {
   id: string;
   name: string;
   category: string;
   description: string;
   thumbnail: string;
+  color?: string;
   elements: CanvasElement[];
   variables: string[];
   canvasWidth: number;
