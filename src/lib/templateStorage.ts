@@ -126,6 +126,7 @@ export function restoreDefaultTemplates(): void {
   const starterIds = starterTemplates.map((t) => t.id);
   const filtered = saved.filter((t) => !starterIds.includes(t.id));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  localStorage.removeItem(HIDDEN_STARTERS_KEY);
 }
 
 export function getTemplateById(id: string): Template | undefined {
