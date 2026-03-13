@@ -133,7 +133,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Estratégia de Marca & Design', price: '8000', tax_rate: '0' },
     inputFields: ['client_name', 'event_name'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0, showTax: false },
+    settings: { taxRate: 0, showTax: false }, color: '#EC4899',
   }),
 
   makeTemplate('simple-estimate', 'Estimativa Simples', 'Geral', 'Template direto com layout mínimo', [
