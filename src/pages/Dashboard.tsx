@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Template } from '@/types/template';
-import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings } from '@/lib/templateStorage';
+import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates } from '@/lib/templateStorage';
 import { useState } from 'react';
-import { Plus, Sparkles, Zap } from 'lucide-react';
+import { Plus, Sparkles, Zap, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -14,16 +13,30 @@ import {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const starters = getStarterTemplates();
+  const [starters, setStarters] = useState(getStarterTemplates());
   const [saved, setSaved] = useState(getSavedTemplates());
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
 
   const confirmDelete = () => {
+    if (deleteType === 'all-starters') {
+      hideAllStarterTemplates();
+      setStarters([]);
+      toast.success('Templates iniciais removidos');
+      setDeleteId(null);
+      return;
+    }
     if (!deleteId) return;
-    deleteTemplate(deleteId);
-    setSaved(getSavedTemplates());
-    toast.success('Template excluído');
+    if (deleteType === 'starter') {
+      hideStarterTemplate(deleteId);
+      setStarters(getStarterTemplates());
+      toast.success('Template removido');
+    } else {
+      deleteTemplate(deleteId);
+      setSaved(getSavedTemplates());
+      toast.success('Template excluído');
+    }
     setDeleteId(null);
   };
 
@@ -68,16 +81,16 @@ const Dashboard = () => {
       </div>
 
       {saved.length > 0 && (
-        <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
+        <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
             {saved.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
                   onGenerate={() => navigate(`/generate/${t.id}`)}
-                  onDelete={() => setDeleteId(t.id)}
+                  onDelete={() => { setDeleteType('saved'); setDeleteId(t.id); }}
                   onDuplicate={() => handleDuplicate(t.id)}
                   isSaved
                 />
@@ -87,29 +100,58 @@ const Dashboard = () => {
         </section>
       )}
 
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Templates Iniciais</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {starters.map((t, i) => (
-            <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-              <TemplateCard template={t} onEdit={() => navigate(`/editor/${t.id}`)} onGenerate={() => navigate(`/generate/${t.id}`)} onDuplicate={() => handleDuplicate(t.id)} />
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {starters.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Templates Iniciais</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-[11px] text-muted-foreground hover:text-destructive"
+              onClick={() => { setDeleteType('all-starters'); setDeleteId('all'); }}
+            >
+              <Trash2 className="mr-1 h-3 w-3" />
+              Remover todos
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
+            {starters.map((t, i) => (
+              <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                <TemplateCard
+                  template={t}
+                  onEdit={() => navigate(`/editor/${t.id}`)}
+                  onGenerate={() => navigate(`/generate/${t.id}`)}
+                  onDelete={() => { setDeleteType('starter'); setDeleteId(t.id); }}
+                  onDuplicate={() => handleDuplicate(t.id)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Tem certeza que deseja apagar este template?</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+            <AlertDialogTitle>
+              {deleteType === 'all-starters' ? 'Remover todos os templates iniciais?' : 'Tem certeza que deseja apagar este template?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteType === 'all-starters'
+                ? 'Você pode restaurá-los a qualquer momento nas Configurações.'
+                : deleteType === 'starter'
+                  ? 'Você pode restaurá-lo nas Configurações.'
+                  : 'Esta ação não pode ser desfeita.'}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Apagar template</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteType === 'all-starters' ? 'Remover todos' : 'Apagar'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
