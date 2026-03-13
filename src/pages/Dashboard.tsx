@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Template } from '@/types/template';
-import { getStarterTemplates, getSavedTemplates, deleteTemplate, restoreDefaultTemplates } from '@/lib/templateStorage';
+import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate } from '@/lib/templateStorage';
 import { useState } from 'react';
-import { Plus, Sparkles, Trash2, RotateCcw } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -24,40 +24,34 @@ const Dashboard = () => {
   const handleDelete = (id: string) => {
     deleteTemplate(id);
     setSaved(getSavedTemplates());
-    toast.success('Template deleted');
+    toast.success('Template excluído');
   };
 
-  const handleRestore = () => {
-    restoreDefaultTemplates();
-    setSaved(getSavedTemplates());
-    toast.success('Default templates restored');
+  const handleDuplicate = (id: string) => {
+    const dup = duplicateTemplate(id);
+    if (dup) {
+      setSaved(getSavedTemplates());
+      toast.success('Template duplicado');
+    }
   };
 
   return (
     <div className="p-4 md:p-8">
-      {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Create and manage your budget templates</p>
+          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Painel</h1>
+          <p className="text-sm text-muted-foreground">Crie e gerencie seus templates de orçamento</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleRestore}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            Restore Defaults
-          </Button>
-          <Button onClick={() => navigate('/editor/new')} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            New Template
-          </Button>
-        </div>
+        <Button onClick={() => navigate('/editor/new')} size="sm">
+          <Plus className="mr-1.5 h-4 w-4" />
+          Novo Template
+        </Button>
       </div>
 
-      {/* Saved templates */}
       {saved.length > 0 && (
         <section className="mb-10">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Your Templates
+            Seus Templates
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {saved.map((t, i) => (
@@ -72,6 +66,7 @@ const Dashboard = () => {
                   onEdit={() => handleSelect(t)}
                   onGenerate={() => handleGenerate(t)}
                   onDelete={() => handleDelete(t.id)}
+                  onDuplicate={() => handleDuplicate(t.id)}
                   isSaved
                 />
               </motion.div>
@@ -80,12 +75,11 @@ const Dashboard = () => {
         </section>
       )}
 
-      {/* Starter templates */}
       <section>
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Starter Templates
+            Templates Iniciais
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -100,6 +94,7 @@ const Dashboard = () => {
                 template={t}
                 onEdit={() => handleSelect(t)}
                 onGenerate={() => handleGenerate(t)}
+                onDuplicate={() => handleDuplicate(t.id)}
               />
             </motion.div>
           ))}

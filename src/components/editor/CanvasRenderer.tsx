@@ -97,6 +97,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       const selectedClass = isSelected ? 'element-selected' : '';
       const hoverClass = readOnly ? '' : 'hover:element-hover';
 
+      const resizeHandle = isSelected ? (
+        <div
+          className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+          onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
+        />
+      ) : null;
+
       switch (el.type) {
         case 'text':
         case 'notes':
@@ -109,12 +116,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
-              {isSelected && (
-                <div
-                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
-                />
-              )}
+              {resizeHandle}
             </div>
           );
 
@@ -133,12 +135,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono text-primary'}`}>
                 {resolveVariable(el)}
               </span>
-              {isSelected && (
-                <div
-                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
-                />
-              )}
+              {resizeHandle}
             </div>
           );
 
@@ -166,23 +163,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               {el.imageUrl ? (
                 <img
                   src={el.imageUrl}
-                  alt={el.type === 'logo' ? 'Logo' : 'Image'}
+                  alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
                   className="h-full w-full rounded"
-                  style={{ objectFit: el.objectFit || 'contain' }}
+                  style={{ objectFit: 'contain' }}
                   draggable={false}
                 />
               ) : (
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Image'}</span>
-                  <span className="text-[10px] text-muted-foreground">Select to upload</span>
+                  <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Imagem'}</span>
+                  <span className="text-[10px] text-muted-foreground">Selecione para enviar</span>
                 </div>
               )}
-              {isSelected && (
-                <div
-                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
-                />
-              )}
+              {resizeHandle}
             </div>
           );
 
@@ -208,12 +200,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   ))}
                 </tbody>
               </table>
-              {isSelected && (
-                <div
-                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
-                />
-              )}
+              {resizeHandle}
             </div>
           );
 
