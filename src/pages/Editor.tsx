@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getTemplateById, saveTemplate, getSettings } from '@/lib/templateStorage';
 import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
-import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template, TemplateSettings, DEFAULT_TEMPLATE_VALUES, DEFAULT_CALCULATED_FIELDS } from '@/types/template';
+import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template, TemplateSettings, DEFAULT_TEMPLATE_VALUES, DEFAULT_CALCULATED_FIELDS, TEMPLATE_COLORS } from '@/types/template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +37,7 @@ const Editor = () => {
   const [inputFields, setInputFields] = useState<string[]>(base?.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
   const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>(base?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
   const [settings, setSettings] = useState<TemplateSettings>(base?.settings || { taxRate: 0.10, showTax: true });
+  const [templateColor, setTemplateColor] = useState(base?.color || TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
 
@@ -135,7 +136,7 @@ const Editor = () => {
     const template: Template = {
       id: isNew ? uuidv4() : id!,
       name: templateName, category: base?.category || 'Custom', description: base?.description || 'Template personalizado',
-      thumbnail: '', elements, variables, canvasWidth: 595, canvasHeight: 842,
+      thumbnail: '', color: templateColor, elements, variables, canvasWidth: 595, canvasHeight: 842,
       defaultValues, inputFields, calculatedFields, settings,
     };
     const saved = saveTemplate(template);
@@ -269,6 +270,23 @@ const Editor = () => {
       <TabsContent value="settings" className="flex-1 overflow-y-auto p-3">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Configurações do Template</h3>
         <div className="flex flex-col gap-4">
+          {/* Template color */}
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Cor do Template</Label>
+            <div className="flex flex-wrap gap-2">
+              {TEMPLATE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setTemplateColor(c)}
+                  className="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                  style={{
+                    backgroundColor: c,
+                    borderColor: templateColor === c ? 'hsl(var(--foreground))' : 'transparent',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground">Taxa de Imposto Padrão (%)</Label>
             <div className="flex items-center gap-1">

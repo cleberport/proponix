@@ -34,6 +34,7 @@ function makeTemplate(
     inputFields?: string[];
     calculatedFields?: Record<string, string>;
     settings?: { taxRate: number; showTax: boolean };
+    color?: string;
   }
 ): Template {
   return {
@@ -42,6 +43,7 @@ function makeTemplate(
     category,
     description,
     thumbnail: '',
+    color: overrides?.color,
     elements,
     variables: [...new Set([...variables, 'data_de_hoje'])],
     canvasWidth: CANVAS_W,
@@ -75,7 +77,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Consultoria', price: '5000', tax_rate: '0.10' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0.10, showTax: true }, color: '#6366F1',
   }),
 
   makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Orçamento completo para produção de eventos', [
@@ -95,7 +97,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Sistema de Som', price: '3000', tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0.10, showTax: true }, color: '#F59E0B',
   }),
 
   makeTemplate('freelancer-quote', 'Orçamento Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
@@ -113,7 +115,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Desenvolvimento Web', price: '2500', tax_rate: '0' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0, showTax: false },
+    settings: { taxRate: 0, showTax: false }, color: '#10B981',
   }),
 
   makeTemplate('creative-proposal', 'Proposta Criativa', 'Criativo', 'Template ousado para projetos criativos', [
@@ -131,7 +133,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Estratégia de Marca & Design', price: '8000', tax_rate: '0' },
     inputFields: ['client_name', 'event_name'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0, showTax: false },
+    settings: { taxRate: 0, showTax: false }, color: '#EC4899',
   }),
 
   makeTemplate('simple-estimate', 'Estimativa Simples', 'Geral', 'Template direto com layout mínimo', [
@@ -150,7 +152,7 @@ export const starterTemplates: Template[] = [
     defaultValues: { service_name: 'Serviços Gerais', price: '1500', tax_rate: '0.08' },
     inputFields: ['client_name', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.08, showTax: true },
+    settings: { taxRate: 0.08, showTax: true }, color: '#3B82F6',
   }),
 
 ];
