@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +29,14 @@ const ThemeInit = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const DefaultTemplateRedirect = () => {
+  const settings = getSettings();
+  if (settings.defaultTemplateId) {
+    return <Navigate to={`/generate/${settings.defaultTemplateId}`} replace />;
+  }
+  return <Dashboard />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -37,13 +45,12 @@ const App = () => (
       <BrowserRouter>
         <ThemeInit>
           <Routes>
-            {/* Pages with sidebar nav */}
             <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
+            <Route path="/quick" element={<DefaultTemplateRedirect />} />
             <Route path="/templates" element={<AppLayout><Templates /></AppLayout>} />
             <Route path="/documents" element={<AppLayout><Documents /></AppLayout>} />
             <Route path="/profile" element={<AppLayout><Profile /></AppLayout>} />
             <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
-            {/* Full-screen pages (editor/generate) */}
             <Route path="/editor/:id" element={<Editor />} />
             <Route path="/generate/:id" element={<Generate />} />
             <Route path="*" element={<NotFound />} />

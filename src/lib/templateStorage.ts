@@ -21,6 +21,7 @@ export interface AppSettings {
   logoAspectRatio?: number;
   theme: 'light' | 'dark';
   pdfBaseName: string;
+  defaultTemplateId: string;
 }
 
 export interface GeneratedDocument {
@@ -45,6 +46,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   logoUrl: '',
   theme: 'light',
   pdfBaseName: 'Orçamento',
+  defaultTemplateId: '',
 };
 
 export function getSettings(): AppSettings {
@@ -121,7 +123,6 @@ export function getDocumentHistory(): GeneratedDocument[] {
 export function addDocumentToHistory(doc: GeneratedDocument): void {
   const history = getDocumentHistory();
   history.unshift(doc);
-  // Keep max 100
   if (history.length > 100) history.length = 100;
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
@@ -129,6 +130,10 @@ export function addDocumentToHistory(doc: GeneratedDocument): void {
 export function deleteDocumentFromHistory(id: string): void {
   const history = getDocumentHistory().filter((d) => d.id !== id);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+export function getDocumentById(id: string): GeneratedDocument | undefined {
+  return getDocumentHistory().find((d) => d.id === id);
 }
 
 // PDF counter for sequential naming

@@ -4,7 +4,9 @@ import { CanvasElement } from '@/types/template';
 interface Props {
   elements: CanvasElement[];
   selectedId: string | null;
+  selectedIds?: string[];
   onSelect: (id: string | null) => void;
+  onMultiSelect?: (ids: string[]) => void;
   onUpdate: (id: string, updates: Partial<CanvasElement>) => void;
   readOnly?: boolean;
   variableValues?: Record<string, string>;
@@ -17,10 +19,14 @@ const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, onSelect, onUpdate, readOnly, variableValues }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
+    const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
+    const canvasElRef = useRef<HTMLDivElement>(null);
+
+    const isSelected = (id: string) => selectedIds.includes(id) || selectedId === id;
 
     const handlePointerDown = useCallback(
       (e: React.PointerEvent, el: CanvasElement, mode: 'drag' | 'resize') => {
@@ -35,17 +41,30 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const isLogo = el.type === 'logo';
         const aspectRatio = isLogo && el.height > 0 ? el.width / el.height : 0;
 
+        // For multi-drag, store all selected element positions
+        const multiDragStart = selectedIds.includes(el.id) && selectedIds.length > 1 && mode === 'drag'
+          ? elements.filter(e => selectedIds.includes(e.id)).map(e => ({ id: e.id, x: e.x, y: e.y }))
+          : null;
+
         const handleMove = (ev: PointerEvent) => {
           const dx = ev.clientX - startPos.current.x;
           const dy = ev.clientY - startPos.current.y;
           if (mode === 'drag') {
-            onUpdate(el.id, {
-              x: snap(Math.max(0, Math.min(CANVAS_W - el.width, startPos.current.elX + dx))),
-              y: snap(Math.max(0, Math.min(CANVAS_H - el.height, startPos.current.elY + dy))),
-            });
+            if (multiDragStart) {
+              multiDragStart.forEach(item => {
+                onUpdate(item.id, {
+                  x: snap(Math.max(0, item.x + dx)),
+                  y: snap(Math.max(0, item.y + dy)),
+                });
+              });
+            } else {
+              onUpdate(el.id, {
+                x: snap(Math.max(0, Math.min(CANVAS_W - el.width, startPos.current.elX + dx))),
+                y: snap(Math.max(0, Math.min(CANVAS_H - el.height, startPos.current.elY + dy))),
+              });
+            }
           } else {
             if (isLogo && aspectRatio > 0) {
-              // Proportional resize for logos
               const newW = snap(Math.max(40, startPos.current.elW + dx));
               const newH = Math.round(newW / aspectRatio);
               onUpdate(el.id, { width: newW, height: newH });
@@ -68,8 +87,55 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         document.addEventListener('pointermove', handleMove);
         document.addEventListener('pointerup', handleUp);
       },
-      [onSelect, onUpdate, readOnly]
+      [onSelect, onUpdate, readOnly, selectedIds, elements]
     );
+
+    // Box selection
+    const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
+      if (readOnly) return;
+      onSelect(null);
+      
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setBoxSelect({ startX: x, startY: y, x, y });
+
+      const handleMove = (ev: PointerEvent) => {
+        const mx = ev.clientX - rect.left;
+        const my = ev.clientY - rect.top;
+        setBoxSelect(prev => prev ? { ...prev, x: mx, y: my } : null);
+      };
+
+      const handleUp = (ev: PointerEvent) => {
+        const mx = ev.clientX - rect.left;
+        const my = ev.clientY - rect.top;
+        setBoxSelect(null);
+        
+        // Find elements within the box
+        const x1 = Math.min(x, mx);
+        const y1 = Math.min(y, my);
+        const x2 = Math.max(x, mx);
+        const y2 = Math.max(y, my);
+        
+        if (Math.abs(x2 - x1) > 5 && Math.abs(y2 - y1) > 5) {
+          const selected = elements.filter(el => {
+            const elRight = el.x + el.width;
+            const elBottom = el.y + el.height;
+            return el.x < x2 && elRight > x1 && el.y < y2 && elBottom > y1;
+          }).map(el => el.id);
+          
+          if (selected.length > 0 && onMultiSelect) {
+            onMultiSelect(selected);
+          }
+        }
+
+        document.removeEventListener('pointermove', handleMove);
+        document.removeEventListener('pointerup', handleUp);
+      };
+
+      document.addEventListener('pointermove', handleMove);
+      document.addEventListener('pointerup', handleUp);
+    }, [readOnly, onSelect, onMultiSelect, elements]);
 
     const resolveContent = (el: CanvasElement): string => {
       if (!variableValues) return el.content;
@@ -87,8 +153,15 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       return el.variable ? `{{${el.variable}}}` : '';
     };
 
+    const boxSelectRect = boxSelect ? {
+      left: Math.min(boxSelect.startX, boxSelect.x),
+      top: Math.min(boxSelect.startY, boxSelect.y),
+      width: Math.abs(boxSelect.x - boxSelect.startX),
+      height: Math.abs(boxSelect.y - boxSelect.startY),
+    } : null;
+
     const renderElement = (el: CanvasElement) => {
-      const isSelected = selectedId === el.id && !readOnly;
+      const elSelected = isSelected(el.id) && !readOnly;
       const style: React.CSSProperties = {
         position: 'absolute',
         left: el.x,
@@ -103,19 +176,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         userSelect: 'none',
       };
 
-      // Logo/image: height auto, never fixed h+w simultaneously
       if (el.type === 'logo' || el.type === 'image') {
-        // Don't set height in style — let object-fit handle it
+        // height auto
       } else if (el.type !== 'divider') {
         style.height = el.height;
       }
 
-      const selectedClass = isSelected ? 'element-selected' : '';
+      const selectedClass = elSelected ? 'element-selected' : '';
       const hoverClass = readOnly ? '' : 'hover:element-hover';
 
-      const resizeHandle = isSelected ? (
+      const resizeHandle = elSelected ? (
         <div
-          className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+          className="absolute -bottom-1 -right-1 h-5 w-5 md:h-4 md:w-4 cursor-se-resize rounded-sm bg-primary touch-none"
           onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
         />
       ) : null;
@@ -233,12 +305,27 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div
-        ref={ref}
+        ref={(node) => {
+          (canvasElRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }}
         className={`canvas-paper relative touch-none ${!readOnly ? 'grid-dots' : ''}`}
         style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H }}
-        onClick={() => !readOnly && onSelect(null)}
+        onPointerDown={handleCanvasPointerDown}
       >
         {elements.map(renderElement)}
+        {boxSelectRect && (
+          <div
+            className="absolute border-2 border-primary/50 bg-primary/10 pointer-events-none"
+            style={{
+              left: boxSelectRect.left,
+              top: boxSelectRect.top,
+              width: boxSelectRect.width,
+              height: boxSelectRect.height,
+            }}
+          />
+        )}
       </div>
     );
   }

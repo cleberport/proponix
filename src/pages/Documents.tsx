@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, RefreshCw, Calendar } from 'lucide-react';
+import { FileText, Trash2, RefreshCw, Calendar, Pencil, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
@@ -13,21 +13,38 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
 const Documents = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState(getDocumentHistory());
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = (id: string) => {
-    deleteDocumentFromHistory(id);
+  const handleDelete = () => {
+    if (!deleteId) return;
+    deleteDocumentFromHistory(deleteId);
     setHistory(getDocumentHistory());
     toast.success('Documento removido do histórico');
+    setDeleteId(null);
+  };
+
+  const handleEdit = (doc: typeof history[0]) => {
+    navigate(`/generate/${doc.templateId}`, {
+      state: { documentId: doc.id, values: doc.values },
+    });
   };
 
   const handleRegenerate = (doc: typeof history[0]) => {
-    navigate(`/generate/${doc.templateId}`);
+    navigate(`/generate/${doc.templateId}`, {
+      state: { values: doc.values },
+    });
+  };
+
+  const handleDuplicate = (doc: typeof history[0]) => {
+    navigate(`/generate/${doc.templateId}`, {
+      state: { values: { ...doc.values } },
+    });
+    toast.info('Documento duplicado - edite os campos e gere novamente');
   };
 
   const formatDate = (iso: string) => {
@@ -53,15 +70,15 @@ const Documents = () => {
           {history.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/30"
+              className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/30 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{doc.fileName}</p>
-                  <div className="flex items-center gap-3 mt-0.5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{doc.fileName}</p>
+                  <div className="flex flex-wrap items-center gap-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">{doc.templateName}</span>
                     {doc.clientName && (
                       <span className="text-xs text-muted-foreground">• {doc.clientName}</span>
@@ -73,40 +90,62 @@ const Documents = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs"
+                  className="h-9 text-xs md:h-8"
+                  onClick={() => handleEdit(doc)}
+                >
+                  <Pencil className="mr-1 h-3 w-3" />
+                  Editar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs md:h-8"
                   onClick={() => handleRegenerate(doc)}
                 >
                   <RefreshCw className="mr-1 h-3 w-3" />
                   Regerar
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Remover do histórico?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        O registro será removido do histórico. O arquivo PDF já baixado não será afetado.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(doc.id)}>Remover</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs md:h-8"
+                  onClick={() => handleDuplicate(doc)}
+                >
+                  <Copy className="mr-1 h-3 w-3" />
+                  Duplicar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 text-destructive md:h-8 md:w-8"
+                  onClick={() => setDeleteId(doc.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover do histórico?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O registro será removido do histórico. O arquivo PDF já baixado não será afetado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

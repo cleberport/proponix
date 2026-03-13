@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getTemplateById, saveTemplate, getSettings } from '@/lib/templateStorage';
 import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
 
+const GRID = 10;
+
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -25,15 +27,71 @@ const Editor = () => {
 
   const [templateName, setTemplateName] = useState(base?.name || 'Template sem título');
   const [elements, setElements] = useState<CanvasElement[]>(base?.elements || []);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [variables, setVariables] = useState<string[]>(base?.variables || [...DEFAULT_VARIABLES]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [newVar, setNewVar] = useState('');
+  const [variables, setVariables] = useState<string[]>(base?.variables || [...DEFAULT_VARIABLES]);
   const [defaultValues, setDefaultValues] = useState<Record<string, string>>(base?.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
   const [inputFields, setInputFields] = useState<string[]>(base?.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
   const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>(base?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
   const [settings, setSettings] = useState<TemplateSettings>(base?.settings || { taxRate: 0.10, showTax: true });
 
-  const selectedElement = elements.find((e) => e.id === selectedId) || null;
+  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
+  const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) || null : null;
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIds.length === 0) return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+
+      const step = e.shiftKey ? 50 : GRID;
+
+      switch (e.key) {
+        case 'Delete':
+        case 'Backspace':
+          e.preventDefault();
+          setElements((prev) => prev.filter((el) => !selectedIds.includes(el.id)));
+          setSelectedIds([]);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setElements((prev) => prev.map((el) =>
+            selectedIds.includes(el.id) ? { ...el, y: Math.max(0, el.y - step) } : el
+          ));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setElements((prev) => prev.map((el) =>
+            selectedIds.includes(el.id) ? { ...el, y: el.y + step } : el
+          ));
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          setElements((prev) => prev.map((el) =>
+            selectedIds.includes(el.id) ? { ...el, x: Math.max(0, el.x - step) } : el
+          ));
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          setElements((prev) => prev.map((el) =>
+            selectedIds.includes(el.id) ? { ...el, x: el.x + step } : el
+          ));
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIds]);
+
+  const handleSelect = useCallback((id: string | null) => {
+    if (id) {
+      setSelectedIds([id]);
+    } else {
+      setSelectedIds([]);
+    }
+  }, []);
 
   const addElement = useCallback((type: ElementType) => {
     const appSettings = getSettings();
@@ -44,7 +102,7 @@ const Editor = () => {
       y: 40 + Math.random() * 200,
       width: type === 'divider' ? 515 : type === 'table' ? 515 : 200,
       height: type === 'divider' ? 2 : type === 'table' ? 150 : type === 'notes' ? 80 : 30,
-      content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? 'Preço:' : type === 'total-calculation' ? 'Total:' : '',
+      content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? '' : type === 'total-calculation' ? 'Total:' : '',
       variable: type === 'dynamic-field' ? 'client_name' : type === 'price-field' ? 'price' : type === 'total-calculation' ? 'total' : undefined,
       fontSize: 14,
       fontWeight: '400',
@@ -52,7 +110,6 @@ const Editor = () => {
       color: '#0F172A',
       alignment: 'left',
       rows: type === 'table' ? [{ cells: ['Coluna 1', 'Coluna 2', 'Coluna 3'] }, { cells: ['', '', ''] }] : undefined,
-      // Auto-insert company logo for logo elements
       imageUrl: type === 'logo' ? appSettings.logoUrl || undefined : undefined,
       objectFit: type === 'logo' || type === 'image' ? 'contain' : undefined,
       isVisible: true,
@@ -63,7 +120,7 @@ const Editor = () => {
       newEl.height = appSettings.logoAspectRatio ? Math.round(150 / appSettings.logoAspectRatio) : 80;
     }
     setElements((prev) => [...prev, newEl]);
-    setSelectedId(newEl.id);
+    setSelectedIds([newEl.id]);
   }, []);
 
   const updateElement = useCallback((id: string, updates: Partial<CanvasElement>) => {
@@ -72,8 +129,8 @@ const Editor = () => {
 
   const deleteElement = useCallback((id: string) => {
     setElements((prev) => prev.filter((e) => e.id !== id));
-    if (selectedId === id) setSelectedId(null);
-  }, [selectedId]);
+    setSelectedIds((prev) => prev.filter((s) => s !== id));
+  }, []);
 
   const handleSave = () => {
     const template: Template = {
@@ -147,6 +204,7 @@ const Editor = () => {
     event_name: 'Nome do Evento',
     location: 'Local',
     event_date: 'Data do Evento',
+    data_de_hoje: 'Data de Hoje',
     service_name: 'Nome do Serviço',
     price: 'Preço',
     tax_rate: 'Taxa de Imposto',
@@ -157,25 +215,25 @@ const Editor = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+      <header className="flex items-center justify-between border-b border-border bg-card px-3 py-2 md:px-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 md:h-8 md:w-auto md:px-3" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <Input
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
-            className="h-8 w-32 md:w-56 border-none bg-transparent text-sm font-semibold focus-visible:ring-1"
+            className="h-8 w-28 md:w-56 border-none bg-transparent text-sm font-semibold focus-visible:ring-1"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleSave}>
+          <Button variant="outline" size="sm" className="h-9 md:h-8" onClick={handleSave}>
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            Salvar
+            <span className="hidden sm:inline">Salvar</span>
           </Button>
-          <Button size="sm" onClick={() => { handleSave(); navigate(`/generate/${isNew ? 'new' : id}`); }}>
+          <Button size="sm" className="h-9 md:h-8" onClick={() => { handleSave(); navigate(`/generate/${isNew ? 'new' : id}`); }}>
             <Play className="mr-1.5 h-3.5 w-3.5" />
-            Gerar
+            <span className="hidden sm:inline">Gerar</span>
           </Button>
         </div>
       </header>
@@ -202,10 +260,10 @@ const Editor = () => {
                     <button
                       key={item.type}
                       onClick={() => addElement(item.type)}
-                      className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent"
+                      className="flex items-center gap-2.5 rounded-md px-3 py-2.5 md:py-2 text-left text-sm text-foreground transition-colors hover:bg-accent active:bg-accent/80"
                     >
                       {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                      <span>{elementLabels[item.type] || item.label}</span>
+                      <span>{item.label}</span>
                     </button>
                   );
                 })}
@@ -217,7 +275,7 @@ const Editor = () => {
                   {variables.map((v) => (
                     <div
                       key={v}
-                      className="drag-handle flex items-center gap-1.5 rounded bg-accent px-2 py-1 text-xs text-foreground"
+                      className="drag-handle flex items-center gap-1.5 rounded bg-accent px-2 py-1.5 md:py-1 text-xs text-foreground"
                       draggable
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground" />
@@ -231,10 +289,10 @@ const Editor = () => {
                     value={newVar}
                     onChange={(e) => setNewVar(e.target.value)}
                     placeholder="nova_variavel"
-                    className="h-7 text-xs"
+                    className="h-8 md:h-7 text-xs"
                     onKeyDown={(e) => e.key === 'Enter' && addVariable()}
                   />
-                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={addVariable}>
+                  <Button variant="ghost" size="sm" className="h-8 md:h-7 px-2" onClick={addVariable}>
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
@@ -250,13 +308,13 @@ const Editor = () => {
                   Campos que o usuário preenche ao gerar um documento
                 </p>
                 <div className="flex flex-col gap-1.5">
-                  {variables.map((v) => (
-                    <label key={v} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-accent/50 cursor-pointer">
+                  {variables.filter(v => v !== 'data_de_hoje').map((v) => (
+                    <label key={v} className="flex items-center gap-2 rounded px-2 py-1.5 md:py-1 text-xs hover:bg-accent/50 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={inputFields.includes(v)}
                         onChange={() => toggleInputField(v)}
-                        className="h-3 w-3 rounded border-border"
+                        className="h-3.5 w-3.5 md:h-3 md:w-3 rounded border-border"
                       />
                       <span className="text-foreground">{varLabels[v] || v.replace(/_/g, ' ')}</span>
                     </label>
@@ -273,7 +331,7 @@ const Editor = () => {
                 </p>
                 <div className="flex flex-col gap-2">
                   {variables
-                    .filter((v) => !inputFields.includes(v) && !Object.keys(calculatedFields).includes(v))
+                    .filter((v) => !inputFields.includes(v) && !Object.keys(calculatedFields).includes(v) && v !== 'data_de_hoje')
                     .map((v) => (
                       <div key={v}>
                         <Label className="text-[10px] text-muted-foreground">{varLabels[v] || v.replace(/_/g, ' ')}</Label>
@@ -288,7 +346,7 @@ const Editor = () => {
                                 updateDefaultValue(v, String(decimal));
                               }}
                               placeholder="Ex: 10"
-                              className="h-7 text-xs"
+                              className="h-8 md:h-7 text-xs"
                             />
                             <span className="text-xs text-muted-foreground">%</span>
                           </div>
@@ -297,7 +355,7 @@ const Editor = () => {
                             value={defaultValues[v] || ''}
                             onChange={(e) => updateDefaultValue(v, e.target.value)}
                             placeholder={`Padrão para ${varLabels[v] || v}`}
-                            className="h-7 text-xs"
+                            className="h-8 md:h-7 text-xs"
                           />
                         )}
                       </div>
@@ -320,7 +378,7 @@ const Editor = () => {
                         value={formula}
                         onChange={(e) => updateCalculatedFormula(field, e.target.value)}
                         placeholder="ex: price * tax_rate"
-                        className="h-7 font-mono text-xs"
+                        className="h-8 md:h-7 font-mono text-xs"
                       />
                     </div>
                   ))}
@@ -347,7 +405,7 @@ const Editor = () => {
                         setSettings((prev) => ({ ...prev, taxRate: decimal }));
                         updateDefaultValue('tax_rate', String(decimal));
                       }}
-                      className="h-7 text-xs"
+                      className="h-8 md:h-7 text-xs"
                     />
                     <span className="text-xs text-muted-foreground">%</span>
                   </div>
@@ -356,7 +414,7 @@ const Editor = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5 md:py-2">
                   <span className="text-xs font-medium text-foreground">Mostrar imposto no documento</span>
                   <Switch
                     checked={settings.showTax}
@@ -378,7 +436,9 @@ const Editor = () => {
             ref={canvasRef}
             elements={elements}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            selectedIds={selectedIds}
+            onSelect={handleSelect}
+            onMultiSelect={setSelectedIds}
             onUpdate={updateElement}
           />
         </main>
