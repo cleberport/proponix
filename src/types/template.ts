@@ -24,6 +24,8 @@ export interface CanvasElement {
   color?: string;
   alignment?: 'left' | 'center' | 'right';
   rows?: TableRow[];
+  imageUrl?: string;
+  objectFit?: 'cover' | 'contain' | 'fill';
 }
 
 export interface TableRow {

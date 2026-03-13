@@ -159,11 +159,24 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={style}
-              className={`flex items-center justify-center rounded border border-dashed border-border bg-accent/30 ${selectedClass} ${hoverClass}`}
+              className={`flex items-center justify-center rounded ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
               onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              <span className="text-xs text-muted-foreground">{el.type === 'logo' ? 'Logo' : 'Image'}</span>
+              {el.imageUrl ? (
+                <img
+                  src={el.imageUrl}
+                  alt={el.type === 'logo' ? 'Logo' : 'Image'}
+                  className="h-full w-full rounded"
+                  style={{ objectFit: el.objectFit || 'contain' }}
+                  draggable={false}
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Image'}</span>
+                  <span className="text-[10px] text-muted-foreground">Select to upload</span>
+                </div>
+              )}
               {isSelected && (
                 <div
                   className="absolute -bottom-1 -right-1 h-3 w-3 cursor-se-resize rounded-sm bg-primary"
