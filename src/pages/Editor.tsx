@@ -147,9 +147,9 @@ const Editor = () => {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Left sidebar */}
-        <aside className="editor-sidebar flex w-64 flex-col overflow-y-auto">
+        <aside className="editor-sidebar flex w-full md:w-64 flex-col overflow-y-auto max-h-[40vh] md:max-h-none">
           <Tabs defaultValue="elements" className="flex flex-1 flex-col">
             <TabsList className="mx-2 mt-2 grid w-auto grid-cols-3">
               <TabsTrigger value="elements" className="text-xs">Elements</TabsTrigger>
