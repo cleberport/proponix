@@ -105,14 +105,14 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               key={el.id}
               style={style}
               className={`rounded px-1 ${selectedClass} ${hoverClass} ${el.type === 'notes' ? 'border border-border bg-accent/30 p-2' : ''}`}
-              onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
               {isSelected && (
                 <div
-                  className="absolute -bottom-1 -right-1 h-3 w-3 cursor-se-resize rounded-sm bg-primary"
-                  onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
+                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
                 />
               )}
             </div>
@@ -126,7 +126,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               key={el.id}
               style={style}
               className={`flex items-center gap-1 rounded px-1 ${selectedClass} ${hoverClass}`}
-              onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {el.content && <span>{resolveContent(el)}</span>}
@@ -135,8 +135,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               </span>
               {isSelected && (
                 <div
-                  className="absolute -bottom-1 -right-1 h-3 w-3 cursor-se-resize rounded-sm bg-primary"
-                  onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
+                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
                 />
               )}
             </div>
@@ -148,7 +148,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               key={el.id}
               style={{ ...style, height: Math.max(el.height, 2), backgroundColor: el.color || '#E2E8F0' }}
               className={`rounded ${selectedClass} ${hoverClass}`}
-              onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             />
           );
@@ -160,7 +160,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               key={el.id}
               style={style}
               className={`flex items-center justify-center rounded ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
-              onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {el.imageUrl ? (
@@ -179,8 +179,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               )}
               {isSelected && (
                 <div
-                  className="absolute -bottom-1 -right-1 h-3 w-3 cursor-se-resize rounded-sm bg-primary"
-                  onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
+                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
                 />
               )}
             </div>
@@ -192,7 +192,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               key={el.id}
               style={{ ...style, overflow: 'hidden' }}
               className={`rounded border border-border ${selectedClass} ${hoverClass}`}
-              onMouseDown={(e) => handleMouseDown(e, el, 'drag')}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               <table className="h-full w-full text-xs">
@@ -210,8 +210,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               </table>
               {isSelected && (
                 <div
-                  className="absolute -bottom-1 -right-1 h-3 w-3 cursor-se-resize rounded-sm bg-primary"
-                  onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
+                  className="absolute -bottom-1 -right-1 h-4 w-4 cursor-se-resize rounded-sm bg-primary touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
                 />
               )}
             </div>
@@ -225,7 +225,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     return (
       <div
         ref={ref}
-        className={`canvas-paper relative ${!readOnly ? 'grid-dots' : ''}`}
+        className={`canvas-paper relative touch-none ${!readOnly ? 'grid-dots' : ''}`}
         style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H }}
         onClick={() => !readOnly && onSelect(null)}
       >
