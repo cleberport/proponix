@@ -5,6 +5,7 @@ const STORAGE_KEY = 'budget-template-builder-templates';
 const SETTINGS_KEY = 'budget-template-builder-settings';
 const HISTORY_KEY = 'budget-template-builder-history';
 const PDF_COUNTER_KEY = 'budget-template-builder-pdf-counter';
+const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
 
 export interface AppSettings {
   profileName: string;
