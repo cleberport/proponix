@@ -45,7 +45,7 @@ export async function generateVectorPdf(
   elements: CanvasElement[],
   variableValues: Record<string, string>,
   fileName: string
-): Promise<void> {
+): Promise<Blob> {
   const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
   // White background
