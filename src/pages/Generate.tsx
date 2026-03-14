@@ -54,10 +54,30 @@ const Generate = () => {
       if (editingDoc.values) {
         setUserInputs({ ...editingDoc.values });
       } else {
+        // Initialize from inputFields + scan all pages for dynamic vars
         const init: Record<string, string> = {};
+        const pages = getTemplatePages(fetchedTemplate);
+        const calcFields = new Set(Object.keys(fetchedTemplate.calculatedFields || {}));
+        const excluded = new Set([...calcFields, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+
         (fetchedTemplate.inputFields || []).forEach((field) => {
-          init[field] = '';
+          if (!excluded.has(field)) init[field] = '';
         });
+
+        for (const page of pages) {
+          for (const el of page) {
+            if (
+              el.isVisible !== false &&
+              (el.type === 'dynamic-field' || el.type === 'price-field') &&
+              el.variable &&
+              !excluded.has(el.variable) &&
+              !(el.variable in init)
+            ) {
+              init[el.variable] = '';
+            }
+          }
+        }
+
         setUserInputs(init);
       }
     };
@@ -69,10 +89,42 @@ const Generate = () => {
     };
   }, [id, editingDoc.values]);
 
+  // Collect ALL dynamic-field variables from every page, preserving order
+  const allDynamicVars = useMemo(() => {
+    if (!template) return [] as string[];
+    const pages = getTemplatePages(template);
+    const vars: string[] = [];
+    for (const page of pages) {
+      for (const el of page) {
+        if (
+          el.isVisible !== false &&
+          (el.type === 'dynamic-field' || el.type === 'price-field') &&
+          el.variable
+        ) {
+          vars.push(el.variable);
+        }
+      }
+    }
+    return vars;
+  }, [template]);
+
   const calculatedFieldNames = Object.keys(template?.calculatedFields || {});
-  const inputFields = (template?.inputFields || []).filter(
-    (f) => !calculatedFieldNames.includes(f) && !['subtotal', 'tax', 'total'].includes(f)
-  );
+  const excludedFields = new Set([...calculatedFieldNames, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+
+  // Merge template.inputFields with discovered dynamic vars, number duplicates
+  const inputFields = useMemo(() => {
+    const baseFields = (template?.inputFields || []).filter((f) => !excludedFields.has(f));
+    // Add any dynamic vars not already in baseFields
+    const seen = new Set(baseFields);
+    const merged = [...baseFields];
+    for (const v of allDynamicVars) {
+      if (!seen.has(v) && !excludedFields.has(v)) {
+        merged.push(v);
+        seen.add(v);
+      }
+    }
+    return merged;
+  }, [template, allDynamicVars, excludedFields]);
 
   const resolvedValues = useMemo(() => {
     if (!template) return {};
