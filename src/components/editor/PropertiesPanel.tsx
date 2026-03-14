@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { Trash2, Plus, Upload, X } from 'lucide-react';
 import { useRef } from 'react';
 
@@ -268,6 +269,47 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Largura das Colunas */}
+      {element.type === 'table' && element.rows && element.rows[0] && (
+        <div>
+          <Label className="text-xs text-muted-foreground mb-2 block">Largura das Colunas</Label>
+          <div className="flex flex-col gap-2">
+            {element.rows[0].cells.map((header, ci) => {
+              const widths = element.columnWidths || element.rows![0].cells.map(() => Math.round(100 / element.rows![0].cells.length));
+              return (
+                <div key={ci} className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground w-12 truncate">{header || `Col ${ci + 1}`}</span>
+                  <Slider
+                    value={[widths[ci] || Math.round(100 / widths.length)]}
+                    min={10}
+                    max={80}
+                    step={1}
+                    className="flex-1"
+                    onValueChange={([val]) => {
+                      const newWidths = [...widths];
+                      const diff = val - newWidths[ci];
+                      newWidths[ci] = val;
+                      // Distribute the difference to other columns proportionally
+                      const others = newWidths.filter((_, i) => i !== ci);
+                      const othersSum = others.reduce((a, b) => a + b, 0);
+                      if (othersSum > 0) {
+                        for (let i = 0; i < newWidths.length; i++) {
+                          if (i !== ci) {
+                            newWidths[i] = Math.max(10, Math.round(newWidths[i] - (diff * newWidths[i] / othersSum)));
+                          }
+                        }
+                      }
+                      onUpdate({ columnWidths: newWidths });
+                    }}
+                  />
+                  <span className="text-[10px] text-muted-foreground w-8 text-right">{widths[ci]}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Editor de Tabela */}

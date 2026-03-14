@@ -26,6 +26,7 @@ export interface CanvasElement {
   color?: string;
   alignment?: 'left' | 'center' | 'right';
   rows?: TableRow[];
+  columnWidths?: number[]; // percentage widths per column
   imageUrl?: string;
   objectFit?: 'cover' | 'contain' | 'fill';
 
