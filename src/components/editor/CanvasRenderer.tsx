@@ -312,8 +312,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           if (typeof ref === 'function') ref(node);
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
-        className={`canvas-paper relative touch-none ${!readOnly ? 'grid-dots' : ''}`}
-        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H }}
+        className={`canvas-paper relative touch-none ${!readOnly && showGrid ? 'grid-dots' : ''}`}
+        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H, backgroundColor: backgroundColor || '#ffffff' }}
         onPointerDown={handleCanvasPointerDown}
       >
         {elements.map(renderElement)}
