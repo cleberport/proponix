@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Painel', url: '/', icon: LayoutDashboard },
+  { title: 'Painel', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Templates', url: '/templates', icon: FolderOpen },
   { title: 'Histórico', url: '/documents', icon: Clock },
   { title: 'Perfil', url: '/profile', icon: User },
