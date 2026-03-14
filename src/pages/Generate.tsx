@@ -101,8 +101,36 @@ const Generate = () => {
   // First page elements for preview
   const visibleElements = visiblePages[0] || [];
 
+  const parsePriceInput = (value: string): string => {
+    const cleaned = value.replace(/[^\d,.-]/g, '').trim();
+    if (!cleaned) return '';
+
+    const hasDecimalSeparator = cleaned.includes(',') || cleaned.includes('.');
+
+    if (!hasDecimalSeparator) {
+      const onlyDigits = cleaned.replace(/\D/g, '');
+      if (!onlyDigits) return '';
+      return String(Number(onlyDigits));
+    }
+
+    const normalized = cleaned.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed.toString() : '';
+  };
+
   const handleChange = (key: string, val: string) => {
+    if (key === 'price') {
+      setUserInputs((prev) => ({ ...prev, [key]: parsePriceInput(val) }));
+      return;
+    }
+
     setUserInputs((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const getInputValue = (key: string) => {
+    const value = userInputs[key] || '';
+    if (key !== 'price' || !value) return value;
+    return formatCurrency(value);
   };
 
   const handleGeneratePDF = useCallback(async () => {
