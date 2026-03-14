@@ -1,4 +1,4 @@
-import { Template, SavedTemplate, TemplateSettings } from '@/types/template';
+import { CanvasElement, Template, SavedTemplate, TemplateSettings, getTemplatePages } from '@/types/template';
 import { starterTemplates } from '@/data/templates';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -98,6 +98,39 @@ const toTemplateSettings = (value: unknown): TemplateSettings => {
   };
 };
 
+const toCanvasElements = (value: unknown): CanvasElement[] => {
+  if (!Array.isArray(value)) return [];
+  return value as CanvasElement[];
+};
+
+const toCanvasPages = (value: unknown): CanvasElement[][] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((page): page is CanvasElement[] => Array.isArray(page));
+};
+
+const toTemplateLayout = (value: unknown): { elements: CanvasElement[]; pages?: CanvasElement[][] } => {
+  if (Array.isArray(value)) {
+    return { elements: toCanvasElements(value) };
+  }
+
+  if (!value || typeof value !== 'object') {
+    return { elements: [] };
+  }
+
+  const payload = value as { elements?: unknown; pages?: unknown };
+  const pages = toCanvasPages(payload.pages);
+  const elements = toCanvasElements(payload.elements);
+
+  if (pages.length > 0) {
+    return {
+      elements: elements.length > 0 ? elements : (pages[0] || []),
+      pages,
+    };
+  }
+
+  return { elements };
+};
+
 const getCachedSavedTemplates = (): SavedTemplate[] => {
   const raw = localStorage.getItem(STORAGE_KEY);
   return raw ? JSON.parse(raw) : [];
@@ -111,44 +144,56 @@ const sortByUpdatedAtDesc = (templates: SavedTemplate[]) => {
   return [...templates].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
-const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => ({
-  id: row.id,
-  name: row.name,
-  category: row.category,
-  description: row.description,
-  thumbnail: row.thumbnail,
-  color: row.color || undefined,
-  elements: Array.isArray(row.elements) ? (row.elements as Template['elements']) : [],
-  variables: toStringArray(row.variables),
-  canvasWidth: row.canvas_width,
-  canvasHeight: row.canvas_height,
-  defaultValues: toStringRecord(row.default_values),
-  inputFields: toStringArray(row.input_fields),
-  calculatedFields: toStringRecord(row.calculated_fields),
-  settings: toTemplateSettings(row.settings),
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-});
+const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => {
+  const layout = toTemplateLayout(row.elements);
 
-const mapTemplateToDb = (template: SavedTemplate, userId: string) => ({
-  id: template.id,
-  user_id: userId,
-  name: template.name,
-  category: template.category,
-  description: template.description,
-  thumbnail: template.thumbnail || '',
-  color: template.color || null,
-  elements: template.elements,
-  variables: template.variables,
-  canvas_width: template.canvasWidth,
-  canvas_height: template.canvasHeight,
-  default_values: template.defaultValues || {},
-  input_fields: template.inputFields || [],
-  calculated_fields: template.calculatedFields || {},
-  settings: template.settings || { taxRate: 0.10, showTax: true },
-  created_at: template.createdAt,
-  updated_at: template.updatedAt,
-});
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    description: row.description,
+    thumbnail: row.thumbnail,
+    color: row.color || undefined,
+    elements: layout.elements,
+    pages: layout.pages,
+    variables: toStringArray(row.variables),
+    canvasWidth: row.canvas_width,
+    canvasHeight: row.canvas_height,
+    defaultValues: toStringRecord(row.default_values),
+    inputFields: toStringArray(row.input_fields),
+    calculatedFields: toStringRecord(row.calculated_fields),
+    settings: toTemplateSettings(row.settings),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+const mapTemplateToDb = (template: SavedTemplate, userId: string) => {
+  const pages = getTemplatePages(template);
+
+  return {
+    id: template.id,
+    user_id: userId,
+    name: template.name,
+    category: template.category,
+    description: template.description,
+    thumbnail: template.thumbnail || '',
+    color: template.color || null,
+    elements: {
+      elements: pages[0] || [],
+      pages,
+    },
+    variables: template.variables,
+    canvas_width: template.canvasWidth,
+    canvas_height: template.canvasHeight,
+    default_values: template.defaultValues || {},
+    input_fields: template.inputFields || [],
+    calculated_fields: template.calculatedFields || {},
+    settings: template.settings || { taxRate: 0.10, showTax: true },
+    created_at: template.createdAt,
+    updated_at: template.updatedAt,
+  };
+};
 
 const getCurrentUserId = async (): Promise<string | null> => {
   const { data } = await supabase.auth.getUser();

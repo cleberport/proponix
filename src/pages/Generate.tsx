@@ -7,8 +7,7 @@ import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Download, FileText, Eye, EyeOff, Share2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { generateVectorPdf } from '@/lib/pdfGenerator';
@@ -28,7 +27,6 @@ const Generate = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
-  const [showTax, setShowTax] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
@@ -52,8 +50,6 @@ const Generate = () => {
       setLoadingTemplate(false);
 
       if (!fetchedTemplate) return;
-
-      setShowTax(fetchedTemplate.settings?.showTax ?? true);
 
       if (editingDoc.values) {
         setUserInputs({ ...editingDoc.values });
@@ -99,20 +95,42 @@ const Generate = () => {
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
     const templatePages = getTemplatePages(template);
-    return templatePages.map(pageEls => {
-      if (showTax) return pageEls;
-      return pageEls.filter((el) => {
-        if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) return false;
-        return el.isVisible !== false;
-      });
-    });
-  }, [template, showTax]);
+    return templatePages.map((pageEls) => pageEls.filter((el) => el.isVisible !== false));
+  }, [template]);
 
   // First page elements for preview
   const visibleElements = visiblePages[0] || [];
 
+  const parsePriceInput = (value: string): string => {
+    const cleaned = value.replace(/[^\d,.-]/g, '').trim();
+    if (!cleaned) return '';
+
+    const hasDecimalSeparator = cleaned.includes(',') || cleaned.includes('.');
+
+    if (!hasDecimalSeparator) {
+      const onlyDigits = cleaned.replace(/\D/g, '');
+      if (!onlyDigits) return '';
+      return String(Number(onlyDigits));
+    }
+
+    const normalized = cleaned.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed.toString() : '';
+  };
+
   const handleChange = (key: string, val: string) => {
+    if (key === 'price') {
+      setUserInputs((prev) => ({ ...prev, [key]: parsePriceInput(val) }));
+      return;
+    }
+
     setUserInputs((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const getInputValue = (key: string) => {
+    const value = userInputs[key] || '';
+    if (key !== 'price' || !value) return value;
+    return formatCurrency(value);
   };
 
   const handleGeneratePDF = useCallback(async () => {
@@ -203,7 +221,7 @@ const Generate = () => {
       event_name: 'Nome do evento',
       location: 'Local do evento',
       event_date: '23/04/2026 ou 23/04 a 25/04/2026',
-      price: '5000',
+      price: 'R$ 5.000,00',
     };
     return p[v] || '';
   };
@@ -242,11 +260,11 @@ const Generate = () => {
               <div key={v}>
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
                 <Input
-                  value={userInputs[v] || ''}
+                  value={getInputValue(v)}
                   onChange={(e) => handleChange(v, e.target.value)}
                   placeholder={getPlaceholder(v)}
                   className="h-12 text-base md:h-10 md:text-sm"
-                  inputMode={v === 'price' ? 'decimal' : 'text'}
+                  inputMode={v === 'price' ? 'numeric' : 'text'}
                 />
                 {v === 'event_date' && (
                   <p className="mt-1 text-[10px] text-muted-foreground">Aceita data única ou intervalo</p>
@@ -258,10 +276,8 @@ const Generate = () => {
           {Object.keys(calculatedFields).length > 0 && (
             <div className="mt-5 rounded-lg border border-border bg-background p-3">
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo</h3>
-              {Object.entries(calculatedFields)
-                .filter(([field]) => showTax || field !== 'tax')
-                .map(([field]) => (
-                  <div key={field} className={`flex items-center justify-between py-2 ${field === 'total' ? 'border-t border-border pt-2 mt-1' : ''}`}>
+              {Object.entries(calculatedFields).map(([field]) => (
+                <div key={field} className={`flex items-center justify-between py-2 ${field === 'total' ? 'border-t border-border pt-2 mt-1' : ''}`}>
                     <span className="text-sm text-foreground">{formatLabel(field)}</span>
                     <span className={`text-sm font-semibold ${field === 'total' ? 'text-primary text-base' : 'text-foreground'}`}>
                       {displayValues[field] || 'R$ 0,00'}
@@ -270,14 +286,6 @@ const Generate = () => {
                 ))}
             </div>
           )}
-
-          <div className="mt-4 flex items-center justify-between rounded-lg border border-border px-3 py-3">
-            <div className="flex items-center gap-2">
-              {showTax ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-              <span className="text-xs font-medium text-foreground">Mostrar imposto</span>
-            </div>
-            <Switch checked={showTax} onCheckedChange={setShowTax} />
-          </div>
 
           {isMobile && (
             <Button
