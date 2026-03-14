@@ -438,11 +438,19 @@ const Editor = () => {
               </SheetContent>
             </Sheet>
           )}
-          <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={handleSave}>
+          <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => { void handleSave(); }}>
             <Save className="mr-1 h-4 w-4" />
             <span className="hidden sm:inline">Salvar</span>
           </Button>
-          <Button size="sm" className="h-10 md:h-9" onClick={() => { handleSave(); navigate(`/generate/${isNew ? 'new' : id}`); }}>
+          <Button
+            size="sm"
+            className="h-10 md:h-9"
+            onClick={async () => {
+              const saved = await handleSave();
+              const targetId = saved?.id || (!isNew ? id : null);
+              if (targetId) navigate(`/generate/${targetId}`);
+            }}
+          >
             <Play className="mr-1 h-4 w-4" />
             <span className="hidden sm:inline">Gerar</span>
           </Button>
