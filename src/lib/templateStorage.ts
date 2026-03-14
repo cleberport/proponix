@@ -98,6 +98,39 @@ const toTemplateSettings = (value: unknown): TemplateSettings => {
   };
 };
 
+const toCanvasElements = (value: unknown): CanvasElement[] => {
+  if (!Array.isArray(value)) return [];
+  return value as CanvasElement[];
+};
+
+const toCanvasPages = (value: unknown): CanvasElement[][] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((page): page is CanvasElement[] => Array.isArray(page));
+};
+
+const toTemplateLayout = (value: unknown): { elements: CanvasElement[]; pages?: CanvasElement[][] } => {
+  if (Array.isArray(value)) {
+    return { elements: toCanvasElements(value) };
+  }
+
+  if (!value || typeof value !== 'object') {
+    return { elements: [] };
+  }
+
+  const payload = value as { elements?: unknown; pages?: unknown };
+  const pages = toCanvasPages(payload.pages);
+  const elements = toCanvasElements(payload.elements);
+
+  if (pages.length > 0) {
+    return {
+      elements: elements.length > 0 ? elements : (pages[0] || []),
+      pages,
+    };
+  }
+
+  return { elements };
+};
+
 const getCachedSavedTemplates = (): SavedTemplate[] => {
   const raw = localStorage.getItem(STORAGE_KEY);
   return raw ? JSON.parse(raw) : [];
