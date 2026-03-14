@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates } from '@/lib/templateStorage';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus, Sparkles, Zap, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -14,12 +14,24 @@ import {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [starters, setStarters] = useState(getStarterTemplates());
-  const [saved, setSaved] = useState(getSavedTemplates());
+  const [saved, setSaved] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
 
-  const confirmDelete = () => {
+  const refreshSaved = useCallback(async () => {
+    setLoadingSaved(true);
+    const templates = await getSavedTemplates();
+    setSaved(templates);
+    setLoadingSaved(false);
+  }, []);
+
+  useEffect(() => {
+    void refreshSaved();
+  }, [refreshSaved]);
+
+  const confirmDelete = async () => {
     if (deleteType === 'all-starters') {
       hideAllStarterTemplates();
       setStarters([]);
@@ -27,23 +39,26 @@ const Dashboard = () => {
       setDeleteId(null);
       return;
     }
+
     if (!deleteId) return;
+
     if (deleteType === 'starter') {
       hideStarterTemplate(deleteId);
       setStarters(getStarterTemplates());
       toast.success('Template removido');
     } else {
-      deleteTemplate(deleteId);
-      setSaved(getSavedTemplates());
+      await deleteTemplate(deleteId);
+      await refreshSaved();
       toast.success('Template excluído');
     }
+
     setDeleteId(null);
   };
 
-  const handleDuplicate = (id: string) => {
-    const dup = duplicateTemplate(id);
+  const handleDuplicate = async (id: string) => {
+    const dup = await duplicateTemplate(id);
     if (dup) {
-      setSaved(getSavedTemplates());
+      await refreshSaved();
       toast.success('Template duplicado');
     }
   };
@@ -80,7 +95,7 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {saved.length > 0 && (
+      {!loadingSaved && saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -91,7 +106,7 @@ const Dashboard = () => {
                   onEdit={() => navigate(`/editor/${t.id}`)}
                   onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('saved'); setDeleteId(t.id); }}
-                  onDuplicate={() => handleDuplicate(t.id)}
+                  onDuplicate={() => { void handleDuplicate(t.id); }}
                   isSaved
                 />
               </motion.div>
@@ -125,7 +140,7 @@ const Dashboard = () => {
                   onEdit={() => navigate(`/editor/${t.id}`)}
                   onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('starter'); setDeleteId(t.id); }}
-                  onDuplicate={() => handleDuplicate(t.id)}
+                  onDuplicate={() => { void handleDuplicate(t.id); }}
                 />
               </motion.div>
             ))}
@@ -149,7 +164,7 @@ const Dashboard = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={() => { void confirmDelete(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deleteType === 'all-starters' ? 'Remover todos' : 'Apagar'}
             </AlertDialogAction>
           </AlertDialogFooter>

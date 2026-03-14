@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getSettings, saveSettings, AppSettings, restoreDefaultTemplates, getStarterTemplates, getSavedTemplates } from '@/lib/templateStorage';
 import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,21 @@ import { toast } from 'sonner';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
+  const [savedTemplates, setSavedTemplates] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const allTemplates = [...getSavedTemplates(), ...getStarterTemplates()];
+
+  useEffect(() => {
+    const loadSavedTemplates = async () => {
+      const templates = await getSavedTemplates();
+      setSavedTemplates(templates);
+    };
+
+    void loadSavedTemplates();
+  }, []);
+
+  const allTemplates = useMemo(() => {
+    return [...savedTemplates, ...getStarterTemplates()];
+  }, [savedTemplates]);
 
   const update = (partial: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
