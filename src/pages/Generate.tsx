@@ -327,6 +327,8 @@ const Generate = () => {
                   placeholder={getPlaceholder(v)}
                   className="h-12 text-base md:h-10 md:text-sm"
                   inputMode={v === 'price' ? 'numeric' : 'text'}
+                  onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
+                  onBlur={v === 'price' ? handlePriceBlur : undefined}
                 />
                 {v === 'event_date' && (
                   <p className="mt-1 text-[10px] text-muted-foreground">Aceita data única ou intervalo</p>
