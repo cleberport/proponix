@@ -175,16 +175,32 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [selectedId, elements]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const template: Template = {
       id: isNew ? uuidv4() : id!,
-      name: templateName, category: base?.category || 'Custom', description: base?.description || 'Template personalizado',
-      thumbnail: '', color: templateColor, elements, variables, canvasWidth: 595, canvasHeight: 842,
-      defaultValues, inputFields, calculatedFields, settings,
+      name: templateName,
+      category: baseCategory,
+      description: baseDescription,
+      thumbnail: '',
+      color: templateColor,
+      elements,
+      variables,
+      canvasWidth: 595,
+      canvasHeight: 842,
+      defaultValues,
+      inputFields,
+      calculatedFields,
+      settings,
     };
-    const saved = saveTemplate(template);
+
+    const saved = await saveTemplate(template);
     toast.success('Template salvo!');
-    if (isNew) navigate(`/editor/${saved.id}`, { replace: true });
+
+    if (isNew) {
+      navigate(`/editor/${saved.id}`, { replace: true });
+    }
+
+    return saved;
   };
 
   const addVariable = () => {
