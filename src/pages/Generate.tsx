@@ -54,10 +54,30 @@ const Generate = () => {
       if (editingDoc.values) {
         setUserInputs({ ...editingDoc.values });
       } else {
+        // Initialize from inputFields + scan all pages for dynamic vars
         const init: Record<string, string> = {};
+        const pages = getTemplatePages(fetchedTemplate);
+        const calcFields = new Set(Object.keys(fetchedTemplate.calculatedFields || {}));
+        const excluded = new Set([...calcFields, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+
         (fetchedTemplate.inputFields || []).forEach((field) => {
-          init[field] = '';
+          if (!excluded.has(field)) init[field] = '';
         });
+
+        for (const page of pages) {
+          for (const el of page) {
+            if (
+              el.isVisible !== false &&
+              (el.type === 'dynamic-field' || el.type === 'price-field') &&
+              el.variable &&
+              !excluded.has(el.variable) &&
+              !(el.variable in init)
+            ) {
+              init[el.variable] = '';
+            }
+          }
+        }
+
         setUserInputs(init);
       }
     };
