@@ -89,7 +89,7 @@ const App = () => {
               {/* Protected */}
               <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
-              <Route path="/templates" element={<ProtectedRoute session={session}><AppLayout><Templates /></AppLayout></ProtectedRoute>} />
+              <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
               <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />

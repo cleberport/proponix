@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, FolderOpen, User, Settings, Clock } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import {
@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Painel', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Templates', url: '/templates', icon: FolderOpen },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Histórico', url: '/documents', icon: Clock },
   { title: 'Perfil', url: '/profile', icon: User },
   { title: 'Configurações', url: '/settings', icon: Settings },
