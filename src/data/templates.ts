@@ -66,7 +66,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'dynamic-field', x: 40, y: 150, width: 250, height: 25, content: '', variable: 'data_de_hoje', fontSize: 11, color: '#64748B', fieldCategory: 'default' }),
     el({ type: 'table', x: 40, y: 190, width: 515, height: 200, content: '', rows: [
       { cells: ['Item', 'Descrição', 'Valor'] },
-      { cells: ['{{service_name}}', '', '{{price}}'] },
+      { cells: ['', '', ''] },
     ]}),
     el({ type: 'divider', x: 40, y: 420, width: 515, height: 2, content: '' }),
     el({ type: 'price-field', x: 350, y: 440, width: 205, height: 30, content: 'Subtotal:', variable: 'subtotal', fieldCategory: 'calculated' }),
@@ -89,7 +89,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'dynamic-field', x: 320, y: 150, width: 235, height: 30, content: 'Cliente:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'table', x: 40, y: 200, width: 515, height: 220, content: '', rows: [
       { cells: ['Categoria', 'Item', 'Qtd', 'Valor Unit.', 'Total'] },
-      { cells: ['Áudio', '{{service_name}}', '1', '{{price}}', '{{price}}'] },
+      { cells: ['', '', '', '', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 480, width: 205, height: 35, content: 'TOTAL:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
     el({ type: 'notes', x: 40, y: 550, width: 515, height: 100, content: 'Montagem inicia 4 horas antes do evento.', fieldCategory: 'default' }),
@@ -107,7 +107,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'divider', x: 40, y: 180, width: 515, height: 2, content: '' }),
     el({ type: 'table', x: 40, y: 200, width: 515, height: 180, content: '', rows: [
       { cells: ['Serviço', 'Valor'] },
-      { cells: ['{{service_name}}', '{{price}}'] },
+      { cells: ['', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 420, width: 205, height: 35, content: 'Total:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
     el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Este orçamento é válido por 30 dias.', fieldCategory: 'default' }),
@@ -126,7 +126,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'text', x: 40, y: 220, width: 515, height: 25, content: 'ESCOPO DO TRABALHO', fontSize: 16, fontWeight: '600' }),
     el({ type: 'table', x: 40, y: 255, width: 515, height: 180, content: '', rows: [
       { cells: ['Fase', 'Entrega', 'Prazo', 'Valor'] },
-      { cells: ['Descoberta', '{{service_name}}', '', '{{price}}'] },
+      { cells: ['', '', '', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 470, width: 205, height: 35, content: 'Investimento:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
   ], [...commonVars, 'event_name', 'service_name', 'price', 'tax_rate'], {
@@ -143,7 +143,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'divider', x: 40, y: 140, width: 515, height: 1, content: '' }),
     el({ type: 'table', x: 40, y: 160, width: 515, height: 200, content: '', rows: [
       { cells: ['Descrição', 'Valor'] },
-      { cells: ['{{service_name}}', '{{price}}'] },
+      { cells: ['', ''] },
     ]}),
     el({ type: 'price-field', x: 350, y: 390, width: 205, height: 28, content: 'Subtotal:', variable: 'subtotal', fieldCategory: 'calculated' }),
     el({ type: 'price-field', x: 350, y: 422, width: 205, height: 28, content: 'Imposto:', variable: 'tax', fieldCategory: 'calculated' }),
