@@ -143,7 +143,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'divider', x: 40, y: 140, width: 515, height: 1, content: '' }),
     el({ type: 'table', x: 40, y: 160, width: 515, height: 200, content: '', rows: [
       { cells: ['Descrição', 'Valor'] },
-      { cells: ['{{service_name}}', '{{price}}'] },
+      { cells: ['', ''] },
     ]}),
     el({ type: 'price-field', x: 350, y: 390, width: 205, height: 28, content: 'Subtotal:', variable: 'subtotal', fieldCategory: 'calculated' }),
     el({ type: 'price-field', x: 350, y: 422, width: 205, height: 28, content: 'Imposto:', variable: 'tax', fieldCategory: 'calculated' }),
