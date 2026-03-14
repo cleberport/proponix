@@ -95,14 +95,8 @@ const Generate = () => {
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
     const templatePages = getTemplatePages(template);
-    return templatePages.map(pageEls => {
-      if (showTax) return pageEls;
-      return pageEls.filter((el) => {
-        if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) return false;
-        return el.isVisible !== false;
-      });
-    });
-  }, [template, showTax]);
+    return templatePages.map((pageEls) => pageEls.filter((el) => el.isVisible !== false));
+  }, [template]);
 
   // First page elements for preview
   const visibleElements = visiblePages[0] || [];
