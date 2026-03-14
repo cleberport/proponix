@@ -44,6 +44,11 @@ const Editor = () => {
   const [templateColor, setTemplateColor] = useState(TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
+  const [zoom, setZoom] = useState(100);
+  const [showGrid, setShowGrid] = useState(true);
+  const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
+
+  const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];
 
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) || null : null;
