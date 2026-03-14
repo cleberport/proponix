@@ -16,6 +16,8 @@ import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const GRID = 10;
 
