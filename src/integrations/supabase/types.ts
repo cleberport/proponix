@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      custom_templates: {
+        Row: {
+          calculated_fields: Json
+          canvas_height: number
+          canvas_width: number
+          category: string
+          color: string | null
+          created_at: string
+          default_values: Json
+          description: string
+          elements: Json
+          id: string
+          input_fields: string[]
+          name: string
+          settings: Json
+          thumbnail: string
+          updated_at: string
+          user_id: string
+          variables: string[]
+        }
+        Insert: {
+          calculated_fields?: Json
+          canvas_height?: number
+          canvas_width?: number
+          category?: string
+          color?: string | null
+          created_at?: string
+          default_values?: Json
+          description?: string
+          elements?: Json
+          id?: string
+          input_fields?: string[]
+          name: string
+          settings?: Json
+          thumbnail?: string
+          updated_at?: string
+          user_id: string
+          variables?: string[]
+        }
+        Update: {
+          calculated_fields?: Json
+          canvas_height?: number
+          canvas_width?: number
+          category?: string
+          color?: string | null
+          created_at?: string
+          default_values?: Json
+          description?: string
+          elements?: Json
+          id?: string
+          input_fields?: string[]
+          name?: string
+          settings?: Json
+          thumbnail?: string
+          updated_at?: string
+          user_id?: string
+          variables?: string[]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
