@@ -221,7 +221,7 @@ const Generate = () => {
       event_name: 'Nome do evento',
       location: 'Local do evento',
       event_date: '23/04/2026 ou 23/04 a 25/04/2026',
-      price: '5000',
+      price: 'R$ 5.000,00',
     };
     return p[v] || '';
   };
