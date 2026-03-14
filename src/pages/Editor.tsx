@@ -151,19 +151,39 @@ const Editor = () => {
     else setSelectedIds([]);
   }, []);
 
+  const addTableElement = useCallback((cols: number) => {
+    const headers = Array.from({ length: cols }, (_, i) => `Coluna ${i + 1}`);
+    const emptyRow = Array.from({ length: cols }, () => '');
+    const newEl: CanvasElement = {
+      id: uuidv4(),
+      type: 'table',
+      x: 40,
+      y: 40 + Math.random() * 100,
+      width: 515,
+      height: 60,
+      content: '',
+      fontSize: 14, fontWeight: '400', fontFamily: 'Inter', color: '#0F172A', alignment: 'left',
+      rows: [{ cells: headers }, { cells: emptyRow }],
+      isVisible: true,
+      fieldCategory: 'default',
+    };
+    setElements((prev) => [...prev, newEl]);
+    setSelectedIds([newEl.id]);
+  }, [setElements]);
+
   const addElement = useCallback((type: ElementType) => {
+    if (type === 'table') return; // handled by addTableElement
     const appSettings = getSettings();
     const newEl: CanvasElement = {
       id: uuidv4(),
       type,
       x: 40 + Math.random() * 100,
       y: 40 + Math.random() * 200,
-      width: type === 'divider' ? 515 : type === 'table' ? 515 : 200,
-      height: type === 'divider' ? 2 : type === 'table' ? 150 : type === 'notes' ? 80 : 30,
+      width: type === 'divider' ? 515 : 200,
+      height: type === 'divider' ? 2 : type === 'notes' ? 80 : 30,
       content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? '' : type === 'total-calculation' ? 'Total:' : '',
       variable: type === 'dynamic-field' ? 'client_name' : type === 'price-field' ? 'price' : type === 'total-calculation' ? 'total' : undefined,
       fontSize: 14, fontWeight: '400', fontFamily: 'Inter', color: '#0F172A', alignment: 'left',
-      rows: type === 'table' ? [{ cells: ['Coluna 1', 'Coluna 2', 'Coluna 3'] }, { cells: ['', '', ''] }] : undefined,
       imageUrl: type === 'logo' ? appSettings.logoUrl || undefined : undefined,
       objectFit: type === 'logo' || type === 'image' ? 'contain' : undefined,
       isVisible: true,
@@ -314,6 +334,29 @@ const Editor = () => {
         <div className="flex flex-col gap-1 p-2">
           {ELEMENT_PALETTE.map((item) => {
             const Icon = iconMap[item.icon];
+            if (item.type === 'table') {
+              return (
+                <Popover key={item.type}>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent active:bg-accent/80 w-full">
+                      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                      <span>{item.label}</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent side="right" align="start" className="w-44 p-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Número de colunas</p>
+                    <div className="flex flex-col gap-1">
+                      {[2, 3, 4, 5].map((cols) => (
+                        <button key={cols} onClick={() => addTableElement(cols)}
+                          className="rounded-md px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                          {cols} colunas
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              );
+            }
             return (
               <button key={item.type} onClick={() => addElement(item.type)}
                 className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent active:bg-accent/80">
