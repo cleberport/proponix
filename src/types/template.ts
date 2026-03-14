@@ -46,16 +46,8 @@ export interface TemplateSettings {
 }
 
 export const TEMPLATE_COLORS = [
-  '#6366F1', // indigo
-  '#EC4899', // pink
-  '#F59E0B', // amber
-  '#10B981', // emerald
-  '#3B82F6', // blue
-  '#8B5CF6', // violet
-  '#EF4444', // red
-  '#14B8A6', // teal
-  '#F97316', // orange
-  '#06B6D4', // cyan
+  '#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6',
+  '#8B5CF6', '#EF4444', '#14B8A6', '#F97316', '#06B6D4',
 ];
 
 export interface Template {
@@ -65,7 +57,10 @@ export interface Template {
   description: string;
   thumbnail: string;
   color?: string;
+  /** @deprecated Use pages instead. Kept for backward compat. */
   elements: CanvasElement[];
+  /** Multi-page support. Each entry is a page's elements. */
+  pages?: CanvasElement[][];
   variables: string[];
   canvasWidth: number;
   canvasHeight: number;
@@ -80,25 +75,25 @@ export interface SavedTemplate extends Template {
   updatedAt: string;
 }
 
+/** Helper: get pages array from a template (backward compat) */
+export function getTemplatePages(t: Template): CanvasElement[][] {
+  if (t.pages && t.pages.length > 0) return t.pages;
+  return [t.elements || []];
+}
+
+/** Helper: flatten pages back to elements (for backward compat storage) */
+export function flattenPages(pages: CanvasElement[][]): CanvasElement[] {
+  return pages.flat();
+}
+
 export const DEFAULT_VARIABLES = [
-  'client_name',
-  'event_name',
-  'location',
-  'event_date',
-  'data_de_hoje',
-  'service_name',
-  'price',
-  'tax_rate',
-  'subtotal',
-  'tax',
-  'total',
+  'client_name', 'event_name', 'location', 'event_date',
+  'data_de_hoje', 'service_name', 'price', 'tax_rate',
+  'subtotal', 'tax', 'total',
 ];
 
 export const DEFAULT_INPUT_FIELDS = [
-  'client_name',
-  'event_name',
-  'location',
-  'event_date',
+  'client_name', 'event_name', 'location', 'event_date',
 ];
 
 export const DEFAULT_CALCULATED_FIELDS: Record<string, string> = {
