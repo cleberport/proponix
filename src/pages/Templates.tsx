@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate } from '@/lib/templateStorage';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -20,21 +20,30 @@ import {
 const Templates = () => {
   const navigate = useNavigate();
   const starters = getStarterTemplates();
-  const [saved, setSaved] = useState(getSavedTemplates());
+  const [saved, setSaved] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const confirmDelete = () => {
+  const refreshSaved = useCallback(async () => {
+    const templates = await getSavedTemplates();
+    setSaved(templates);
+  }, []);
+
+  useEffect(() => {
+    void refreshSaved();
+  }, [refreshSaved]);
+
+  const confirmDelete = async () => {
     if (!deleteId) return;
-    deleteTemplate(deleteId);
-    setSaved(getSavedTemplates());
+    await deleteTemplate(deleteId);
+    await refreshSaved();
     toast.success('Template excluído');
     setDeleteId(null);
   };
 
-  const handleDuplicate = (id: string) => {
-    const dup = duplicateTemplate(id);
+  const handleDuplicate = async (id: string) => {
+    const dup = await duplicateTemplate(id);
     if (dup) {
-      setSaved(getSavedTemplates());
+      await refreshSaved();
       toast.success('Template duplicado');
     }
   };
@@ -63,7 +72,7 @@ const Templates = () => {
                   onEdit={() => navigate(`/editor/${t.id}`)}
                   onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => setDeleteId(t.id)}
-                  onDuplicate={() => handleDuplicate(t.id)}
+                  onDuplicate={() => { void handleDuplicate(t.id); }}
                   isSaved
                 />
               </motion.div>
@@ -81,7 +90,7 @@ const Templates = () => {
                 template={t}
                 onEdit={() => navigate(`/editor/${t.id}`)}
                 onGenerate={() => navigate(`/generate/${t.id}`)}
-                onDuplicate={() => handleDuplicate(t.id)}
+                onDuplicate={() => { void handleDuplicate(t.id); }}
               />
             </motion.div>
           ))}
@@ -98,7 +107,7 @@ const Templates = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={() => { void confirmDelete(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Apagar template
             </AlertDialogAction>
           </AlertDialogFooter>

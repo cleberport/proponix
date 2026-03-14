@@ -1,11 +1,34 @@
-import { Template, SavedTemplate } from '@/types/template';
+import { Template, SavedTemplate, TemplateSettings } from '@/types/template';
 import { starterTemplates } from '@/data/templates';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'budget-template-builder-templates';
 const SETTINGS_KEY = 'budget-template-builder-settings';
 const HISTORY_KEY = 'budget-template-builder-history';
 const PDF_COUNTER_KEY = 'budget-template-builder-pdf-counter';
 const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
+
+const db = supabase as any;
+
+interface CustomTemplateRow {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  description: string;
+  thumbnail: string;
+  color: string | null;
+  elements: unknown;
+  variables: unknown;
+  canvas_width: number;
+  canvas_height: number;
+  default_values: unknown;
+  input_fields: unknown;
+  calculated_fields: unknown;
+  settings: unknown;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface AppSettings {
   profileName: string;
@@ -50,6 +73,96 @@ const DEFAULT_SETTINGS: AppSettings = {
   defaultTemplateId: '',
 };
 
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string');
+};
+
+const toStringRecord = (value: unknown): Record<string, string> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, String(v ?? '')]));
+};
+
+const toTemplateSettings = (value: unknown): TemplateSettings => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { taxRate: 0.10, showTax: true };
+  }
+
+  const settings = value as { taxRate?: unknown; showTax?: unknown };
+  const taxRate = typeof settings.taxRate === 'number' ? settings.taxRate : parseFloat(String(settings.taxRate ?? '0.10'));
+  const showTax = typeof settings.showTax === 'boolean' ? settings.showTax : String(settings.showTax ?? 'true') === 'true';
+
+  return {
+    taxRate: Number.isFinite(taxRate) ? taxRate : 0.10,
+    showTax,
+  };
+};
+
+const getCachedSavedTemplates = (): SavedTemplate[] => {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  return raw ? JSON.parse(raw) : [];
+};
+
+const setCachedSavedTemplates = (templates: SavedTemplate[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
+};
+
+const sortByUpdatedAtDesc = (templates: SavedTemplate[]) => {
+  return [...templates].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+};
+
+const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => ({
+  id: row.id,
+  name: row.name,
+  category: row.category,
+  description: row.description,
+  thumbnail: row.thumbnail,
+  color: row.color || undefined,
+  elements: Array.isArray(row.elements) ? (row.elements as Template['elements']) : [],
+  variables: toStringArray(row.variables),
+  canvasWidth: row.canvas_width,
+  canvasHeight: row.canvas_height,
+  defaultValues: toStringRecord(row.default_values),
+  inputFields: toStringArray(row.input_fields),
+  calculatedFields: toStringRecord(row.calculated_fields),
+  settings: toTemplateSettings(row.settings),
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+const mapTemplateToDb = (template: SavedTemplate, userId: string) => ({
+  id: template.id,
+  user_id: userId,
+  name: template.name,
+  category: template.category,
+  description: template.description,
+  thumbnail: template.thumbnail || '',
+  color: template.color || null,
+  elements: template.elements,
+  variables: template.variables,
+  canvas_width: template.canvasWidth,
+  canvas_height: template.canvasHeight,
+  default_values: template.defaultValues || {},
+  input_fields: template.inputFields || [],
+  calculated_fields: template.calculatedFields || {},
+  settings: template.settings || { taxRate: 0.10, showTax: true },
+  created_at: template.createdAt,
+  updated_at: template.updatedAt,
+});
+
+const getCurrentUserId = async (): Promise<string | null> => {
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+};
+
+const mergeIntoCache = (template: SavedTemplate) => {
+  const all = getCachedSavedTemplates();
+  const idx = all.findIndex((t) => t.id === template.id);
+  if (idx >= 0) all[idx] = template;
+  else all.push(template);
+  setCachedSavedTemplates(sortByUpdatedAtDesc(all));
+};
+
 export function getSettings(): AppSettings {
   const raw = localStorage.getItem(SETTINGS_KEY);
   return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
@@ -82,57 +195,136 @@ export function getStarterTemplates(): Template[] {
   return starterTemplates.filter((t) => !hidden.includes(t.id));
 }
 
-export function getSavedTemplates(): SavedTemplate[] {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? JSON.parse(raw) : [];
+export async function getSavedTemplates(): Promise<SavedTemplate[]> {
+  const cached = getCachedSavedTemplates();
+  const userId = await getCurrentUserId();
+  if (!userId) return cached;
+
+  const { data, error } = await db
+    .from('custom_templates')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    console.error('Erro ao buscar templates do backend:', error);
+    return cached;
+  }
+
+  const remote = (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
+  const remoteIds = new Set(remote.map((template) => template.id));
+  const missingFromRemote = cached.filter((template) => !remoteIds.has(template.id));
+
+  if (missingFromRemote.length > 0) {
+    const { error: syncError } = await db
+      .from('custom_templates')
+      .upsert(missingFromRemote.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+
+    if (syncError) {
+      console.error('Erro ao sincronizar templates locais:', syncError);
+    }
+  }
+
+  const merged = sortByUpdatedAtDesc([...remote, ...missingFromRemote.filter((template) => !remoteIds.has(template.id))]);
+  setCachedSavedTemplates(merged);
+  return merged;
 }
 
-export function saveTemplate(template: Template): SavedTemplate {
+export async function saveTemplate(template: Template): Promise<SavedTemplate> {
+  const cached = getCachedSavedTemplates();
+  const existing = cached.find((t) => t.id === template.id);
+  const now = new Date().toISOString();
+
   const saved: SavedTemplate = {
     ...template,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
   };
-  const all = getSavedTemplates();
-  const idx = all.findIndex((t) => t.id === saved.id);
-  if (idx >= 0) {
-    saved.createdAt = all[idx].createdAt;
-    all[idx] = saved;
-  } else {
-    all.push(saved);
+
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    mergeIntoCache(saved);
+    return saved;
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-  return saved;
+
+  const { data, error } = await db
+    .from('custom_templates')
+    .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' })
+    .select('*')
+    .single();
+
+  if (error) {
+    console.error('Erro ao salvar template no backend:', error);
+    mergeIntoCache(saved);
+    return saved;
+  }
+
+  const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
+  mergeIntoCache(mapped);
+  return mapped;
 }
 
-export function duplicateTemplate(id: string): SavedTemplate | null {
-  const original = getTemplateById(id);
+export async function duplicateTemplate(id: string): Promise<SavedTemplate | null> {
+  const original = await getTemplateById(id);
   if (!original) return null;
+
   const copy: Template = {
     ...original,
     id: crypto.randomUUID(),
     name: `${original.name} (Cópia)`,
   };
+
   return saveTemplate(copy);
 }
 
-export function deleteTemplate(id: string): void {
-  const all = getSavedTemplates().filter((t) => t.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+export async function deleteTemplate(id: string): Promise<void> {
+  const updatedLocal = getCachedSavedTemplates().filter((t) => t.id !== id);
+  setCachedSavedTemplates(updatedLocal);
+
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const { error } = await db
+    .from('custom_templates')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Erro ao excluir template no backend:', error);
+  }
 }
 
 export function restoreDefaultTemplates(): void {
-  const saved = getSavedTemplates();
+  const saved = getCachedSavedTemplates();
   const starterIds = starterTemplates.map((t) => t.id);
   const filtered = saved.filter((t) => !starterIds.includes(t.id));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   localStorage.removeItem(HIDDEN_STARTERS_KEY);
 }
 
-export function getTemplateById(id: string): Template | undefined {
-  const saved = getSavedTemplates().find((t) => t.id === id);
+export async function getTemplateById(id: string): Promise<Template | undefined> {
+  const cached = getCachedSavedTemplates();
+  const saved = cached.find((template) => template.id === id);
   if (saved) return saved;
-  return starterTemplates.find((t) => t.id === id);
+
+  const userId = await getCurrentUserId();
+  if (userId) {
+    const { data, error } = await db
+      .from('custom_templates')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
+      mergeIntoCache(mapped);
+      return mapped;
+    }
+  }
+
+  return starterTemplates.find((template) => template.id === id);
 }
 
 // Document history

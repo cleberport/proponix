@@ -1,7 +1,8 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
 import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
+import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,25 +18,61 @@ const Generate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const template = getTemplateById(id!);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const editingDoc = (location.state as { documentId?: string; values?: Record<string, string> }) || {};
-  const inputFields = template?.inputFields || [];
+  const editingDoc = useMemo(() => {
+    return (location.state as { documentId?: string; values?: Record<string, string> }) || {};
+  }, [location.state]);
 
-  const [userInputs, setUserInputs] = useState<Record<string, string>>(() => {
-    if (editingDoc.values) return { ...editingDoc.values };
-    if (!template) return {};
-    const init: Record<string, string> = {};
-    inputFields.forEach((v) => (init[v] = ''));
-    return init;
-  });
-
-  const [showTax, setShowTax] = useState(template?.settings?.showTax ?? true);
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [loadingTemplate, setLoadingTemplate] = useState(true);
+  const [userInputs, setUserInputs] = useState<Record<string, string>>({});
+  const [showTax, setShowTax] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTemplate = async () => {
+      if (!id) {
+        setTemplate(null);
+        setLoadingTemplate(false);
+        return;
+      }
+
+      setLoadingTemplate(true);
+      const fetchedTemplate = await getTemplateById(id);
+      if (!active) return;
+
+      setTemplate(fetchedTemplate || null);
+      setLoadingTemplate(false);
+
+      if (!fetchedTemplate) return;
+
+      setShowTax(fetchedTemplate.settings?.showTax ?? true);
+
+      if (editingDoc.values) {
+        setUserInputs({ ...editingDoc.values });
+      } else {
+        const init: Record<string, string> = {};
+        (fetchedTemplate.inputFields || []).forEach((field) => {
+          init[field] = '';
+        });
+        setUserInputs(init);
+      }
+    };
+
+    void loadTemplate();
+
+    return () => {
+      active = false;
+    };
+  }, [id, editingDoc.values]);
+
+  const inputFields = template?.inputFields || [];
 
   const resolvedValues = useMemo(() => {
     if (!template) return {};
@@ -109,7 +146,6 @@ const Generate = () => {
         if (e.name !== 'AbortError') toast.error('Erro ao compartilhar');
       }
     } else {
-      // Fallback: download
       const url = URL.createObjectURL(lastPdfBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -120,12 +156,22 @@ const Generate = () => {
     }
   };
 
+  if (loadingTemplate) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   if (!template) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-muted-foreground">Template não encontrado</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/')}>Voltar</Button>
+          <Button variant="outline" className="mt-4" onClick={() => navigate('/')}>
+            Voltar
+          </Button>
         </div>
       </div>
     );
@@ -156,7 +202,6 @@ const Generate = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
       <header className="flex items-center justify-between border-b border-border bg-card px-3 py-2 shrink-0">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate('/')}>
@@ -181,7 +226,6 @@ const Generate = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-        {/* Form panel */}
         <div className="w-full md:w-80 overflow-y-auto border-b md:border-b-0 md:border-r border-border bg-card p-4 md:p-5">
           <div className="flex flex-col gap-4">
             {inputFields.map((v) => (
@@ -201,7 +245,6 @@ const Generate = () => {
             ))}
           </div>
 
-          {/* Calculated summary */}
           {Object.keys(calculatedFields).length > 0 && (
             <div className="mt-5 rounded-lg border border-border bg-background p-3">
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo</h3>
@@ -226,7 +269,6 @@ const Generate = () => {
             <Switch checked={showTax} onCheckedChange={setShowTax} />
           </div>
 
-          {/* Mobile preview toggle */}
           {isMobile && (
             <Button
               variant="outline"
@@ -238,7 +280,6 @@ const Generate = () => {
             </Button>
           )}
 
-          {/* Mobile share/download actions after generation */}
           {isMobile && lastPdfBlob && (
             <div className="mt-4 flex flex-col gap-2">
               <Button className="w-full h-12 text-base font-semibold" onClick={handleShare}>
@@ -249,7 +290,6 @@ const Generate = () => {
           )}
         </div>
 
-        {/* Preview */}
         {(!isMobile || showPreview) && (
           <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-4 md:p-8">
             <CanvasRenderer
