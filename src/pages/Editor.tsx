@@ -26,23 +26,66 @@ const Editor = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const isNew = id === 'new';
-  const base = isNew ? null : getTemplateById(id!);
+  const [loadingTemplate, setLoadingTemplate] = useState(!isNew);
+  const [baseCategory, setBaseCategory] = useState('Custom');
+  const [baseDescription, setBaseDescription] = useState('Template personalizado');
 
-  const [templateName, setTemplateName] = useState(base?.name || 'Template sem título');
-  const [elements, setElements] = useState<CanvasElement[]>(base?.elements || []);
+  const [templateName, setTemplateName] = useState('Template sem título');
+  const [elements, setElements] = useState<CanvasElement[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [newVar, setNewVar] = useState('');
-  const [variables, setVariables] = useState<string[]>(base?.variables || [...DEFAULT_VARIABLES]);
-  const [defaultValues, setDefaultValues] = useState<Record<string, string>>(base?.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
-  const [inputFields, setInputFields] = useState<string[]>(base?.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
-  const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>(base?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
-  const [settings, setSettings] = useState<TemplateSettings>(base?.settings || { taxRate: 0.10, showTax: true });
-  const [templateColor, setTemplateColor] = useState(base?.color || TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
+  const [variables, setVariables] = useState<string[]>([...DEFAULT_VARIABLES]);
+  const [defaultValues, setDefaultValues] = useState<Record<string, string>>({ ...DEFAULT_TEMPLATE_VALUES });
+  const [inputFields, setInputFields] = useState<string[]>(['client_name', 'event_name', 'location', 'event_date']);
+  const [calculatedFields, setCalculatedFields] = useState<Record<string, string>>({ ...DEFAULT_CALCULATED_FIELDS });
+  const [settings, setSettings] = useState<TemplateSettings>({ taxRate: 0.10, showTax: true });
+  const [templateColor, setTemplateColor] = useState(TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
 
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) || null : null;
+
+  useEffect(() => {
+    let active = true;
+
+    if (isNew) {
+      setLoadingTemplate(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    const loadTemplate = async () => {
+      setLoadingTemplate(true);
+      const existing = await getTemplateById(id!);
+      if (!active) return;
+
+      if (!existing) {
+        toast.error('Template não encontrado');
+        navigate('/templates', { replace: true });
+        return;
+      }
+
+      setBaseCategory(existing.category || 'Custom');
+      setBaseDescription(existing.description || 'Template personalizado');
+      setTemplateName(existing.name || 'Template sem título');
+      setElements(existing.elements || []);
+      setVariables(existing.variables?.length ? existing.variables : [...DEFAULT_VARIABLES]);
+      setDefaultValues(existing.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
+      setInputFields(existing.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
+      setCalculatedFields(existing.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
+      setSettings(existing.settings || { taxRate: 0.10, showTax: true });
+      setTemplateColor(existing.color || TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
+      setLoadingTemplate(false);
+    };
+
+    void loadTemplate();
+
+    return () => {
+      active = false;
+    };
+  }, [id, isNew, navigate]);
 
   // Keyboard shortcuts
   useEffect(() => {
