@@ -168,25 +168,32 @@ const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => {
   };
 };
 
-const mapTemplateToDb = (template: SavedTemplate, userId: string) => ({
-  id: template.id,
-  user_id: userId,
-  name: template.name,
-  category: template.category,
-  description: template.description,
-  thumbnail: template.thumbnail || '',
-  color: template.color || null,
-  elements: template.elements,
-  variables: template.variables,
-  canvas_width: template.canvasWidth,
-  canvas_height: template.canvasHeight,
-  default_values: template.defaultValues || {},
-  input_fields: template.inputFields || [],
-  calculated_fields: template.calculatedFields || {},
-  settings: template.settings || { taxRate: 0.10, showTax: true },
-  created_at: template.createdAt,
-  updated_at: template.updatedAt,
-});
+const mapTemplateToDb = (template: SavedTemplate, userId: string) => {
+  const pages = getTemplatePages(template);
+
+  return {
+    id: template.id,
+    user_id: userId,
+    name: template.name,
+    category: template.category,
+    description: template.description,
+    thumbnail: template.thumbnail || '',
+    color: template.color || null,
+    elements: {
+      elements: pages[0] || [],
+      pages,
+    },
+    variables: template.variables,
+    canvas_width: template.canvasWidth,
+    canvas_height: template.canvasHeight,
+    default_values: template.defaultValues || {},
+    input_fields: template.inputFields || [],
+    calculated_fields: template.calculatedFields || {},
+    settings: template.settings || { taxRate: 0.10, showTax: true },
+    created_at: template.createdAt,
+    updated_at: template.updatedAt,
+  };
+};
 
 const getCurrentUserId = async (): Promise<string | null> => {
   const { data } = await supabase.auth.getUser();
