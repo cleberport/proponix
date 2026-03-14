@@ -107,7 +107,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'divider', x: 40, y: 180, width: 515, height: 2, content: '' }),
     el({ type: 'table', x: 40, y: 200, width: 515, height: 180, content: '', rows: [
       { cells: ['Serviço', 'Valor'] },
-      { cells: ['{{service_name}}', '{{price}}'] },
+      { cells: ['', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 420, width: 205, height: 35, content: 'Total:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
     el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Este orçamento é válido por 30 dias.', fieldCategory: 'default' }),
