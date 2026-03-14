@@ -260,11 +260,11 @@ const Generate = () => {
               <div key={v}>
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
                 <Input
-                  value={userInputs[v] || ''}
+                  value={getInputValue(v)}
                   onChange={(e) => handleChange(v, e.target.value)}
                   placeholder={getPlaceholder(v)}
                   className="h-12 text-base md:h-10 md:text-sm"
-                  inputMode={v === 'price' ? 'decimal' : 'text'}
+                  inputMode={v === 'price' ? 'numeric' : 'text'}
                 />
                 {v === 'event_date' && (
                   <p className="mt-1 text-[10px] text-muted-foreground">Aceita data única ou intervalo</p>
