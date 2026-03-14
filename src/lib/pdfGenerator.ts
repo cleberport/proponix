@@ -1,10 +1,9 @@
 import jsPDF from 'jspdf';
 import { CanvasElement } from '@/types/template';
-import { getSettings } from '@/lib/templateStorage';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
-const PDF_W = 595.28; // A4 in pt
+const PDF_W = 595.28;
 const PDF_H = 841.89;
 
 const scaleX = (x: number) => (x / CANVAS_W) * PDF_W;
@@ -41,6 +40,29 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
   return lines;
 }
 
+function loadImageAsDataUrl(url: string): Promise<{ data: string; w: number; h: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      const scale = Math.min(1, maxW / img.naturalWidth);
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      const ctx = canvas.getContext('2d')!;
+      // White background to avoid transparency → black
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL('image/png');
+      resolve({ data, w: img.naturalWidth, h: img.naturalHeight });
+    };
+    img.onerror = () => resolve({ data: '', w: 0, h: 0 });
+    img.src = url;
+  });
+}
+
 export async function generateVectorPdf(
   elements: CanvasElement[],
   variableValues: Record<string, string>,
@@ -48,7 +70,6 @@ export async function generateVectorPdf(
 ): Promise<Blob> {
   const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-  // White background
   pdf.setFillColor(255, 255, 255);
   pdf.rect(0, 0, PDF_W, PDF_H, 'F');
 
@@ -67,36 +88,19 @@ export async function generateVectorPdf(
     return '';
   };
 
-  // Process images first (async), collect promises
-  const imagePromises: Promise<{ el: CanvasElement; imgData: string; imgW: number; imgH: number }>[] = [];
+  // Pre-load all images
+  const imageMap = new Map<string, { data: string; w: number; h: number }>();
+  const imageElements = elements.filter(
+    (el) => (el.type === 'logo' || el.type === 'image') && el.imageUrl
+  );
 
-  for (const el of elements) {
-    if ((el.type === 'logo' || el.type === 'image') && el.imageUrl) {
-      imagePromises.push(
-        new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            // Compress: max 800px wide for PDF
-            const maxW = 800;
-            const scale = Math.min(1, maxW / img.naturalWidth);
-            canvas.width = Math.round(img.naturalWidth * scale);
-            canvas.height = Math.round(img.naturalHeight * scale);
-            const ctx = canvas.getContext('2d')!;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const data = canvas.toDataURL('image/jpeg', 0.85);
-            resolve({ el, imgData: data, imgW: img.naturalWidth, imgH: img.naturalHeight });
-          };
-          img.onerror = () => resolve({ el, imgData: '', imgW: 0, imgH: 0 });
-          img.src = el.imageUrl!;
-        })
-      );
-    }
-  }
-
-  const loadedImages = await Promise.all(imagePromises);
-  const imageMap = new Map(loadedImages.map((i) => [i.el.id, i]));
+  const loaded = await Promise.all(
+    imageElements.map(async (el) => {
+      const result = await loadImageAsDataUrl(el.imageUrl!);
+      return { id: el.id, ...result };
+    })
+  );
+  loaded.forEach((item) => imageMap.set(item.id, item));
 
   for (const el of elements) {
     const x = scaleX(el.x);
@@ -149,11 +153,11 @@ export async function generateVectorPdf(
 
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-        
+
         let tx = x;
         if (align === 'center') tx = x + w / 2;
         else if (align === 'right') tx = x + w;
-        
+
         pdf.text(displayText, tx, y + fontSize, { align });
         break;
       }
@@ -169,12 +173,12 @@ export async function generateVectorPdf(
       case 'logo':
       case 'image': {
         const imgInfo = imageMap.get(el.id);
-        if (imgInfo && imgInfo.imgData) {
-          const aspectRatio = imgInfo.imgW / imgInfo.imgH;
+        if (imgInfo && imgInfo.data) {
+          const aspectRatio = imgInfo.w / imgInfo.h;
           const imgW = w;
           const imgH = imgW / aspectRatio;
           try {
-            pdf.addImage(imgInfo.imgData, 'JPEG', x, y, imgW, imgH);
+            pdf.addImage(imgInfo.data, 'PNG', x, y, imgW, imgH);
           } catch {
             // Skip if image fails
           }
@@ -190,23 +194,20 @@ export async function generateVectorPdf(
 
         el.rows.forEach((row, ri) => {
           const ry = y + ri * rowH;
-          
-          // Header background
+
           if (ri === 0) {
             pdf.setFillColor(241, 245, 249);
             pdf.rect(x, ry, w, rowH, 'F');
           }
 
-          // Cell borders
           pdf.setDrawColor(226, 232, 240);
           pdf.setLineWidth(0.5);
           pdf.rect(x, ry, w, rowH, 'S');
-          
+
           row.cells.forEach((cell, ci) => {
             const cx = x + ci * colW;
             if (ci > 0) pdf.line(cx, ry, cx, ry + rowH);
 
-            // Resolve variables in cell content
             let cellText = cell;
             Object.entries(variableValues).forEach(([k, v]) => {
               cellText = cellText.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v || '');
@@ -223,6 +224,20 @@ export async function generateVectorPdf(
     }
   }
 
-  pdf.save(fileName);
-  return pdf.output('blob');
+  // Create blob and trigger instant download
+  const blob = pdf.output('blob');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  // Small delay to ensure download starts
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+
+  return blob;
 }

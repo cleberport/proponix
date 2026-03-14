@@ -10,12 +10,24 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { SavedTemplate } from '@/types/template';
+
+// Use cache for instant display
+const getCachedTemplates = (): SavedTemplate[] => {
+  try {
+    const raw = localStorage.getItem('budget-template-builder-templates');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [starters, setStarters] = useState(getStarterTemplates());
-  const [saved, setSaved] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
-  const [loadingSaved, setLoadingSaved] = useState(true);
+  // Initialize with cache for instant display
+  const [saved, setSaved] = useState<SavedTemplate[]>(getCachedTemplates());
+  const [loadingSaved, setLoadingSaved] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
@@ -85,7 +97,7 @@ const Dashboard = () => {
 
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Painel</h1>
+          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
           <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de orçamento</p>
         </div>
         <Button onClick={() => navigate('/editor/new')} size="sm" className="h-10 md:h-9">
@@ -95,10 +107,10 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {!loadingSaved && saved.length > 0 && (
+      {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {saved.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
@@ -132,7 +144,7 @@ const Dashboard = () => {
               Remover todos
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {starters.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard

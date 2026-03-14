@@ -1,10 +1,9 @@
-import { LayoutDashboard, FolderOpen, Clock, Settings } from 'lucide-react';
+import { LayoutDashboard, Clock, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const items = [
-  { label: 'Painel', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Templates', path: '/templates', icon: FolderOpen },
+  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Histórico', path: '/documents', icon: Clock },
   { label: 'Config', path: '/settings', icon: Settings },
 ];
@@ -23,7 +22,7 @@ export default function MobileNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[10px] font-medium transition-colors',
+                'flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[11px] font-medium transition-colors',
                 active ? 'text-primary' : 'text-muted-foreground'
               )}
             >
