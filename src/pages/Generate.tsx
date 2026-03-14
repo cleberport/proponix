@@ -50,6 +50,15 @@ const Generate = () => {
 
   const hasTable = !!tableInfo;
 
+  // Initialize tableRows when tableInfo becomes available
+  useEffect(() => {
+    if (!tableInfo) return;
+    setTableRows((prev) => {
+      if (prev.length > 0) return prev;
+      return [{ cells: tableInfo.headers.map(() => '') }];
+    });
+  }, [tableInfo]);
+
   // Auto-sum table price column → feed into price
   useEffect(() => {
     if (!hasTable || !tableInfo) return;
