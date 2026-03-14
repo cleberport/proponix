@@ -334,6 +334,29 @@ const Editor = () => {
         <div className="flex flex-col gap-1 p-2">
           {ELEMENT_PALETTE.map((item) => {
             const Icon = iconMap[item.icon];
+            if (item.type === 'table') {
+              return (
+                <Popover key={item.type}>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent active:bg-accent/80 w-full">
+                      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                      <span>{item.label}</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent side="right" align="start" className="w-44 p-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Número de colunas</p>
+                    <div className="flex flex-col gap-1">
+                      {[2, 3, 4, 5].map((cols) => (
+                        <button key={cols} onClick={() => addTableElement(cols)}
+                          className="rounded-md px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                          {cols} colunas
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              );
+            }
             return (
               <button key={item.type} onClick={() => addElement(item.type)}
                 className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent active:bg-accent/80">
