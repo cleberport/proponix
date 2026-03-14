@@ -12,7 +12,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
-import Templates from "./pages/Templates";
+
 import Documents from "./pages/Documents";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/Settings";
