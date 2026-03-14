@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useState, useRef } from 'react';
 import { CanvasElement } from '@/types/template';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   elements: CanvasElement[];
@@ -8,6 +9,7 @@ interface Props {
   onSelect: (id: string | null) => void;
   onMultiSelect?: (ids: string[]) => void;
   onUpdate: (id: string, updates: Partial<CanvasElement>) => void;
+  onAddElement?: (element: CanvasElement) => void;
   readOnly?: boolean;
   variableValues?: Record<string, string>;
   showGrid?: boolean;
@@ -21,10 +23,11 @@ const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
+    const [dragOver, setDragOver] = useState(false);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
     const canvasElRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +46,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const isLogo = el.type === 'logo';
         const aspectRatio = isLogo && el.height > 0 ? el.width / el.height : 0;
 
-        // For multi-drag, store all selected element positions
         const multiDragStart = selectedIds.includes(el.id) && selectedIds.length > 1 && mode === 'drag'
           ? elements.filter(e => selectedIds.includes(e.id)).map(e => ({ id: e.id, x: e.x, y: e.y }))
           : null;
@@ -92,7 +94,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       [onSelect, onUpdate, readOnly, selectedIds, elements]
     );
 
-    // Box selection
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
       onSelect(null);
@@ -113,7 +114,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const my = ev.clientY - rect.top;
         setBoxSelect(null);
         
-        // Find elements within the box
         const x1 = Math.min(x, mx);
         const y1 = Math.min(y, my);
         const x2 = Math.max(x, mx);
@@ -138,6 +138,60 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     }, [readOnly, onSelect, onMultiSelect, elements]);
+
+    // Drag & drop images
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+      if (readOnly) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      setDragOver(true);
+    }, [readOnly]);
+
+    const handleDragLeave = useCallback(() => {
+      setDragOver(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      if (readOnly || !onAddElement) return;
+
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (files.length === 0) return;
+
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const dropX = snap(Math.max(0, e.clientX - rect.left - 75));
+      const dropY = snap(Math.max(0, e.clientY - rect.top - 40));
+
+      files.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const url = ev.target?.result as string;
+          const img = new Image();
+          img.onload = () => {
+            const aspectRatio = img.naturalWidth / img.naturalHeight;
+            const width = 200;
+            const height = Math.round(width / aspectRatio);
+            const newEl: CanvasElement = {
+              id: uuidv4(),
+              type: 'image',
+              x: snap(Math.min(CANVAS_W - width, dropX + i * 20)),
+              y: snap(Math.min(CANVAS_H - height, dropY + i * 20)),
+              width,
+              height,
+              content: '',
+              imageUrl: url,
+              objectFit: 'contain',
+              isVisible: true,
+              fieldCategory: 'default',
+            };
+            onAddElement(newEl);
+          };
+          img.src = url;
+        };
+        reader.readAsDataURL(file);
+      });
+    }, [readOnly, onAddElement]);
 
     const resolveContent = (el: CanvasElement): string => {
       if (!variableValues) return el.content;
@@ -266,7 +320,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               ) : (
                 <div className="flex flex-col items-center gap-1 py-4">
                   <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Imagem'}</span>
-                  <span className="text-[10px] text-muted-foreground">Selecione para enviar</span>
+                  <span className="text-[10px] text-muted-foreground">Arraste uma imagem ou selecione para enviar</span>
                 </div>
               )}
               {resizeHandle}
@@ -312,9 +366,12 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           if (typeof ref === 'function') ref(node);
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
-        className={`canvas-paper relative touch-none ${!readOnly && showGrid ? 'grid-dots' : ''}`}
+        className={`canvas-paper relative touch-none ${!readOnly && showGrid ? 'grid-dots' : ''} ${dragOver ? 'ring-2 ring-primary ring-inset' : ''}`}
         style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H, backgroundColor: backgroundColor || '#ffffff' }}
         onPointerDown={handleCanvasPointerDown}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {elements.map(renderElement)}
         {boxSelectRect && (
@@ -327,6 +384,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               height: boxSelectRect.height,
             }}
           />
+        )}
+        {dragOver && (
+          <div className="absolute inset-0 flex items-center justify-center bg-primary/5 pointer-events-none">
+            <div className="rounded-lg bg-card px-4 py-2 shadow-lg border border-primary/30">
+              <p className="text-sm font-medium text-primary">Solte a imagem aqui</p>
+            </div>
+          </div>
         )}
       </div>
     );

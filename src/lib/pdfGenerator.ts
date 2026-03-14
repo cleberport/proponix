@@ -21,21 +21,14 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 function getFontStyle(weight: string): string {
-  const w = parseInt(weight);
-  if (w >= 700) return 'bold';
-  return 'normal';
+  return parseInt(weight) >= 700 ? 'bold' : 'normal';
 }
 
 function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
   const lines: string[] = [];
-  const paragraphs = text.split('\n');
-  for (const para of paragraphs) {
-    if (para.trim() === '') {
-      lines.push('');
-      continue;
-    }
-    const wrapped = pdf.splitTextToSize(para, maxWidth);
-    lines.push(...wrapped);
+  for (const para of text.split('\n')) {
+    if (para.trim() === '') { lines.push(''); continue; }
+    lines.push(...pdf.splitTextToSize(para, maxWidth));
   }
   return lines;
 }
@@ -46,61 +39,52 @@ function loadImageAsDataUrl(url: string): Promise<{ data: string; w: number; h: 
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const maxW = 800;
-      const scale = Math.min(1, maxW / img.naturalWidth);
+      const scale = Math.min(1, 800 / img.naturalWidth);
       canvas.width = Math.round(img.naturalWidth * scale);
       canvas.height = Math.round(img.naturalHeight * scale);
       const ctx = canvas.getContext('2d')!;
-      // White background to avoid transparency → black
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const data = canvas.toDataURL('image/png');
-      resolve({ data, w: img.naturalWidth, h: img.naturalHeight });
+      resolve({ data: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
     };
     img.onerror = () => resolve({ data: '', w: 0, h: 0 });
     img.src = url;
   });
 }
 
-export async function generateVectorPdf(
+function resolveContent(el: CanvasElement, variableValues: Record<string, string>): string {
+  let text = el.content || '';
+  Object.entries(variableValues).forEach(([k, v]) => {
+    text = text.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v || '');
+  });
+  return text;
+}
+
+function resolveVariable(el: CanvasElement, variableValues: Record<string, string>): string {
+  return el.variable ? (variableValues[el.variable] || '') : '';
+}
+
+async function preloadImages(elements: CanvasElement[]): Promise<Map<string, { data: string; w: number; h: number }>> {
+  const imageMap = new Map<string, { data: string; w: number; h: number }>();
+  const imageEls = elements.filter(el => (el.type === 'logo' || el.type === 'image') && el.imageUrl);
+  const loaded = await Promise.all(imageEls.map(async el => ({
+    id: el.id,
+    ...(await loadImageAsDataUrl(el.imageUrl!)),
+  })));
+  loaded.forEach(item => imageMap.set(item.id, item));
+  return imageMap;
+}
+
+function renderPageElements(
+  pdf: jsPDF,
   elements: CanvasElement[],
   variableValues: Record<string, string>,
-  fileName: string
-): Promise<Blob> {
-  const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-
+  imageMap: Map<string, { data: string; w: number; h: number }>
+) {
+  // White background
   pdf.setFillColor(255, 255, 255);
   pdf.rect(0, 0, PDF_W, PDF_H, 'F');
-
-  const resolveContent = (el: CanvasElement): string => {
-    let text = el.content || '';
-    Object.entries(variableValues).forEach(([k, v]) => {
-      text = text.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v || '');
-    });
-    return text;
-  };
-
-  const resolveVariable = (el: CanvasElement): string => {
-    if (el.variable) {
-      return variableValues[el.variable] || '';
-    }
-    return '';
-  };
-
-  // Pre-load all images
-  const imageMap = new Map<string, { data: string; w: number; h: number }>();
-  const imageElements = elements.filter(
-    (el) => (el.type === 'logo' || el.type === 'image') && el.imageUrl
-  );
-
-  const loaded = await Promise.all(
-    imageElements.map(async (el) => {
-      const result = await loadImageAsDataUrl(el.imageUrl!);
-      return { id: el.id, ...result };
-    })
-  );
-  loaded.forEach((item) => imageMap.set(item.id, item));
 
   for (const el of elements) {
     const x = scaleX(el.x);
@@ -113,7 +97,7 @@ export async function generateVectorPdf(
     switch (el.type) {
       case 'text':
       case 'notes': {
-        const content = resolveContent(el);
+        const content = resolveContent(el, variableValues);
         pdf.setFont('helvetica', fontStyle);
         pdf.setFontSize(fontSize);
         pdf.setTextColor(...color);
@@ -125,9 +109,7 @@ export async function generateVectorPdf(
           pdf.roundedRect(x, y, w, h, 3, 3, 'FD');
           const lines = wrapText(pdf, content, w - 16);
           const lineH = fontSize * 1.4;
-          lines.forEach((line, i) => {
-            pdf.text(line, x + 8, y + 12 + i * lineH);
-          });
+          lines.forEach((line, i) => pdf.text(line, x + 8, y + 12 + i * lineH));
         } else {
           const lines = wrapText(pdf, content, w);
           const lineH = fontSize * 1.4;
@@ -145,19 +127,16 @@ export async function generateVectorPdf(
       case 'dynamic-field':
       case 'price-field':
       case 'total-calculation': {
-        const label = resolveContent(el);
-        const value = resolveVariable(el);
+        const label = resolveContent(el, variableValues);
+        const value = resolveVariable(el, variableValues);
         pdf.setFont('helvetica', fontStyle);
         pdf.setFontSize(fontSize);
         pdf.setTextColor(...color);
-
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-
         let tx = x;
         if (align === 'center') tx = x + w / 2;
         else if (align === 'right') tx = x + w;
-
         pdf.text(displayText, tx, y + fontSize, { align });
         break;
       }
@@ -173,46 +152,31 @@ export async function generateVectorPdf(
       case 'logo':
       case 'image': {
         const imgInfo = imageMap.get(el.id);
-        if (imgInfo && imgInfo.data) {
-          const aspectRatio = imgInfo.w / imgInfo.h;
-          const imgW = w;
-          const imgH = imgW / aspectRatio;
-          try {
-            pdf.addImage(imgInfo.data, 'PNG', x, y, imgW, imgH);
-          } catch {
-            // Skip if image fails
-          }
+        if (imgInfo?.data) {
+          const ar = imgInfo.w / imgInfo.h;
+          try { pdf.addImage(imgInfo.data, 'PNG', x, y, w, w / ar); } catch {}
         }
         break;
       }
 
       case 'table': {
-        if (!el.rows || el.rows.length === 0) break;
+        if (!el.rows?.length) break;
         const cols = el.rows[0].cells.length;
         const colW = w / cols;
         const rowH = scaleH(el.height) / el.rows.length;
-
         el.rows.forEach((row, ri) => {
           const ry = y + ri * rowH;
-
-          if (ri === 0) {
-            pdf.setFillColor(241, 245, 249);
-            pdf.rect(x, ry, w, rowH, 'F');
-          }
-
+          if (ri === 0) { pdf.setFillColor(241, 245, 249); pdf.rect(x, ry, w, rowH, 'F'); }
           pdf.setDrawColor(226, 232, 240);
           pdf.setLineWidth(0.5);
           pdf.rect(x, ry, w, rowH, 'S');
-
           row.cells.forEach((cell, ci) => {
             const cx = x + ci * colW;
             if (ci > 0) pdf.line(cx, ry, cx, ry + rowH);
-
             let cellText = cell;
             Object.entries(variableValues).forEach(([k, v]) => {
               cellText = cellText.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v || '');
             });
-
             pdf.setFont('helvetica', ri === 0 ? 'bold' : 'normal');
             pdf.setFontSize(fontSize * 0.75);
             pdf.setTextColor(15, 23, 42);
@@ -223,8 +187,34 @@ export async function generateVectorPdf(
       }
     }
   }
+}
 
-  // Create blob and trigger instant download
+/**
+ * Generate a multi-page vector PDF.
+ * Accepts either a flat array of elements (single page) or an array of pages.
+ */
+export async function generateVectorPdf(
+  elementsOrPages: CanvasElement[] | CanvasElement[][],
+  variableValues: Record<string, string>,
+  fileName: string
+): Promise<Blob> {
+  // Normalize to pages array
+  const pages: CanvasElement[][] = Array.isArray(elementsOrPages[0]) && Array.isArray((elementsOrPages as any[])[0])
+    ? (elementsOrPages as CanvasElement[][])
+    : [elementsOrPages as CanvasElement[]];
+
+  const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+
+  // Preload all images across all pages
+  const allElements = pages.flat();
+  const imageMap = await preloadImages(allElements);
+
+  for (let i = 0; i < pages.length; i++) {
+    if (i > 0) pdf.addPage();
+    renderPageElements(pdf, pages[i], variableValues, imageMap);
+  }
+
+  // Instant download
   const blob = pdf.output('blob');
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -233,7 +223,6 @@ export async function generateVectorPdf(
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  // Small delay to ensure download starts
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);

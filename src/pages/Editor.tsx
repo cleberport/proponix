@@ -3,13 +3,13 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getTemplateById, saveTemplate, getSettings } from '@/lib/templateStorage';
 import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
-import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template, TemplateSettings, DEFAULT_TEMPLATE_VALUES, DEFAULT_CALCULATED_FIELDS, TEMPLATE_COLORS } from '@/types/template';
+import { CanvasElement, ElementType, ELEMENT_PALETTE, DEFAULT_VARIABLES, Template, TemplateSettings, DEFAULT_TEMPLATE_VALUES, DEFAULT_CALCULATED_FIELDS, TEMPLATE_COLORS, getTemplatePages } from '@/types/template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, Grid3X3, ZoomIn, ZoomOut, Paintbrush } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -18,6 +18,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 const GRID = 10;
 
@@ -33,7 +34,10 @@ const Editor = () => {
   const [baseDescription, setBaseDescription] = useState('Template personalizado');
 
   const [templateName, setTemplateName] = useState('Template sem título');
-  const [elements, setElements] = useState<CanvasElement[]>([]);
+  // Multi-page state
+  const [pages, setPages] = useState<CanvasElement[][]>([[]]);
+  const [currentPage, setCurrentPage] = useState(0);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [newVar, setNewVar] = useState('');
   const [variables, setVariables] = useState<string[]>([...DEFAULT_VARIABLES]);
@@ -50,6 +54,20 @@ const Editor = () => {
 
   const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];
 
+  // Current page elements
+  const elements = pages[currentPage] || [];
+  const setElements = useCallback((updater: CanvasElement[] | ((prev: CanvasElement[]) => CanvasElement[])) => {
+    setPages(prev => {
+      const newPages = [...prev];
+      if (typeof updater === 'function') {
+        newPages[currentPage] = updater(newPages[currentPage] || []);
+      } else {
+        newPages[currentPage] = updater;
+      }
+      return newPages;
+    });
+  }, [currentPage]);
+
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) || null : null;
 
@@ -58,9 +76,7 @@ const Editor = () => {
 
     if (isNew) {
       setLoadingTemplate(false);
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }
 
     const loadTemplate = async () => {
@@ -70,14 +86,15 @@ const Editor = () => {
 
       if (!existing) {
         toast.error('Template não encontrado');
-        navigate('/templates', { replace: true });
+        navigate('/dashboard', { replace: true });
         return;
       }
 
       setBaseCategory(existing.category || 'Custom');
       setBaseDescription(existing.description || 'Template personalizado');
       setTemplateName(existing.name || 'Template sem título');
-      setElements(existing.elements || []);
+      setPages(getTemplatePages(existing));
+      setCurrentPage(0);
       setVariables(existing.variables?.length ? existing.variables : [...DEFAULT_VARIABLES]);
       setDefaultValues(existing.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
       setInputFields(existing.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
@@ -88,49 +105,46 @@ const Editor = () => {
     };
 
     void loadTemplate();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [id, isNew, navigate]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedIds.length === 0) return;
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
 
-      const step = e.shiftKey ? 50 : GRID;
-
-      switch (e.key) {
-        case 'Delete':
-        case 'Backspace':
-          e.preventDefault();
-          setElements((prev) => prev.filter((el) => !selectedIds.includes(el.id)));
-          setSelectedIds([]);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: Math.max(0, el.y - step) } : el));
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: el.y + step } : el));
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: Math.max(0, el.x - step) } : el));
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: el.x + step } : el));
-          break;
+      if (selectedIds.length > 0) {
+        const step = e.shiftKey ? 50 : GRID;
+        switch (e.key) {
+          case 'Delete':
+          case 'Backspace':
+            e.preventDefault();
+            setElements((prev) => prev.filter((el) => !selectedIds.includes(el.id)));
+            setSelectedIds([]);
+            return;
+          case 'ArrowUp':
+            e.preventDefault();
+            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: Math.max(0, el.y - step) } : el));
+            return;
+          case 'ArrowDown':
+            e.preventDefault();
+            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: el.y + step } : el));
+            return;
+          case 'ArrowLeft':
+            e.preventDefault();
+            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: Math.max(0, el.x - step) } : el));
+            return;
+          case 'ArrowRight':
+            e.preventDefault();
+            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: el.x + step } : el));
+            return;
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds]);
+  }, [selectedIds, setElements]);
 
   const handleSelect = useCallback((id: string | null) => {
     if (id) setSelectedIds([id]);
@@ -162,16 +176,21 @@ const Editor = () => {
     setElements((prev) => [...prev, newEl]);
     setSelectedIds([newEl.id]);
     if (isMobile) setShowMobileElements(false);
-  }, [isMobile]);
+  }, [isMobile, setElements]);
+
+  const addElementDirect = useCallback((el: CanvasElement) => {
+    setElements((prev) => [...prev, el]);
+    setSelectedIds([el.id]);
+  }, [setElements]);
 
   const updateElement = useCallback((id: string, updates: Partial<CanvasElement>) => {
     setElements((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
-  }, []);
+  }, [setElements]);
 
   const deleteElement = useCallback((id: string) => {
     setElements((prev) => prev.filter((e) => e.id !== id));
     setSelectedIds((prev) => prev.filter((s) => s !== id));
-  }, []);
+  }, [setElements]);
 
   const duplicateSelected = useCallback(() => {
     if (!selectedId) return;
@@ -180,7 +199,41 @@ const Editor = () => {
     const newEl = { ...el, id: uuidv4(), x: el.x + 20, y: el.y + 20 };
     setElements(prev => [...prev, newEl]);
     setSelectedIds([newEl.id]);
-  }, [selectedId, elements]);
+  }, [selectedId, elements, setElements]);
+
+  // Page management
+  const addPage = useCallback(() => {
+    setPages(prev => [...prev, []]);
+    setCurrentPage(pages.length);
+    setSelectedIds([]);
+  }, [pages.length]);
+
+  const deletePage = useCallback((index: number) => {
+    if (pages.length <= 1) return;
+    setPages(prev => prev.filter((_, i) => i !== index));
+    if (currentPage >= pages.length - 1) {
+      setCurrentPage(Math.max(0, pages.length - 2));
+    } else if (currentPage > index) {
+      setCurrentPage(currentPage - 1);
+    }
+    setSelectedIds([]);
+  }, [pages.length, currentPage]);
+
+  const duplicatePage = useCallback((index: number) => {
+    const pageCopy = pages[index].map(el => ({ ...el, id: uuidv4() }));
+    setPages(prev => {
+      const newPages = [...prev];
+      newPages.splice(index + 1, 0, pageCopy);
+      return newPages;
+    });
+    setCurrentPage(index + 1);
+    setSelectedIds([]);
+  }, [pages]);
+
+  const goToPage = useCallback((index: number) => {
+    setCurrentPage(index);
+    setSelectedIds([]);
+  }, []);
 
   const handleSave = async () => {
     const template: Template = {
@@ -190,7 +243,8 @@ const Editor = () => {
       description: baseDescription,
       thumbnail: '',
       color: templateColor,
-      elements,
+      elements: pages[0] || [],
+      pages,
       variables,
       canvasWidth: 595,
       canvasHeight: 842,
@@ -269,6 +323,56 @@ const Editor = () => {
             );
           })}
         </div>
+
+        {/* Page thumbnails */}
+        <div className="border-t border-border p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Páginas</h3>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={addPage}>
+              <Plus className="h-3 w-3 mr-1" />
+              Página
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {pages.map((pageEls, i) => (
+              <div
+                key={i}
+                onClick={() => goToPage(i)}
+                className={cn(
+                  'group relative flex items-center gap-2 rounded-lg border px-2.5 py-2 cursor-pointer transition-colors',
+                  i === currentPage ? 'border-primary bg-primary/10' : 'border-border hover:bg-accent/50'
+                )}
+              >
+                <div className="flex h-8 w-6 items-center justify-center rounded bg-card border border-border text-[10px] font-semibold text-muted-foreground shrink-0">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">Página {i + 1}</p>
+                  <p className="text-[10px] text-muted-foreground">{pageEls.length} elemento{pageEls.length !== 1 ? 's' : ''}</p>
+                </div>
+                <div className="flex shrink-0 opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
+                  <button
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); duplicatePage(i); }}
+                    title="Duplicar página"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </button>
+                  {pages.length > 1 && (
+                    <button
+                      className="p-1 text-destructive hover:text-destructive/80"
+                      onClick={(e) => { e.stopPropagation(); deletePage(i); }}
+                      title="Remover página"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="border-t border-border p-3">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Variáveis</h3>
           <div className="flex flex-col gap-1">
@@ -336,7 +440,6 @@ const Editor = () => {
       <TabsContent value="settings" className="flex-1 overflow-y-auto p-3">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Configurações do Template</h3>
         <div className="flex flex-col gap-4">
-          {/* Template color */}
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">Cor do Template</Label>
             <div className="flex flex-wrap gap-2">
@@ -374,7 +477,6 @@ const Editor = () => {
   // Mobile floating toolbar
   const mobileToolbar = (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom">
-      {/* Element action bar when selected */}
       {selectedId && (
         <div className="flex items-center justify-center gap-1 border-b border-border px-2 py-1.5">
           <Button variant="ghost" size="sm" className="h-9 w-9 p-0" onClick={() => selectedId && deleteElement(selectedId)}>
@@ -394,7 +496,22 @@ const Editor = () => {
           </Button>
         </div>
       )}
-      {/* Element palette */}
+      {/* Page navigation + element palette */}
+      <div className="flex items-center gap-1 border-b border-border px-2 py-1.5">
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs shrink-0" disabled={currentPage === 0} onClick={() => goToPage(currentPage - 1)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-xs font-medium text-foreground shrink-0">
+          {currentPage + 1}/{pages.length}
+        </span>
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs shrink-0" disabled={currentPage === pages.length - 1} onClick={() => goToPage(currentPage + 1)}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs shrink-0" onClick={addPage}>
+          <Plus className="h-3.5 w-3.5 mr-0.5" />
+          <FileText className="h-3.5 w-3.5" />
+        </Button>
+      </div>
       <div className="flex items-center gap-1 overflow-x-auto px-2 py-2 scrollbar-hide">
         {ELEMENT_PALETTE.map((item) => {
           const Icon = iconMap[item.icon];
@@ -473,9 +590,9 @@ const Editor = () => {
         )}
 
         {/* Canvas */}
-        <main className={`flex flex-1 flex-col items-center overflow-auto bg-background ${isMobile ? 'pb-28' : ''}`}>
+        <main className={`flex flex-1 flex-col items-center overflow-auto bg-background ${isMobile ? 'pb-36' : ''}`}>
           {/* Canvas toolbar */}
-          <div className="flex w-full items-center justify-center gap-2 border-b border-border bg-card px-3 py-1.5 shrink-0">
+          <div className="flex w-full items-center justify-center gap-2 border-b border-border bg-card px-3 py-1.5 shrink-0 flex-wrap">
             <Button
               variant={showGrid ? 'secondary' : 'ghost'}
               size="sm"
@@ -530,6 +647,24 @@ const Editor = () => {
                 />
               </PopoverContent>
             </Popover>
+
+            {/* Desktop page nav */}
+            {!isMobile && (
+              <div className="flex items-center gap-1 ml-2 border-l border-border pl-2">
+                <Button variant="ghost" size="sm" className="h-8 px-1.5" disabled={currentPage === 0} onClick={() => goToPage(currentPage - 1)}>
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <span className="text-xs font-medium text-foreground px-1">
+                  Pág {currentPage + 1}/{pages.length}
+                </span>
+                <Button variant="ghost" size="sm" className="h-8 px-1.5" disabled={currentPage === pages.length - 1} onClick={() => goToPage(currentPage + 1)}>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={addPage}>
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full">
@@ -542,6 +677,7 @@ const Editor = () => {
                 onSelect={handleSelect}
                 onMultiSelect={setSelectedIds}
                 onUpdate={updateElement}
+                onAddElement={addElementDirect}
                 showGrid={showGrid}
                 backgroundColor={canvasBgColor}
               />

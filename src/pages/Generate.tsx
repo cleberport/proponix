@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
+import { getTemplatePages } from '@/types/template';
 import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
 import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
@@ -95,14 +96,20 @@ const Generate = () => {
     return display;
   }, [resolvedValues]);
 
-  const visibleElements = useMemo(() => {
-    if (!template) return [];
-    if (showTax) return template.elements;
-    return template.elements.filter((el) => {
-      if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) return false;
-      return el.isVisible !== false;
+  const visiblePages = useMemo(() => {
+    if (!template) return [[]];
+    const templatePages = getTemplatePages(template);
+    return templatePages.map(pageEls => {
+      if (showTax) return pageEls;
+      return pageEls.filter((el) => {
+        if (el.variable === 'tax' && (el.type === 'price-field' || el.type === 'total-calculation')) return false;
+        return el.isVisible !== false;
+      });
     });
   }, [template, showTax]);
+
+  // First page elements for preview
+  const visibleElements = visiblePages[0] || [];
 
   const handleChange = (key: string, val: string) => {
     setUserInputs((prev) => ({ ...prev, [key]: val }));
@@ -113,7 +120,7 @@ const Generate = () => {
     setGenerating(true);
     try {
       const fileName = generatePdfFileName();
-      const blob = await generateVectorPdf(visibleElements, displayValues, fileName);
+      const blob = await generateVectorPdf(visiblePages, displayValues, fileName);
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
@@ -134,7 +141,7 @@ const Generate = () => {
     } finally {
       setGenerating(false);
     }
-  }, [template, userInputs, visibleElements, displayValues]);
+  }, [template, userInputs, visiblePages, displayValues]);
 
   const handleShare = async () => {
     if (!lastPdfBlob) {
