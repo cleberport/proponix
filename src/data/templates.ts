@@ -89,7 +89,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'dynamic-field', x: 320, y: 150, width: 235, height: 30, content: 'Cliente:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'table', x: 40, y: 200, width: 515, height: 220, content: '', rows: [
       { cells: ['Categoria', 'Item', 'Qtd', 'Valor Unit.', 'Total'] },
-      { cells: ['Áudio', '{{service_name}}', '1', '{{price}}', '{{price}}'] },
+      { cells: ['', '', '', '', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 480, width: 205, height: 35, content: 'TOTAL:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
     el({ type: 'notes', x: 40, y: 550, width: 515, height: 100, content: 'Montagem inicia 4 horas antes do evento.', fieldCategory: 'default' }),
