@@ -51,8 +51,6 @@ const Generate = () => {
 
       if (!fetchedTemplate) return;
 
-      setShowTax(fetchedTemplate.settings?.showTax ?? true);
-
       if (editingDoc.values) {
         setUserInputs({ ...editingDoc.values });
       } else {
