@@ -10,6 +10,8 @@ interface Props {
   onUpdate: (id: string, updates: Partial<CanvasElement>) => void;
   readOnly?: boolean;
   variableValues?: Record<string, string>;
+  showGrid?: boolean;
+  backgroundColor?: string;
 }
 
 const CANVAS_W = 595;
