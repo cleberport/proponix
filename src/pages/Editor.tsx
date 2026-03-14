@@ -164,6 +164,7 @@ const Editor = () => {
       content: '',
       fontSize: 14, fontWeight: '400', fontFamily: 'Inter', color: '#0F172A', alignment: 'left',
       rows: [{ cells: headers }, { cells: emptyRow }],
+      columnWidths: Array.from({ length: cols }, () => Math.round(100 / cols)),
       isVisible: true,
       fieldCategory: 'default',
     };

@@ -338,6 +338,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               <table className="h-full w-full text-xs" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                {el.columnWidths && (
+                  <colgroup>
+                    {el.columnWidths.map((w, ci) => (
+                      <col key={ci} style={{ width: `${w}%` }} />
+                    ))}
+                  </colgroup>
+                )}
                 <tbody>
                   {(el.rows || []).map((row, ri) => (
                     <tr key={ri} style={ri === 0 ? { backgroundColor: 'hsl(240 5% 88%)', fontWeight: 600 } : undefined}>
