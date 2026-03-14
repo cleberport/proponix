@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
-import { getTemplatePages } from '@/types/template';
+import { getTemplatePages, CanvasElement } from '@/types/template';
 import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
 import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
+import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
 import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -31,6 +32,36 @@ const Generate = () => {
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
+  const [tableRows, setTableRows] = useState<DynamicRow[]>([{ cells: ['', '', ''] }]);
+
+  // Find table element info from template
+  const tableInfo = useMemo(() => {
+    if (!template) return null;
+    const pages = getTemplatePages(template);
+    for (const page of pages) {
+      for (const el of page) {
+        if (el.type === 'table' && el.rows && el.rows.length > 0) {
+          return { headers: el.rows[0].cells, elementId: el.id };
+        }
+      }
+    }
+    return null;
+  }, [template]);
+
+  const hasTable = !!tableInfo;
+
+  // Auto-sum table price column → feed into price
+  useEffect(() => {
+    if (!hasTable || !tableInfo) return;
+    const priceColIndex = tableInfo.headers.length - 1;
+    const total = tableRows.reduce((sum, row) => {
+      const val = row.cells[priceColIndex] || '';
+      const cleaned = val.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+      const num = parseFloat(cleaned);
+      return sum + (isFinite(num) ? num : 0);
+    }, 0);
+    setUserInputs((prev) => ({ ...prev, price: total > 0 ? total.toString() : '' }));
+  }, [tableRows, hasTable, tableInfo]);
 
   useEffect(() => {
     let active = true;
@@ -54,11 +85,23 @@ const Generate = () => {
       if (editingDoc.values) {
         setUserInputs({ ...editingDoc.values });
       } else {
-        // Initialize from inputFields + scan all pages for dynamic vars
         const init: Record<string, string> = {};
         const pages = getTemplatePages(fetchedTemplate);
         const calcFields = new Set(Object.keys(fetchedTemplate.calculatedFields || {}));
         const excluded = new Set([...calcFields, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+
+        // Check if template has a table - if so, exclude price from manual inputs
+        let templateHasTable = false;
+        for (const page of pages) {
+          for (const el of page) {
+            if (el.type === 'table' && el.rows && el.rows.length > 0) {
+              templateHasTable = true;
+              break;
+            }
+          }
+          if (templateHasTable) break;
+        }
+        if (templateHasTable) excluded.add('price');
 
         (fetchedTemplate.inputFields || []).forEach((field) => {
           if (!excluded.has(field)) init[field] = '';
@@ -89,7 +132,6 @@ const Generate = () => {
     };
   }, [id, editingDoc.values]);
 
-  // Collect ALL dynamic-field variables from every page, preserving order
   const allDynamicVars = useMemo(() => {
     if (!template) return [] as string[];
     const pages = getTemplatePages(template);
@@ -109,12 +151,14 @@ const Generate = () => {
   }, [template]);
 
   const calculatedFieldNames = Object.keys(template?.calculatedFields || {});
-  const excludedFields = new Set([...calculatedFieldNames, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+  const excludedFields = useMemo(() => {
+    const base = new Set([...calculatedFieldNames, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+    if (hasTable) base.add('price');
+    return base;
+  }, [calculatedFieldNames, hasTable]);
 
-  // Merge template.inputFields with discovered dynamic vars, number duplicates
   const inputFields = useMemo(() => {
     const baseFields = (template?.inputFields || []).filter((f) => !excludedFields.has(f));
-    // Add any dynamic vars not already in baseFields
     const seen = new Set(baseFields);
     const merged = [...baseFields];
     for (const v of allDynamicVars) {
@@ -144,19 +188,36 @@ const Generate = () => {
     return display;
   }, [resolvedValues]);
 
+  // Build pages with dynamic table rows injected
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
     const templatePages = getTemplatePages(template);
-    return templatePages.map((pageEls) => pageEls.filter((el) => el.isVisible !== false));
-  }, [template]);
+    return templatePages.map((pageEls) =>
+      pageEls
+        .filter((el) => el.isVisible !== false)
+        .map((el) => {
+          if (el.type === 'table' && hasTable && tableInfo) {
+            // Replace table rows with dynamic rows (keep headers)
+            const dataRows = tableRows.filter((r) => r.cells.some((c) => c.trim()));
+            const allRows = [
+              { cells: tableInfo.headers },
+              ...(dataRows.length > 0 ? dataRows : [{ cells: tableInfo.headers.map(() => '') }]),
+            ];
+            // Auto-adjust height based on row count
+            const rowHeight = 28;
+            const newHeight = Math.max(el.height, allRows.length * rowHeight);
+            return { ...el, rows: allRows, height: newHeight } as CanvasElement;
+          }
+          return el;
+        })
+    );
+  }, [template, tableRows, hasTable, tableInfo]);
 
-  // First page elements for preview
   const visibleElements = visiblePages[0] || [];
 
   const [priceDisplay, setPriceDisplay] = useState('');
   const [priceFocused, setPriceFocused] = useState(false);
 
-  // Sync priceDisplay when userInputs.price changes externally (e.g. editing doc)
   useEffect(() => {
     if (!priceFocused && userInputs.price) {
       setPriceDisplay(formatCurrency(userInputs.price));
@@ -166,7 +227,6 @@ const Generate = () => {
   const handleChange = (key: string, val: string) => {
     if (key === 'price') {
       setPriceDisplay(val);
-      // Strip formatting, keep digits and comma/dot
       const cleaned = val.replace(/[^\d,.-]/g, '').trim();
       if (!cleaned) {
         setUserInputs((prev) => ({ ...prev, price: '' }));
@@ -335,6 +395,14 @@ const Generate = () => {
                 )}
               </div>
             ))}
+
+            {hasTable && tableInfo && (
+              <DynamicTableInput
+                headers={tableInfo.headers}
+                rows={tableRows}
+                onChange={setTableRows}
+              />
+            )}
           </div>
 
           {Object.keys(calculatedFields).length > 0 && (
