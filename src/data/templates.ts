@@ -126,7 +126,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'text', x: 40, y: 220, width: 515, height: 25, content: 'ESCOPO DO TRABALHO', fontSize: 16, fontWeight: '600' }),
     el({ type: 'table', x: 40, y: 255, width: 515, height: 180, content: '', rows: [
       { cells: ['Fase', 'Entrega', 'Prazo', 'Valor'] },
-      { cells: ['Descoberta', '{{service_name}}', '', '{{price}}'] },
+      { cells: ['', '', '', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 470, width: 205, height: 35, content: 'Investimento:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
   ], [...commonVars, 'event_name', 'service_name', 'price', 'tax_rate'], {
