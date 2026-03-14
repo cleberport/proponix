@@ -32,7 +32,7 @@ const Generate = () => {
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
-  const [tableRows, setTableRows] = useState<DynamicRow[]>([{ cells: ['', '', ''] }]);
+  const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
@@ -49,6 +49,15 @@ const Generate = () => {
   }, [template]);
 
   const hasTable = !!tableInfo;
+
+  // Initialize tableRows when tableInfo becomes available
+  useEffect(() => {
+    if (!tableInfo) return;
+    setTableRows((prev) => {
+      if (prev.length > 0) return prev;
+      return [{ cells: tableInfo.headers.map(() => '') }];
+    });
+  }, [tableInfo]);
 
   // Auto-sum table price column → feed into price
   useEffect(() => {
