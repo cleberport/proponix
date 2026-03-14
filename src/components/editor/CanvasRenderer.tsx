@@ -10,6 +10,8 @@ interface Props {
   onUpdate: (id: string, updates: Partial<CanvasElement>) => void;
   readOnly?: boolean;
   variableValues?: Record<string, string>;
+  showGrid?: boolean;
+  backgroundColor?: string;
 }
 
 const CANVAS_W = 595;
@@ -19,7 +21,7 @@ const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
@@ -310,8 +312,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           if (typeof ref === 'function') ref(node);
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
-        className={`canvas-paper relative touch-none ${!readOnly ? 'grid-dots' : ''}`}
-        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H }}
+        className={`canvas-paper relative touch-none ${!readOnly && showGrid ? 'grid-dots' : ''}`}
+        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H, backgroundColor: backgroundColor || '#ffffff' }}
         onPointerDown={handleCanvasPointerDown}
       >
         {elements.map(renderElement)}

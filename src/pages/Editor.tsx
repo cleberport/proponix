@@ -9,13 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, Grid3X3, ZoomIn, ZoomOut, Paintbrush } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const GRID = 10;
 
@@ -42,6 +44,11 @@ const Editor = () => {
   const [templateColor, setTemplateColor] = useState(TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
+  const [zoom, setZoom] = useState(100);
+  const [showGrid, setShowGrid] = useState(true);
+  const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
+
+  const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];
 
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) || null : null;
@@ -466,16 +473,80 @@ const Editor = () => {
         )}
 
         {/* Canvas */}
-        <main className={`flex flex-1 items-start justify-center overflow-auto bg-background p-4 md:p-8 ${isMobile ? 'pb-28' : ''}`}>
-          <CanvasRenderer
-            ref={canvasRef}
-            elements={elements}
-            selectedId={selectedId}
-            selectedIds={selectedIds}
-            onSelect={handleSelect}
-            onMultiSelect={setSelectedIds}
-            onUpdate={updateElement}
-          />
+        <main className={`flex flex-1 flex-col items-center overflow-auto bg-background ${isMobile ? 'pb-28' : ''}`}>
+          {/* Canvas toolbar */}
+          <div className="flex w-full items-center justify-center gap-2 border-b border-border bg-card px-3 py-1.5 shrink-0">
+            <Button
+              variant={showGrid ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setShowGrid(!showGrid)}
+              title={showGrid ? 'Ocultar grade' : 'Mostrar grade'}
+            >
+              <Grid3X3 className="h-3.5 w-3.5" />
+            </Button>
+
+            <div className="flex items-center gap-1.5">
+              <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
+              <Slider
+                value={[zoom]}
+                onValueChange={([v]) => setZoom(v)}
+                min={25}
+                max={200}
+                step={5}
+                className="w-24 md:w-32"
+              />
+              <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground w-9 text-center">{zoom}%</span>
+            </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
+                  <div className="h-4 w-4 rounded border border-border" style={{ backgroundColor: canvasBgColor }} />
+                  <Paintbrush className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-3" align="center">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Cor de fundo</p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {BG_PRESETS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setCanvasBgColor(c)}
+                      className="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                      style={{
+                        backgroundColor: c,
+                        borderColor: canvasBgColor === c ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                      }}
+                    />
+                  ))}
+                </div>
+                <Input
+                  type="color"
+                  value={canvasBgColor}
+                  onChange={(e) => setCanvasBgColor(e.target.value)}
+                  className="h-8 w-full cursor-pointer"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full">
+            <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.15s ease' }}>
+              <CanvasRenderer
+                ref={canvasRef}
+                elements={elements}
+                selectedId={selectedId}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                onMultiSelect={setSelectedIds}
+                onUpdate={updateElement}
+                showGrid={showGrid}
+                backgroundColor={canvasBgColor}
+              />
+            </div>
+          </div>
         </main>
 
         {/* Desktop right sidebar - properties */}
