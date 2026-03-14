@@ -1,4 +1,4 @@
-import { Template, SavedTemplate, TemplateSettings } from '@/types/template';
+import { CanvasElement, Template, SavedTemplate, TemplateSettings, getTemplatePages } from '@/types/template';
 import { starterTemplates } from '@/data/templates';
 import { supabase } from '@/integrations/supabase/client';
 
