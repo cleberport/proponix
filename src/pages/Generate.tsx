@@ -141,7 +141,7 @@ const Generate = () => {
     } finally {
       setGenerating(false);
     }
-  }, [template, userInputs, visibleElements, displayValues]);
+  }, [template, userInputs, visiblePages, displayValues]);
 
   const handleShare = async () => {
     if (!lastPdfBlob) {
