@@ -153,36 +153,46 @@ const Generate = () => {
   // First page elements for preview
   const visibleElements = visiblePages[0] || [];
 
-  const parsePriceInput = (value: string): string => {
-    const cleaned = value.replace(/[^\d,.-]/g, '').trim();
-    if (!cleaned) return '';
+  const [priceDisplay, setPriceDisplay] = useState('');
+  const [priceFocused, setPriceFocused] = useState(false);
 
-    const hasDecimalSeparator = cleaned.includes(',') || cleaned.includes('.');
-
-    if (!hasDecimalSeparator) {
-      const onlyDigits = cleaned.replace(/\D/g, '');
-      if (!onlyDigits) return '';
-      return String(Number(onlyDigits));
+  // Sync priceDisplay when userInputs.price changes externally (e.g. editing doc)
+  useEffect(() => {
+    if (!priceFocused && userInputs.price) {
+      setPriceDisplay(formatCurrency(userInputs.price));
     }
-
-    const normalized = cleaned.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
-    const parsed = Number.parseFloat(normalized);
-    return Number.isFinite(parsed) ? parsed.toString() : '';
-  };
+  }, [userInputs.price, priceFocused]);
 
   const handleChange = (key: string, val: string) => {
     if (key === 'price') {
-      setUserInputs((prev) => ({ ...prev, [key]: parsePriceInput(val) }));
+      setPriceDisplay(val);
+      // Strip formatting, keep digits and comma/dot
+      const cleaned = val.replace(/[^\d,.-]/g, '').trim();
+      if (!cleaned) {
+        setUserInputs((prev) => ({ ...prev, price: '' }));
+        return;
+      }
+      const normalized = cleaned.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+      const parsed = Number.parseFloat(normalized);
+      if (Number.isFinite(parsed)) {
+        setUserInputs((prev) => ({ ...prev, price: parsed.toString() }));
+      }
       return;
     }
-
     setUserInputs((prev) => ({ ...prev, [key]: val }));
   };
 
+  const handlePriceBlur = () => {
+    setPriceFocused(false);
+    const val = userInputs.price;
+    if (val && !isNaN(parseFloat(val))) {
+      setPriceDisplay(formatCurrency(val));
+    }
+  };
+
   const getInputValue = (key: string) => {
-    const value = userInputs[key] || '';
-    if (key !== 'price' || !value) return value;
-    return formatCurrency(value);
+    if (key === 'price') return priceDisplay;
+    return userInputs[key] || '';
   };
 
   const handleGeneratePDF = useCallback(async () => {
