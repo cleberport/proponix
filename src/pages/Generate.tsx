@@ -120,7 +120,7 @@ const Generate = () => {
     setGenerating(true);
     try {
       const fileName = generatePdfFileName();
-      const blob = await generateVectorPdf(visibleElements, displayValues, fileName);
+      const blob = await generateVectorPdf(visiblePages, displayValues, fileName);
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
