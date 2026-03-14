@@ -32,7 +32,7 @@ const Generate = () => {
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
-  const [tableRows, setTableRows] = useState<DynamicRow[]>([{ cells: ['', '', ''] }]);
+  const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
