@@ -333,17 +333,25 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={{ ...style, height: el.height, overflow: 'hidden' }}
-              className={`rounded border border-border ${selectedClass} ${hoverClass}`}
+              className={`rounded border border-gray-400 ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              <table className="h-full w-full text-xs">
+              <table className="h-full w-full text-xs" style={{ borderCollapse: 'collapse' }}>
                 <tbody>
                   {(el.rows || []).map((row, ri) => (
-                    <tr key={ri} className={ri === 0 ? 'bg-accent font-semibold' : ''}>
+                    <tr key={ri} style={ri === 0 ? { backgroundColor: 'hsl(240 5% 88%)', fontWeight: 600 } : undefined}>
                       {row.cells.map((cell, ci) => (
-                        <td key={ci} className="border-b border-r border-border px-2 py-1 last:border-r-0">
-                          {variableValues ? resolveContent({ ...el, content: cell }) : cell}
+                        <td
+                          key={ci}
+                          className="px-2 py-1.5"
+                          style={{
+                            borderBottom: '1px solid hsl(240 5% 82%)',
+                            borderRight: ci < row.cells.length - 1 ? '1px solid hsl(240 5% 82%)' : 'none',
+                            color: el.color || '#0F172A',
+                          }}
+                        >
+                          {variableValues ? resolveContent({ ...el, content: cell }) : (cell || (ri > 0 ? '\u00A0' : ''))}
                         </td>
                       ))}
                     </tr>
