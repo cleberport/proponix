@@ -21,7 +21,7 @@ const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
