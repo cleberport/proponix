@@ -337,7 +337,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              <table className="h-full w-full text-xs" style={{ borderCollapse: 'collapse' }}>
+              <table className="h-full w-full text-xs" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                 <tbody>
                   {(el.rows || []).map((row, ri) => (
                     <tr key={ri} style={ri === 0 ? { backgroundColor: 'hsl(240 5% 88%)', fontWeight: 600 } : undefined}>
