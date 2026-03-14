@@ -144,24 +144,29 @@ const sortByUpdatedAtDesc = (templates: SavedTemplate[]) => {
   return [...templates].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
-const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => ({
-  id: row.id,
-  name: row.name,
-  category: row.category,
-  description: row.description,
-  thumbnail: row.thumbnail,
-  color: row.color || undefined,
-  elements: Array.isArray(row.elements) ? (row.elements as Template['elements']) : [],
-  variables: toStringArray(row.variables),
-  canvasWidth: row.canvas_width,
-  canvasHeight: row.canvas_height,
-  defaultValues: toStringRecord(row.default_values),
-  inputFields: toStringArray(row.input_fields),
-  calculatedFields: toStringRecord(row.calculated_fields),
-  settings: toTemplateSettings(row.settings),
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-});
+const mapRowToSavedTemplate = (row: CustomTemplateRow): SavedTemplate => {
+  const layout = toTemplateLayout(row.elements);
+
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    description: row.description,
+    thumbnail: row.thumbnail,
+    color: row.color || undefined,
+    elements: layout.elements,
+    pages: layout.pages,
+    variables: toStringArray(row.variables),
+    canvasWidth: row.canvas_width,
+    canvasHeight: row.canvas_height,
+    defaultValues: toStringRecord(row.default_values),
+    inputFields: toStringArray(row.input_fields),
+    calculatedFields: toStringRecord(row.calculated_fields),
+    settings: toTemplateSettings(row.settings),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
 
 const mapTemplateToDb = (template: SavedTemplate, userId: string) => ({
   id: template.id,
