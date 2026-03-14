@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory } from '@/lib/templateStorage';
+import { getTemplatePages } from '@/types/template';
 import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
 import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
