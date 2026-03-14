@@ -3,9 +3,14 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getSettings } from "@/lib/templateStorage";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import AppLayout from "./components/AppLayout";
+import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
+import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
 import Templates from "./pages/Templates";
 import Documents from "./pages/Documents";
@@ -29,6 +34,11 @@ const ThemeInit = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+function ProtectedRoute({ session, children }: { session: Session | null; children: React.ReactNode }) {
+  if (!session) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+}
+
 const DefaultTemplateRedirect = () => {
   const settings = getSettings();
   if (settings.defaultTemplateId) {
@@ -37,28 +47,62 @@ const DefaultTemplateRedirect = () => {
   return <Dashboard />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ThemeInit>
-          <Routes>
-            <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
-            <Route path="/quick" element={<DefaultTemplateRedirect />} />
-            <Route path="/templates" element={<AppLayout><Templates /></AppLayout>} />
-            <Route path="/documents" element={<AppLayout><Documents /></AppLayout>} />
-            <Route path="/profile" element={<AppLayout><Profile /></AppLayout>} />
-            <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
-            <Route path="/editor/:id" element={<Editor />} />
-            <Route path="/generate/:id" element={<Generate />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ThemeInit>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ThemeInit>
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
+              <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
+              <Route path="/pricing" element={<Pricing />} />
+
+              {/* Protected */}
+              <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+              <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
+              <Route path="/templates" element={<ProtectedRoute session={session}><AppLayout><Templates /></AppLayout></ProtectedRoute>} />
+              <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+              <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
+              <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ThemeInit>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

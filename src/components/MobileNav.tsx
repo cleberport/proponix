@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const items = [
-  { label: 'Painel', path: '/', icon: LayoutDashboard },
+  { label: 'Painel', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Templates', path: '/templates', icon: FolderOpen },
   { label: 'Histórico', path: '/documents', icon: Clock },
   { label: 'Config', path: '/settings', icon: Settings },
