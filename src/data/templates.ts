@@ -66,7 +66,7 @@ export const starterTemplates: Template[] = [
     el({ type: 'dynamic-field', x: 40, y: 150, width: 250, height: 25, content: '', variable: 'data_de_hoje', fontSize: 11, color: '#64748B', fieldCategory: 'default' }),
     el({ type: 'table', x: 40, y: 190, width: 515, height: 200, content: '', rows: [
       { cells: ['Item', 'Descrição', 'Valor'] },
-      { cells: ['{{service_name}}', '', '{{price}}'] },
+      { cells: ['', '', ''] },
     ]}),
     el({ type: 'divider', x: 40, y: 420, width: 515, height: 2, content: '' }),
     el({ type: 'price-field', x: 350, y: 440, width: 205, height: 30, content: 'Subtotal:', variable: 'subtotal', fieldCategory: 'calculated' }),
