@@ -72,7 +72,10 @@ const Generate = () => {
     };
   }, [id, editingDoc.values]);
 
-  const inputFields = template?.inputFields || [];
+  const calculatedFieldNames = Object.keys(template?.calculatedFields || {});
+  const inputFields = (template?.inputFields || []).filter(
+    (f) => !calculatedFieldNames.includes(f) && !['subtotal', 'tax', 'total'].includes(f)
+  );
 
   const resolvedValues = useMemo(() => {
     if (!template) return {};
