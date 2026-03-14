@@ -27,7 +27,6 @@ const Generate = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
-  const [showTax, setShowTax] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
