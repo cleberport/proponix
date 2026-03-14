@@ -39,7 +39,7 @@ export function AppSidebar() {
                 <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
                   <FileText className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
-                <span className="text-xs font-semibold">Orçamentos</span>
+                <span className="text-xs font-semibold">Budgetly</span>
               </div>
             )}
           </SidebarGroupLabel>
