@@ -305,7 +305,7 @@ const Generate = () => {
     } finally {
       setGenerating(false);
     }
-  }, [template, userInputs, visiblePages, displayValues]);
+  }, [template, userInputs, visiblePages, displayValues, isMobile]);
 
   const handleShare = async () => {
     if (!lastPdfBlob) {
