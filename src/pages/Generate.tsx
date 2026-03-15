@@ -284,13 +284,28 @@ const Generate = () => {
         values: { ...userInputs },
       });
 
+      // On mobile, open share sheet directly after generating
+      if (blob && isMobile) {
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: fileName });
+          } catch (e: any) {
+            if (e.name !== 'AbortError') {
+              toast.error('Erro ao compartilhar');
+            }
+          }
+          return;
+        }
+      }
+
       toast.success('PDF gerado com sucesso!');
     } catch {
       toast.error('Falha ao gerar PDF');
     } finally {
       setGenerating(false);
     }
-  }, [template, userInputs, visiblePages, displayValues]);
+  }, [template, userInputs, visiblePages, displayValues, isMobile]);
 
   const handleShare = async () => {
     if (!lastPdfBlob) {
