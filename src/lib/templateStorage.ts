@@ -286,27 +286,33 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     updatedAt: now,
   };
 
+  // Always persist to localStorage first as safety net
+  mergeIntoCache(saved);
+
   const userId = await getCurrentUserId();
   if (!userId) {
-    mergeIntoCache(saved);
     return saved;
   }
 
-  const { data, error } = await db
-    .from('custom_templates')
-    .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' })
-    .select('*')
-    .single();
+  try {
+    const { data, error } = await db
+      .from('custom_templates')
+      .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' })
+      .select('*')
+      .single();
 
-  if (error) {
-    console.error('Erro ao salvar template no backend:', error);
-    mergeIntoCache(saved);
+    if (error) {
+      console.error('Erro ao salvar template no backend:', error);
+      return saved;
+    }
+
+    const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
+    mergeIntoCache(mapped);
+    return mapped;
+  } catch (err) {
+    console.error('Erro inesperado ao salvar template:', err);
     return saved;
   }
-
-  const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
-  mergeIntoCache(mapped);
-  return mapped;
 }
 
 export async function duplicateTemplate(id: string): Promise<SavedTemplate | null> {
