@@ -35,7 +35,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const handlePointerDown = useCallback(
       (e: React.PointerEvent, el: CanvasElement, mode: 'drag' | 'resize') => {
-        if (readOnly) return;
+        if (readOnly || el.locked) return;
         e.stopPropagation();
         e.preventDefault();
         onSelect(el.id);
