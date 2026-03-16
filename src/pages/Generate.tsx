@@ -449,7 +449,7 @@ const Generate = () => {
               className="mt-4 w-full h-11 text-sm"
               onClick={() => setShowPreview((p) => !p)}
             >
-              {showPreview ? <ChevronDown className="mr-1.5 h-4 w-4" /> : <ChevronUp className="mr-1.5 h-4 w-4" />}
+              {showPreview ? <ChevronUp className="mr-1.5 h-4 w-4" /> : <ChevronDown className="mr-1.5 h-4 w-4" />}
               {showPreview ? 'Ocultar Prévia' : 'Ver Prévia'}
             </Button>
           )}
