@@ -124,6 +124,47 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       [onSelect, onUpdate, readOnly, selectedIds, elements]
     );
 
+    const handleImagePanPointerDown = useCallback(
+      (e: React.PointerEvent, el: CanvasElement) => {
+        if (readOnly || el.locked) return;
+        e.stopPropagation();
+        e.preventDefault();
+        onSelect(el.id);
+
+        const currentPos = resolveObjectPositionPercent(el);
+        imagePanStart.current = {
+          x: e.clientX,
+          y: e.clientY,
+          posX: currentPos.x,
+          posY: currentPos.y,
+          width: Math.max(1, el.width),
+          height: Math.max(1, el.height),
+        };
+
+        const handleMove = (ev: PointerEvent) => {
+          const dx = ev.clientX - imagePanStart.current.x;
+          const dy = ev.clientY - imagePanStart.current.y;
+
+          const nextX = clamp(imagePanStart.current.posX + (dx / imagePanStart.current.width) * 100, 0, 100);
+          const nextY = clamp(imagePanStart.current.posY + (dy / imagePanStart.current.height) * 100, 0, 100);
+
+          onUpdate(el.id, {
+            objectPositionX: nextX,
+            objectPositionY: nextY,
+          });
+        };
+
+        const handleUp = () => {
+          document.removeEventListener('pointermove', handleMove);
+          document.removeEventListener('pointerup', handleUp);
+        };
+
+        document.addEventListener('pointermove', handleMove);
+        document.addEventListener('pointerup', handleUp);
+      },
+      [onSelect, onUpdate, readOnly]
+    );
+
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
       onSelect(null);
