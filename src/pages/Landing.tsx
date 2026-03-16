@@ -20,16 +20,16 @@ const Landing = () => {
   const steps = [
     { num: '01', title: 'Escolha um template', desc: 'Selecione entre templates profissionais prontos para uso.' },
     { num: '02', title: 'Preencha os dados', desc: 'Adicione cliente, valores e detalhes em poucos campos.' },
-    { num: '03', title: 'Gere e envie', desc: 'Baixe o PDF ou compartilhe direto pelo celular.' },
+    { num: '03', title: 'Envie e aprove', desc: 'Compartilhe a proposta e receba aprovação online.' },
   ];
 
   const features = [
     { icon: Palette, title: 'Templates personalizados', desc: 'Crie e customize templates para cada tipo de serviço.' },
     { icon: FileText, title: 'Editor visual', desc: 'Arraste e solte elementos no editor intuitivo.' },
-    { icon: Clock, title: 'Histórico completo', desc: 'Acesse todos os orçamentos gerados anteriormente.' },
+    { icon: Clock, title: 'Histórico completo', desc: 'Acesse todas as propostas geradas anteriormente.' },
     { icon: Zap, title: 'PDF instantâneo', desc: 'Gere documentos profissionais em menos de 3 segundos.' },
     { icon: Share2, title: 'Compartilhe fácil', desc: 'Envie por WhatsApp, e-mail ou qualquer app.' },
-    { icon: Smartphone, title: 'Feito para mobile', desc: 'Interface otimizada para criar orçamentos pelo celular.' },
+    { icon: Smartphone, title: 'Feito para mobile', desc: 'Interface otimizada para criar propostas pelo celular.' },
   ];
 
   const audiences = [
@@ -39,7 +39,7 @@ const Landing = () => {
   const plans = [
     {
       name: 'Gratuito', price: 'R$ 0', period: '',
-      features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Budgetly'],
+      features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Proponix'],
       cta: 'Começar grátis', highlight: false,
     },
     {
@@ -61,7 +61,7 @@ const Landing = () => {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">Budgetly</span>
+            <span className="text-lg font-bold">Proponix</span>
           </div>
           <div className="hidden items-center gap-6 text-sm text-[hsl(var(--landing-muted))] md:flex">
             <a href="#features" className="hover:text-[hsl(var(--landing-fg))] transition-colors">Funcionalidades</a>
@@ -87,14 +87,14 @@ const Landing = () => {
           <div className="mx-auto max-w-3xl text-center">
             <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
               <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                <Sparkles className="h-3 w-3" /> Novo — agora com editor visual
+                <Sparkles className="h-3 w-3" /> Envie propostas. Receba aprovações.
               </span>
             </motion.div>
             <motion.h1
               className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl"
               initial="hidden" animate="visible" variants={fadeUp} custom={1}
             >
-              Crie orçamentos{' '}
+              Propostas{' '}
               <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                 profissionais
               </span>{' '}
@@ -104,7 +104,7 @@ const Landing = () => {
               className="mx-auto mt-6 max-w-xl text-lg text-[hsl(var(--landing-muted))] md:text-xl"
               initial="hidden" animate="visible" variants={fadeUp} custom={2}
             >
-              Crie, edite e envie orçamentos em PDF direto do celular.
+              Crie, envie e aprove propostas em PDF direto do celular.
               Sem complicação, sem planilhas.
             </motion.p>
             <motion.div
@@ -137,7 +137,7 @@ const Landing = () => {
               <div className="mt-4 rounded-[2rem] bg-[hsl(var(--landing-bg))] p-4 pt-6">
                 <div className="mb-3 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold">Budgetly</span>
+                  <span className="text-xs font-bold">Proponix</span>
                 </div>
                 <div className="mb-2 h-2.5 w-3/4 rounded bg-primary/20" />
                 <div className="mb-4 h-2 w-1/2 rounded bg-[hsl(var(--landing-border))]" />
@@ -166,7 +166,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-14 text-center">
             <h2 className="text-3xl font-bold md:text-4xl">Como funciona</h2>
-            <p className="mt-3 text-[hsl(var(--landing-muted))]">Três passos simples para criar seu orçamento</p>
+            <p className="mt-3 text-[hsl(var(--landing-muted))]">Três passos simples para criar sua proposta</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {steps.map((s, i) => (
@@ -214,7 +214,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="text-3xl font-bold md:text-4xl">Para quem é</h2>
           <p className="mx-auto mt-3 max-w-lg text-[hsl(var(--landing-muted))]">
-            Perfeito para profissionais que precisam enviar orçamentos rapidamente
+            Perfeito para profissionais que precisam enviar propostas rapidamente
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             {audiences.map((a) => (
@@ -279,7 +279,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="text-3xl font-bold md:text-4xl">Comece grátis hoje</h2>
           <p className="mx-auto mt-4 max-w-md text-[hsl(var(--landing-muted))]">
-            Crie sua conta e envie seu primeiro orçamento em menos de 2 minutos.
+            Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
           </p>
           <Button
             size="lg"
@@ -297,9 +297,9 @@ const Landing = () => {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Budgetly</span>
+            <span className="text-sm font-semibold">Proponix</span>
           </div>
-          <p className="text-xs text-[hsl(var(--landing-muted))]">© {new Date().getFullYear()} Budgetly</p>
+          <p className="text-xs text-[hsl(var(--landing-muted))]">© {new Date().getFullYear()} Proponix</p>
         </div>
       </footer>
     </div>
