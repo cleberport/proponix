@@ -52,6 +52,14 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
     });
   };
 
+  const resetPanZoom = () => {
+    onUpdate({
+      imageScale: 1,
+      imageOffsetX: 0,
+      imageOffsetY: 0,
+    });
+  };
+
   const resetCrop = () => {
     onUpdate({
       cropX: 0,
