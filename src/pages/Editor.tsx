@@ -261,32 +261,38 @@ const Editor = () => {
   }, []);
 
   const handleSave = async () => {
-    const template: Template = {
-      id: isNew ? uuidv4() : id!,
-      name: templateName,
-      category: baseCategory,
-      description: baseDescription,
-      thumbnail: '',
-      color: templateColor,
-      elements: pages[0] || [],
-      pages,
-      variables,
-      canvasWidth: 595,
-      canvasHeight: 842,
-      defaultValues,
-      inputFields,
-      calculatedFields,
-      settings,
-    };
+    try {
+      const template: Template = {
+        id: isNew ? uuidv4() : id!,
+        name: templateName,
+        category: baseCategory,
+        description: baseDescription,
+        thumbnail: '',
+        color: templateColor,
+        elements: pages[0] || [],
+        pages,
+        variables,
+        canvasWidth: 595,
+        canvasHeight: 842,
+        defaultValues,
+        inputFields,
+        calculatedFields,
+        settings,
+      };
 
-    const saved = await saveTemplate(template);
-    toast.success('Template salvo!');
+      const saved = await saveTemplate(template);
+      toast.success('Template salvo!');
 
-    if (isNew) {
-      navigate(`/editor/${saved.id}`, { replace: true });
+      if (isNew) {
+        navigate(`/editor/${saved.id}`, { replace: true });
+      }
+
+      return saved;
+    } catch (err) {
+      console.error('Erro ao salvar template:', err);
+      toast.error('Erro ao salvar template. Tente novamente.');
+      return undefined;
     }
-
-    return saved;
   };
 
   const addVariable = () => {
