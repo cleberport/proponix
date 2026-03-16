@@ -100,8 +100,8 @@ export const starterTemplates: Template[] = [
     settings: { taxRate: 0.10, showTax: true }, color: '#F59E0B',
   }),
 
-  makeTemplate('freelancer-quote', 'Orçamento Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 40, content: 'ORÇAMENTO', fontSize: 32, fontWeight: '700', fontFamily: 'Roboto' }),
+  makeTemplate('freelancer-quote', 'Proposta Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 40, content: 'PROPOSTA', fontSize: 32, fontWeight: '700', fontFamily: 'Roboto' }),
     el({ type: 'dynamic-field', x: 40, y: 100, width: 300, height: 30, content: 'Para:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 40, y: 135, width: 300, height: 30, content: 'Data:', variable: 'event_date', fieldCategory: 'input' }),
     el({ type: 'divider', x: 40, y: 180, width: 515, height: 2, content: '' }),
