@@ -98,6 +98,10 @@ const toTemplateSettings = (value: unknown): TemplateSettings => {
   };
 };
 
+const isUuid = (value: string): boolean => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
+
 const toCanvasElements = (value: unknown): CanvasElement[] => {
   if (!Array.isArray(value)) return [];
   return value as CanvasElement[];
@@ -259,11 +263,12 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const remote = (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
   const remoteIds = new Set(remote.map((template) => template.id));
   const missingFromRemote = cached.filter((template) => !remoteIds.has(template.id));
+  const syncableMissing = missingFromRemote.filter((template) => isUuid(template.id));
 
-  if (missingFromRemote.length > 0) {
+  if (syncableMissing.length > 0) {
     const { error: syncError } = await db
       .from('custom_templates')
-      .upsert(missingFromRemote.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+      .upsert(syncableMissing.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
 
     if (syncError) {
       console.error('Erro ao sincronizar templates locais:', syncError);
@@ -277,17 +282,23 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {
   const cached = getCachedSavedTemplates();
-  const existing = cached.find((t) => t.id === template.id);
+  const finalId = isUuid(template.id) ? template.id : crypto.randomUUID();
+  const existing = cached.find((t) => t.id === finalId);
   const now = new Date().toISOString();
 
   const saved: SavedTemplate = {
     ...template,
+    id: finalId,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
 
-  // Always persist to localStorage first as safety net
-  mergeIntoCache(saved);
+  try {
+    // safety net: local cache first, but never break save flow if storage is full
+    mergeIntoCache(saved);
+  } catch (cacheError) {
+    console.warn('Não foi possível salvar em cache local:', cacheError);
+  }
 
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -307,7 +318,11 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     }
 
     const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
-    mergeIntoCache(mapped);
+    try {
+      mergeIntoCache(mapped);
+    } catch (cacheError) {
+      console.warn('Template salvo no backend, mas falhou no cache local:', cacheError);
+    }
     return mapped;
   } catch (err) {
     console.error('Erro inesperado ao salvar template:', err);

@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 
 const GRID = 10;
+const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
@@ -262,8 +263,9 @@ const Editor = () => {
 
   const handleSave = async () => {
     try {
+      const shouldCreateNewId = isNew || !id || !isUuid(id);
       const template: Template = {
-        id: isNew ? uuidv4() : id!,
+        id: shouldCreateNewId ? uuidv4() : id,
         name: templateName,
         category: baseCategory,
         description: baseDescription,
@@ -283,7 +285,7 @@ const Editor = () => {
       const saved = await saveTemplate(template);
       toast.success('Template salvo!');
 
-      if (isNew) {
+      if (shouldCreateNewId) {
         navigate(`/editor/${saved.id}`, { replace: true });
       }
 
