@@ -110,7 +110,7 @@ export const starterTemplates: Template[] = [
       { cells: ['', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 420, width: 205, height: 35, content: 'Total:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
-    el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Este orçamento é válido por 30 dias.', fieldCategory: 'default' }),
+    el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Esta proposta é válida por 30 dias.', fieldCategory: 'default' }),
   ], [...commonVars, 'service_name', 'price', 'tax_rate'], {
     defaultValues: { service_name: 'Desenvolvimento Web', price: '2500', tax_rate: '0' },
     inputFields: ['client_name', 'event_date'],
