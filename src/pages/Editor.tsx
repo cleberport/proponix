@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { optimizeTemplatePagesForSave } from '@/lib/imageOptimization';
 
 const GRID = 10;
 const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -264,6 +265,7 @@ const Editor = () => {
   const handleSave = async () => {
     try {
       const shouldCreateNewId = isNew || !id || !isUuid(id);
+      const optimizedLayout = await optimizeTemplatePagesForSave(pages);
       const template: Template = {
         id: shouldCreateNewId ? uuidv4() : id,
         name: templateName,
@@ -271,8 +273,8 @@ const Editor = () => {
         description: baseDescription,
         thumbnail: '',
         color: templateColor,
-        elements: pages[0] || [],
-        pages,
+        elements: optimizedLayout.pages[0] || [],
+        pages: optimizedLayout.pages,
         variables,
         canvasWidth: 595,
         canvasHeight: 842,
@@ -283,6 +285,9 @@ const Editor = () => {
       };
 
       const saved = await saveTemplate(template);
+      if (optimizedLayout.optimizedCount > 0) {
+        toast.info(`${optimizedLayout.optimizedCount} imagem(ns) foram otimizadas para salvar sem erro.`);
+      }
       toast.success('Template salvo!');
 
       if (shouldCreateNewId) {

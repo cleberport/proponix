@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useState, useRef } from 'react';
 import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
+import { optimizeImageFile } from '@/lib/imageOptimization';
 
 interface Props {
   elements: CanvasElement[];
@@ -21,32 +22,6 @@ const CANVAS_H = 842;
 const GRID = 10;
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
-const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-
-const OBJECT_POSITION_PRESETS: Record<string, { x: number; y: number }> = {
-  'top left': { x: 0, y: 0 },
-  'top center': { x: 50, y: 0 },
-  'top right': { x: 100, y: 0 },
-  'center left': { x: 0, y: 50 },
-  center: { x: 50, y: 50 },
-  'center right': { x: 100, y: 50 },
-  'bottom left': { x: 0, y: 100 },
-  'bottom center': { x: 50, y: 100 },
-  'bottom right': { x: 100, y: 100 },
-  top: { x: 50, y: 0 },
-  bottom: { x: 50, y: 100 },
-  left: { x: 0, y: 50 },
-  right: { x: 100, y: 50 },
-};
-
-const resolveObjectPositionPercent = (el: CanvasElement): { x: number; y: number } => {
-  if (typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number') {
-    return { x: clamp(el.objectPositionX, 0, 100), y: clamp(el.objectPositionY, 0, 100) };
-  }
-
-  const presetKey = (el.objectPosition || 'center').toLowerCase();
-  return OBJECT_POSITION_PRESETS[presetKey] || OBJECT_POSITION_PRESETS.center;
-};
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
@@ -228,36 +203,46 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       const dropY = snap(Math.max(0, e.clientY - rect.top - 40));
 
       files.forEach((file, i) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const url = ev.target?.result as string;
-          const img = new Image();
-          img.onload = () => {
-            const aspectRatio = img.naturalWidth / img.naturalHeight;
-            let width = Math.min(200, CANVAS_W - 20);
-            let height = Math.round(width / aspectRatio);
-            if (height > CANVAS_H - 20) {
-              height = CANVAS_H - 20;
-              width = Math.round(height * aspectRatio);
-            }
-            const newEl: CanvasElement = {
-              id: uuidv4(),
-              type: 'image',
-              x: snap(Math.min(Math.max(0, CANVAS_W - width), dropX + i * 20)),
-              y: snap(Math.min(Math.max(0, CANVAS_H - height), dropY + i * 20)),
-              width,
-              height,
-              content: '',
-              imageUrl: url,
-              objectFit: 'contain',
-              isVisible: true,
-              fieldCategory: 'default',
+        void (async () => {
+          try {
+            const url = await optimizeImageFile(file, {
+              maxDimension: 1800,
+              targetBytes: 800_000,
+              preferredFormat: 'image/jpeg',
+            });
+
+            const img = new Image();
+            img.onload = () => {
+              const aspectRatio = img.naturalWidth / img.naturalHeight;
+              let width = Math.min(200, CANVAS_W - 20);
+              let height = Math.round(width / aspectRatio);
+              if (height > CANVAS_H - 20) {
+                height = CANVAS_H - 20;
+                width = Math.round(height * aspectRatio);
+              }
+              const newEl: CanvasElement = {
+                id: uuidv4(),
+                type: 'image',
+                x: snap(Math.min(Math.max(0, CANVAS_W - width), dropX + i * 20)),
+                y: snap(Math.min(Math.max(0, CANVAS_H - height), dropY + i * 20)),
+                width,
+                height,
+                content: '',
+                imageUrl: url,
+                objectFit: 'contain',
+                imageScale: 1,
+                imageOffsetX: 0,
+                imageOffsetY: 0,
+                isVisible: true,
+                fieldCategory: 'default',
+              };
+              onAddElement(newEl);
             };
-            onAddElement(newEl);
-          };
-          img.src = url;
-        };
-        reader.readAsDataURL(file);
+            img.src = url;
+          } catch (error) {
+            console.error('Erro ao otimizar imagem de upload:', error);
+          }
+        })();
       });
     }, [readOnly, onAddElement]);
 
