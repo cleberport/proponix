@@ -18,6 +18,9 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showCropControls, setShowCropControls] = useState(false);
 
+  const CANVAS_W = 595;
+  const CANVAS_H = 842;
+
   const handleImageReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -27,8 +30,13 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
       const img = new Image();
       img.onload = () => {
         const aspectRatio = img.naturalWidth / img.naturalHeight;
-        const newHeight = Math.round((element.width) / aspectRatio);
-        onUpdate({ imageUrl: url, height: newHeight });
+        let newWidth = Math.min(element.width, CANVAS_W - 20);
+        let newHeight = Math.round(newWidth / aspectRatio);
+        if (newHeight > CANVAS_H - 20) {
+          newHeight = CANVAS_H - 20;
+          newWidth = Math.round(newHeight * aspectRatio);
+        }
+        onUpdate({ imageUrl: url, width: newWidth, height: newHeight });
       };
       img.src = url;
     };
