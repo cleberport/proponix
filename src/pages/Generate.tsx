@@ -13,6 +13,7 @@ import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
 import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import DateRangePicker from '@/components/generate/DateRangePicker';
 
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
@@ -411,17 +412,21 @@ const Generate = () => {
             {inputFields.map((v) => (
               <div key={v}>
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
-                <Input
-                  value={getInputValue(v)}
-                  onChange={(e) => handleChange(v, e.target.value)}
-                  placeholder={getPlaceholder(v)}
-                  className="h-12 text-base md:h-10 md:text-sm"
-                  inputMode={v === 'price' ? 'numeric' : 'text'}
-                  onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
-                  onBlur={v === 'price' ? handlePriceBlur : undefined}
-                />
-                {v === 'event_date' && (
-                  <p className="mt-1 text-[10px] text-muted-foreground">Aceita data única ou intervalo</p>
+                {v === 'event_date' ? (
+                  <DateRangePicker
+                    value={getInputValue(v)}
+                    onChange={(val) => handleChange(v, val)}
+                  />
+                ) : (
+                  <Input
+                    value={getInputValue(v)}
+                    onChange={(e) => handleChange(v, e.target.value)}
+                    placeholder={getPlaceholder(v)}
+                    className="h-12 text-base md:h-10 md:text-sm"
+                    inputMode={v === 'price' ? 'numeric' : 'text'}
+                    onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
+                    onBlur={v === 'price' ? handlePriceBlur : undefined}
+                  />
                 )}
               </div>
             ))}
@@ -438,7 +443,9 @@ const Generate = () => {
           {Object.keys(calculatedFields).length > 0 && (
             <div className="mt-5 rounded-lg border border-border bg-background p-3">
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo</h3>
-              {Object.entries(calculatedFields).map(([field]) => (
+              {['subtotal', 'tax', 'total']
+                .filter((field) => field in calculatedFields)
+                .map((field) => (
                 <div key={field} className={`flex items-center justify-between py-2 ${field === 'total' ? 'border-t border-border pt-2 mt-1' : ''}`}>
                     <span className="text-sm text-foreground">{formatLabel(field)}</span>
                     <span className={`text-sm font-semibold ${field === 'total' ? 'text-primary text-base' : 'text-foreground'}`}>
