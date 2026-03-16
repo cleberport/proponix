@@ -22,12 +22,17 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
   const CANVAS_W = 595;
   const CANVAS_H = 842;
 
-  const handleImageReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const url = ev.target?.result as string;
+
+    try {
+      const url = await optimizeImageFile(file, {
+        maxDimension: element.type === 'logo' ? 1400 : 1800,
+        targetBytes: element.type === 'logo' ? 900_000 : 800_000,
+        preferredFormat: element.type === 'logo' ? 'image/png' : 'image/jpeg',
+      });
+
       const img = new Image();
       img.onload = () => {
         const aspectRatio = img.naturalWidth / img.naturalHeight;
@@ -40,8 +45,11 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
         onUpdate({ imageUrl: url, width: newWidth, height: newHeight });
       };
       img.src = url;
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Erro ao substituir imagem:', error);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const resetEffects = () => {

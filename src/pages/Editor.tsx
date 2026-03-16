@@ -285,6 +285,9 @@ const Editor = () => {
       };
 
       const saved = await saveTemplate(template);
+      if (optimizedLayout.optimizedCount > 0) {
+        toast.info(`${optimizedLayout.optimizedCount} imagem(ns) foram otimizadas para salvar sem erro.`);
+      }
       toast.success('Template salvo!');
 
       if (shouldCreateNewId) {

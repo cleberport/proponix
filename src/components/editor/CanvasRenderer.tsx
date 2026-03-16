@@ -203,36 +203,46 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       const dropY = snap(Math.max(0, e.clientY - rect.top - 40));
 
       files.forEach((file, i) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const url = ev.target?.result as string;
-          const img = new Image();
-          img.onload = () => {
-            const aspectRatio = img.naturalWidth / img.naturalHeight;
-            let width = Math.min(200, CANVAS_W - 20);
-            let height = Math.round(width / aspectRatio);
-            if (height > CANVAS_H - 20) {
-              height = CANVAS_H - 20;
-              width = Math.round(height * aspectRatio);
-            }
-            const newEl: CanvasElement = {
-              id: uuidv4(),
-              type: 'image',
-              x: snap(Math.min(Math.max(0, CANVAS_W - width), dropX + i * 20)),
-              y: snap(Math.min(Math.max(0, CANVAS_H - height), dropY + i * 20)),
-              width,
-              height,
-              content: '',
-              imageUrl: url,
-              objectFit: 'contain',
-              isVisible: true,
-              fieldCategory: 'default',
+        void (async () => {
+          try {
+            const url = await optimizeImageFile(file, {
+              maxDimension: 1800,
+              targetBytes: 800_000,
+              preferredFormat: 'image/jpeg',
+            });
+
+            const img = new Image();
+            img.onload = () => {
+              const aspectRatio = img.naturalWidth / img.naturalHeight;
+              let width = Math.min(200, CANVAS_W - 20);
+              let height = Math.round(width / aspectRatio);
+              if (height > CANVAS_H - 20) {
+                height = CANVAS_H - 20;
+                width = Math.round(height * aspectRatio);
+              }
+              const newEl: CanvasElement = {
+                id: uuidv4(),
+                type: 'image',
+                x: snap(Math.min(Math.max(0, CANVAS_W - width), dropX + i * 20)),
+                y: snap(Math.min(Math.max(0, CANVAS_H - height), dropY + i * 20)),
+                width,
+                height,
+                content: '',
+                imageUrl: url,
+                objectFit: 'contain',
+                imageScale: 1,
+                imageOffsetX: 0,
+                imageOffsetY: 0,
+                isVisible: true,
+                fieldCategory: 'default',
+              };
+              onAddElement(newEl);
             };
-            onAddElement(newEl);
-          };
-          img.src = url;
-        };
-        reader.readAsDataURL(file);
+            img.src = url;
+          } catch (error) {
+            console.error('Erro ao otimizar imagem de upload:', error);
+          }
+        })();
       });
     }, [readOnly, onAddElement]);
 
