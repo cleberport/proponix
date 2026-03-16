@@ -134,7 +134,7 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
           ].map((pos) => (
             <button
               key={pos.value}
-              onClick={() => onUpdate({ objectPosition: pos.value })}
+              onClick={() => onUpdate({ objectPosition: pos.value, objectPositionX: undefined, objectPositionY: undefined })}
               className={`h-7 rounded border text-xs transition-colors ${
                 (element.objectPosition || 'center') === pos.value
                   ? 'border-primary bg-primary/10 text-primary'
