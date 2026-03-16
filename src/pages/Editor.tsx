@@ -116,6 +116,10 @@ const Editor = () => {
 
       if (selectedIds.length > 0) {
         const step = e.shiftKey ? 50 : GRID;
+        // Check if any selected element is locked
+        const currentElements = pages[currentPage] || [];
+        const hasLocked = selectedIds.some(id => currentElements.find(el => el.id === id)?.locked);
+        
         switch (e.key) {
           case 'Delete':
           case 'Backspace':
@@ -125,19 +129,19 @@ const Editor = () => {
             return;
           case 'ArrowUp':
             e.preventDefault();
-            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: Math.max(0, el.y - step) } : el));
+            if (!hasLocked) setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: Math.max(0, el.y - step) } : el));
             return;
           case 'ArrowDown':
             e.preventDefault();
-            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: el.y + step } : el));
+            if (!hasLocked) setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, y: el.y + step } : el));
             return;
           case 'ArrowLeft':
             e.preventDefault();
-            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: Math.max(0, el.x - step) } : el));
+            if (!hasLocked) setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: Math.max(0, el.x - step) } : el));
             return;
           case 'ArrowRight':
             e.preventDefault();
-            setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: el.x + step } : el));
+            if (!hasLocked) setElements((prev) => prev.map((el) => selectedIds.includes(el.id) ? { ...el, x: el.x + step } : el));
             return;
         }
       }

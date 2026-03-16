@@ -28,7 +28,23 @@ export interface CanvasElement {
   rows?: TableRow[];
   columnWidths?: number[]; // percentage widths per column
   imageUrl?: string;
-  objectFit?: 'cover' | 'contain' | 'fill';
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none';
+  objectPosition?: string; // e.g. 'center', 'top', 'bottom left'
+
+  // Image editing properties
+  rotation?: number; // degrees
+  borderWidth?: number;
+  borderColor?: string;
+  borderRadius?: number;
+  imageBrightness?: number; // 0-200, default 100
+  imageContrast?: number; // 0-200, default 100
+  imageSaturation?: number; // 0-200, default 100
+  imageOpacity?: number; // 0-100, default 100
+  locked?: boolean;
+  cropX?: number; // percentage 0-100
+  cropY?: number; // percentage 0-100
+  cropWidth?: number; // percentage 0-100
+  cropHeight?: number; // percentage 0-100
 
   // 3-layer data model
   fieldCategory?: FieldCategory;

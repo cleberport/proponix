@@ -35,7 +35,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const handlePointerDown = useCallback(
       (e: React.PointerEvent, el: CanvasElement, mode: 'drag' | 'resize') => {
-        if (readOnly) return;
+        if (readOnly || el.locked) return;
         e.stopPropagation();
         e.preventDefault();
         onSelect(el.id);
@@ -233,7 +233,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       };
 
       if (el.type === 'logo' || el.type === 'image') {
-        // height auto
+        // Height managed by container style in image rendering
       } else if (el.type !== 'divider') {
         style.height = el.height;
       }
@@ -296,16 +296,49 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
         case 'image':
         case 'logo': {
-          const imgStyle: React.CSSProperties = {
+          const hasCrop = el.cropX || el.cropY || (el.cropWidth && el.cropWidth < 100) || (el.cropHeight && el.cropHeight < 100);
+          const cropX = el.cropX || 0;
+          const cropY = el.cropY || 0;
+          const cropW = el.cropWidth || 100;
+          const cropH = el.cropHeight || 100;
+
+          const filterParts: string[] = [];
+          if (el.imageBrightness != null && el.imageBrightness !== 100) filterParts.push(`brightness(${el.imageBrightness / 100})`);
+          if (el.imageContrast != null && el.imageContrast !== 100) filterParts.push(`contrast(${el.imageContrast / 100})`);
+          if (el.imageSaturation != null && el.imageSaturation !== 100) filterParts.push(`saturate(${el.imageSaturation / 100})`);
+          const filterStr = filterParts.length > 0 ? filterParts.join(' ') : undefined;
+
+          const imgContainerStyle: React.CSSProperties = {
             ...style,
-            height: 'auto',
+            height: el.height || 'auto',
             minHeight: 20,
+            overflow: 'hidden',
+            borderWidth: el.borderWidth || 0,
+            borderStyle: (el.borderWidth || 0) > 0 ? 'solid' : 'none',
+            borderColor: el.borderColor || '#000000',
+            borderRadius: el.borderRadius || 0,
+            opacity: (el.imageOpacity ?? 100) / 100,
+            transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
           };
+
+          const imgInnerStyle: React.CSSProperties = {
+            objectFit: (el.objectFit as React.CSSProperties['objectFit']) || 'contain',
+            objectPosition: el.objectPosition || 'center',
+            filter: filterStr,
+            width: '100%',
+            height: '100%',
+          };
+
+          if (hasCrop) {
+            // Use clip-path for cropping
+            imgInnerStyle.clipPath = `inset(${cropY}% ${100 - cropX - cropW}% ${100 - cropY - cropH}% ${cropX}%)`;
+          }
+
           return (
             <div
               key={el.id}
-              style={imgStyle}
-              className={`flex items-center justify-center rounded ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
+              style={imgContainerStyle}
+              className={`flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${el.locked ? 'cursor-not-allowed' : ''}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
@@ -313,14 +346,22 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <img
                   src={el.imageUrl}
                   alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
-                  className="w-full rounded"
-                  style={{ objectFit: 'contain', height: 'auto', maxHeight: el.height || 200 }}
+                  className="rounded"
+                  style={imgInnerStyle}
                   draggable={false}
                 />
               ) : (
                 <div className="flex flex-col items-center gap-1 py-4">
                   <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Imagem'}</span>
                   <span className="text-[10px] text-muted-foreground">Arraste uma imagem ou selecione para enviar</span>
+                </div>
+              )}
+              {el.locked && elSelected && (
+                <div className="absolute top-1 left-1 rounded bg-card/80 p-0.5">
+                  <svg className="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" />
+                  </svg>
                 </div>
               )}
               {resizeHandle}
