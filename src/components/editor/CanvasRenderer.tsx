@@ -397,9 +397,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
           };
 
+          const objectPosition = typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number'
+            ? `${clamp(el.objectPositionX, 0, 100)}% ${clamp(el.objectPositionY, 0, 100)}%`
+            : (el.objectPosition || 'center');
+
           const imgInnerStyle: React.CSSProperties = {
             objectFit: (el.objectFit as React.CSSProperties['objectFit']) || 'contain',
-            objectPosition: el.objectPosition || 'center',
+            objectPosition,
             filter: filterStr,
             width: '100%',
             height: '100%',
