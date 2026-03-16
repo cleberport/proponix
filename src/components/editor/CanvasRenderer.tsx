@@ -132,27 +132,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.preventDefault();
         onSelect(el.id);
 
-        const currentPos = resolveObjectPositionPercent(el);
-        imagePanStart.current = {
-          x: e.clientX,
-          y: e.clientY,
-          posX: currentPos.x,
-          posY: currentPos.y,
-          width: Math.max(1, el.width),
-          height: Math.max(1, el.height),
-        };
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startOffsetX = el.imageOffsetX || 0;
+        const startOffsetY = el.imageOffsetY || 0;
 
         const handleMove = (ev: PointerEvent) => {
-          const dx = ev.clientX - imagePanStart.current.x;
-          const dy = ev.clientY - imagePanStart.current.y;
-
-          const nextX = clamp(imagePanStart.current.posX + (dx / imagePanStart.current.width) * 100, 0, 100);
-          const nextY = clamp(imagePanStart.current.posY + (dy / imagePanStart.current.height) * 100, 0, 100);
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
 
           onUpdate(el.id, {
-            objectPositionX: nextX,
-            objectPositionY: nextY,
-            objectFit: el.objectFit === 'contain' ? 'cover' : el.objectFit,
+            imageOffsetX: startOffsetX + dx,
+            imageOffsetY: startOffsetY + dy,
           });
         };
 
