@@ -62,9 +62,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 });
               });
             } else {
+              const maxX = Math.max(0, CANVAS_W - el.width);
+              const maxY = Math.max(0, CANVAS_H - el.height);
               onUpdate(el.id, {
-                x: snap(Math.max(0, Math.min(CANVAS_W - el.width, startPos.current.elX + dx))),
-                y: snap(Math.max(0, Math.min(CANVAS_H - el.height, startPos.current.elY + dy))),
+                x: snap(Math.max(0, Math.min(maxX, startPos.current.elX + dx))),
+                y: snap(Math.max(0, Math.min(maxY, startPos.current.elY + dy))),
               });
             }
           } else {
