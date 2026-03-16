@@ -69,7 +69,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   defaultTaxRate: 0.10,
   logoUrl: '',
   theme: 'light',
-  pdfBaseName: 'Orçamento',
+  pdfBaseName: 'Proposta',
   defaultTemplateId: '',
 };
 
