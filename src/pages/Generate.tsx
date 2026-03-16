@@ -411,17 +411,21 @@ const Generate = () => {
             {inputFields.map((v) => (
               <div key={v}>
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
-                <Input
-                  value={getInputValue(v)}
-                  onChange={(e) => handleChange(v, e.target.value)}
-                  placeholder={getPlaceholder(v)}
-                  className="h-12 text-base md:h-10 md:text-sm"
-                  inputMode={v === 'price' ? 'numeric' : 'text'}
-                  onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
-                  onBlur={v === 'price' ? handlePriceBlur : undefined}
-                />
-                {v === 'event_date' && (
-                  <p className="mt-1 text-[10px] text-muted-foreground">Aceita data única ou intervalo</p>
+                {v === 'event_date' ? (
+                  <DateRangePicker
+                    value={getInputValue(v)}
+                    onChange={(val) => handleChange(v, val)}
+                  />
+                ) : (
+                  <Input
+                    value={getInputValue(v)}
+                    onChange={(e) => handleChange(v, e.target.value)}
+                    placeholder={getPlaceholder(v)}
+                    className="h-12 text-base md:h-10 md:text-sm"
+                    inputMode={v === 'price' ? 'numeric' : 'text'}
+                    onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
+                    onBlur={v === 'price' ? handlePriceBlur : undefined}
+                  />
                 )}
               </div>
             ))}
