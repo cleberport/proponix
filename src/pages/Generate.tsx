@@ -29,7 +29,7 @@ const Generate = () => {
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(!isMobile);
+  const [showPreview, setShowPreview] = useState(false);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
   const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
