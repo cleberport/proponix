@@ -458,15 +458,14 @@ const Generate = () => {
         </div>
 
         {isMobile && showPreview && (
-          <div className="flex flex-col shrink-0" style={{ height: '50vh' }}>
-            <div className="flex items-center justify-center border-b border-border bg-card p-2">
+          <div className="flex flex-col flex-1">
+            <div className="flex items-center justify-center border-b border-border bg-card p-4">
               <Button
                 variant="outline"
-                size="sm"
-                className="h-9 text-xs"
+                className="w-full h-11 text-sm"
                 onClick={() => setShowPreview(false)}
               >
-                <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
+                <ChevronUp className="mr-1.5 h-4 w-4" />
                 Ocultar Prévia
               </Button>
             </div>
