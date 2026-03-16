@@ -458,6 +458,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   </svg>
                 </div>
               )}
+              {editingImageId === el.id && !el.locked && (
+                <div className="pointer-events-none absolute bottom-1 left-1 rounded bg-card/85 px-1.5 py-0.5 text-[10px] text-foreground">
+                  Reenquadrando • arraste a foto
+                </div>
+              )}
               {resizeHandle}
             </div>
           );
