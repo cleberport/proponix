@@ -265,6 +265,7 @@ const Editor = () => {
   const handleSave = async () => {
     try {
       const shouldCreateNewId = isNew || !id || !isUuid(id);
+      const optimizedLayout = await optimizeTemplatePagesForSave(pages);
       const template: Template = {
         id: shouldCreateNewId ? uuidv4() : id,
         name: templateName,
@@ -272,8 +273,8 @@ const Editor = () => {
         description: baseDescription,
         thumbnail: '',
         color: templateColor,
-        elements: pages[0] || [],
-        pages,
+        elements: optimizedLayout.pages[0] || [],
+        pages: optimizedLayout.pages,
         variables,
         canvasWidth: 595,
         canvasHeight: 842,
