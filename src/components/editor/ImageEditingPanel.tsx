@@ -125,9 +125,34 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
         </Select>
       </div>
 
-      {/* Object Position */}
+      {/* Zoom & Pan */}
       <div>
-        <Label className="text-xs text-muted-foreground">Posição da Imagem</Label>
+        <div className="flex items-center justify-between mb-1">
+          <Label className="text-xs text-muted-foreground">Zoom & Enquadramento</Label>
+          <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={resetPanZoom}>
+            Resetar
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="text-[10px] text-muted-foreground w-10">Zoom</Label>
+          <Slider
+            value={[Math.round((element.imageScale || 1) * 100)]}
+            min={100}
+            max={300}
+            step={5}
+            className="flex-1"
+            onValueChange={([val]) => onUpdate({ imageScale: val / 100 })}
+          />
+          <span className="text-[10px] text-muted-foreground w-10 text-right">{Math.round((element.imageScale || 1) * 100)}%</span>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1.5">
+          Aumente o zoom e dê <strong>duplo clique</strong> na imagem para arrastar e enquadrar.
+        </p>
+      </div>
+
+      {/* Object Position (preset grid) */}
+      <div>
+        <Label className="text-xs text-muted-foreground">Posição Rápida</Label>
         <div className="grid grid-cols-3 gap-1 mt-1">
           {[
             { label: '↖', value: 'top left' },
@@ -142,9 +167,9 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
           ].map((pos) => (
             <button
               key={pos.value}
-              onClick={() => onUpdate({ objectPosition: pos.value, objectPositionX: undefined, objectPositionY: undefined })}
+              onClick={() => onUpdate({ objectPosition: pos.value, imageOffsetX: 0, imageOffsetY: 0 })}
               className={`h-7 rounded border text-xs transition-colors ${
-                (element.objectPosition || 'center') === pos.value
+                (element.objectPosition || 'center') === pos.value && !(element.imageOffsetX || element.imageOffsetY)
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-muted-foreground hover:bg-accent'
               }`}
@@ -152,17 +177,6 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
               {pos.label}
             </button>
           ))}
-        </div>
-        <div className="mt-1.5 flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground">Dica: dê duplo clique na imagem e arraste para reenquadrar</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 text-[10px]"
-            onClick={() => onUpdate({ objectPositionX: undefined, objectPositionY: undefined, objectPosition: 'center' })}
-          >
-            Centralizar
-          </Button>
         </div>
       </div>
 
