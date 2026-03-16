@@ -391,16 +391,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             cursor: el.locked ? 'not-allowed' : (editingImageId === el.id ? 'move' : (readOnly ? 'default' : 'grab')),
           };
 
-          const objectPosition = typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number'
-            ? `${clamp(el.objectPositionX, 0, 100)}% ${clamp(el.objectPositionY, 0, 100)}%`
-            : (el.objectPosition || 'center');
+          const scale = el.imageScale || 1;
+          const offsetX = el.imageOffsetX || 0;
+          const offsetY = el.imageOffsetY || 0;
 
           const imgInnerStyle: React.CSSProperties = {
-            objectFit: (el.objectFit as React.CSSProperties['objectFit']) || 'contain',
-            objectPosition,
             filter: filterStr,
             width: '100%',
             height: '100%',
+            objectFit: scale > 1 ? 'cover' : ((el.objectFit as React.CSSProperties['objectFit']) || 'contain'),
+            objectPosition: el.objectPosition || 'center',
+            transform: `scale(${scale}) translate(${offsetX / scale}px, ${offsetY / scale}px)`,
+            transformOrigin: 'center center',
           };
 
           if (hasCrop) {
