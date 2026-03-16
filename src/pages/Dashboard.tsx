@@ -98,7 +98,7 @@ const Dashboard = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de orçamento</p>
+          <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
         </div>
         <Button onClick={() => navigate('/editor/new')} size="sm" className="h-10 md:h-9">
           <Plus className="mr-1.5 h-4 w-4" />
