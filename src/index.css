@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 4%;
 
-    --primary: 262 83% 58%;
+    --primary: 346 100% 59%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 5% 96%;
@@ -32,25 +32,25 @@
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 262 83% 58%;
+    --ring: 346 100% 59%;
 
     --radius: 0.625rem;
 
     --canvas: 0 0% 100%;
     --canvas-shadow: 0 4px 24px -4px hsl(240 10% 4% / 0.08);
     --grid-dot: 240 6% 90%;
-    --snap-line: 262 83% 58%;
-    --element-hover: 262 83% 58% / 0.08;
-    --element-selected: 262 83% 58% / 0.15;
+    --snap-line: 346 100% 59%;
+    --element-hover: 346 100% 59% / 0.08;
+    --element-selected: 346 100% 59% / 0.15;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 10% 4%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary: 346 100% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 96%;
     --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 346 100% 59%;
 
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
@@ -74,7 +74,7 @@
     --popover: 240 6% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 262 83% 70%;
+    --primary: 346 100% 68%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4% 16%;
@@ -91,23 +91,23 @@
 
     --border: 240 4% 16%;
     --input: 240 4% 16%;
-    --ring: 262 83% 58%;
+    --ring: 346 100% 59%;
 
     --canvas: 0 0% 100%;
     --canvas-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.5);
     --grid-dot: 240 4% 20%;
-    --snap-line: 262 83% 58%;
-    --element-hover: 262 83% 58% / 0.12;
-    --element-selected: 262 83% 58% / 0.2;
+    --snap-line: 346 100% 59%;
+    --element-hover: 346 100% 59% / 0.12;
+    --element-selected: 346 100% 59% / 0.2;
 
     --sidebar-background: 240 6% 10%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary: 346 100% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4% 16%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 346 100% 59%;
 
     --success: 142 71% 40%;
     --success-foreground: 0 0% 100%;
@@ -185,7 +185,7 @@
   }
 
   .landing-gradient {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(262 83% 58% / 0.15), transparent);
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(346 100% 59% / 0.15), transparent);
   }
 
   .glass-card {
