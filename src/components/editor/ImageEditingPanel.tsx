@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Upload, Lock, Unlock, RotateCw, Crop, Maximize, RefreshCw } from 'lucide-react';
+import { Upload, Lock, Unlock, RotateCw, Crop, RefreshCw } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
+import { optimizeImageFile } from '@/lib/imageOptimization';
 
 interface Props {
   element: CanvasElement;

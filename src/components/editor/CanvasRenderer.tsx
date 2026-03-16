@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useState, useRef } from 'react';
 import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
+import { optimizeImageFile } from '@/lib/imageOptimization';
 
 interface Props {
   elements: CanvasElement[];
@@ -21,32 +22,6 @@ const CANVAS_H = 842;
 const GRID = 10;
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
-const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-
-const OBJECT_POSITION_PRESETS: Record<string, { x: number; y: number }> = {
-  'top left': { x: 0, y: 0 },
-  'top center': { x: 50, y: 0 },
-  'top right': { x: 100, y: 0 },
-  'center left': { x: 0, y: 50 },
-  center: { x: 50, y: 50 },
-  'center right': { x: 100, y: 50 },
-  'bottom left': { x: 0, y: 100 },
-  'bottom center': { x: 50, y: 100 },
-  'bottom right': { x: 100, y: 100 },
-  top: { x: 50, y: 0 },
-  bottom: { x: 50, y: 100 },
-  left: { x: 0, y: 50 },
-  right: { x: 100, y: 50 },
-};
-
-const resolveObjectPositionPercent = (el: CanvasElement): { x: number; y: number } => {
-  if (typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number') {
-    return { x: clamp(el.objectPositionX, 0, 100), y: clamp(el.objectPositionY, 0, 100) };
-  }
-
-  const presetKey = (el.objectPosition || 'center').toLowerCase();
-  return OBJECT_POSITION_PRESETS[presetKey] || OBJECT_POSITION_PRESETS.center;
-};
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
