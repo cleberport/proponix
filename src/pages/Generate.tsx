@@ -406,7 +406,7 @@ const Generate = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-        <div className={`w-full md:w-80 overflow-y-auto border-b md:border-b-0 md:border-r border-border bg-card p-4 md:p-5 ${isMobile && showPreview ? 'max-h-[40vh] shrink-0' : ''}`}>
+        <div className={`w-full md:w-80 overflow-y-auto border-b md:border-b-0 md:border-r border-border bg-card p-4 md:p-5 ${isMobile ? (showPreview ? 'hidden' : 'flex-1 min-h-0') : ''}`}>
           <div className="flex flex-col gap-4">
             {inputFields.map((v) => (
               <div key={v}>
