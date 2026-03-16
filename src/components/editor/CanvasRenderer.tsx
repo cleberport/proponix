@@ -56,7 +56,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
-    const imagePanStart = useRef({ x: 0, y: 0, posX: 50, posY: 50, width: 1, height: 1 });
     const canvasElRef = useRef<HTMLDivElement>(null);
 
     const isSelected = (id: string) => selectedIds.includes(id) || selectedId === id;
@@ -132,27 +131,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.preventDefault();
         onSelect(el.id);
 
-        const currentPos = resolveObjectPositionPercent(el);
-        imagePanStart.current = {
-          x: e.clientX,
-          y: e.clientY,
-          posX: currentPos.x,
-          posY: currentPos.y,
-          width: Math.max(1, el.width),
-          height: Math.max(1, el.height),
-        };
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startOffsetX = el.imageOffsetX || 0;
+        const startOffsetY = el.imageOffsetY || 0;
 
         const handleMove = (ev: PointerEvent) => {
-          const dx = ev.clientX - imagePanStart.current.x;
-          const dy = ev.clientY - imagePanStart.current.y;
-
-          const nextX = clamp(imagePanStart.current.posX + (dx / imagePanStart.current.width) * 100, 0, 100);
-          const nextY = clamp(imagePanStart.current.posY + (dy / imagePanStart.current.height) * 100, 0, 100);
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
 
           onUpdate(el.id, {
-            objectPositionX: nextX,
-            objectPositionY: nextY,
-            objectFit: el.objectFit === 'contain' ? 'cover' : el.objectFit,
+            imageOffsetX: startOffsetX + dx,
+            imageOffsetY: startOffsetY + dy,
           });
         };
 
@@ -400,16 +390,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             cursor: el.locked ? 'not-allowed' : (editingImageId === el.id ? 'move' : (readOnly ? 'default' : 'grab')),
           };
 
-          const objectPosition = typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number'
-            ? `${clamp(el.objectPositionX, 0, 100)}% ${clamp(el.objectPositionY, 0, 100)}%`
-            : (el.objectPosition || 'center');
+          const scale = el.imageScale || 1;
+          const offsetX = el.imageOffsetX || 0;
+          const offsetY = el.imageOffsetY || 0;
 
           const imgInnerStyle: React.CSSProperties = {
-            objectFit: (el.objectFit as React.CSSProperties['objectFit']) || 'contain',
-            objectPosition,
             filter: filterStr,
             width: '100%',
             height: '100%',
+            objectFit: scale > 1 ? 'cover' : ((el.objectFit as React.CSSProperties['objectFit']) || 'contain'),
+            objectPosition: el.objectPosition || 'center',
+            transform: `scale(${scale}) translate(${offsetX / scale}px, ${offsetY / scale}px)`,
+            transformOrigin: 'center center',
           };
 
           if (hasCrop) {
