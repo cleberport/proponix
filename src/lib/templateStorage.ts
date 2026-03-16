@@ -282,17 +282,23 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {
   const cached = getCachedSavedTemplates();
-  const existing = cached.find((t) => t.id === template.id);
+  const finalId = isUuid(template.id) ? template.id : crypto.randomUUID();
+  const existing = cached.find((t) => t.id === finalId);
   const now = new Date().toISOString();
 
   const saved: SavedTemplate = {
     ...template,
+    id: finalId,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
 
-  // Always persist to localStorage first as safety net
-  mergeIntoCache(saved);
+  try {
+    // safety net: local cache first, but never break save flow if storage is full
+    mergeIntoCache(saved);
+  } catch (cacheError) {
+    console.warn('Não foi possível salvar em cache local:', cacheError);
+  }
 
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -312,7 +318,11 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     }
 
     const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
-    mergeIntoCache(mapped);
+    try {
+      mergeIntoCache(mapped);
+    } catch (cacheError) {
+      console.warn('Template salvo no backend, mas falhou no cache local:', cacheError);
+    }
     return mapped;
   } catch (err) {
     console.error('Erro inesperado ao salvar template:', err);
