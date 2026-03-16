@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Trash2, Plus, Upload, X } from 'lucide-react';
 import { useRef } from 'react';
+import { Separator } from '@/components/ui/separator';
+import ImageEditingPanel from './ImageEditingPanel';
 
 interface Props {
   element: CanvasElement | null;
