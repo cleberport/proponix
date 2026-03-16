@@ -145,6 +145,17 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
             </button>
           ))}
         </div>
+        <div className="mt-1.5 flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground">Dica: dê duplo clique na imagem e arraste para reenquadrar</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px]"
+            onClick={() => onUpdate({ objectPositionX: undefined, objectPositionY: undefined, objectPosition: 'center' })}
+          >
+            Centralizar
+          </Button>
+        </div>
       </div>
 
       <Separator />
