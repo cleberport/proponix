@@ -59,7 +59,7 @@ const commonVars = ['client_name', 'event_date', 'subtotal', 'tax', 'total'];
 
 export const starterTemplates: Template[] = [
   makeTemplate('corporate-budget', 'Proposta Corporativa', 'Corporativo', 'Template profissional para propostas corporativas com layout estruturado', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'ORÇAMENTO', fontSize: 28, fontWeight: '700', alignment: 'center' }),
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'PROPOSTA', fontSize: 28, fontWeight: '700', alignment: 'center' }),
     el({ type: 'divider', x: 40, y: 95, width: 515, height: 2, content: '' }),
     el({ type: 'dynamic-field', x: 40, y: 115, width: 250, height: 30, content: 'Cliente:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 320, y: 115, width: 235, height: 30, content: 'Data:', variable: 'event_date', fieldCategory: 'input' }),
