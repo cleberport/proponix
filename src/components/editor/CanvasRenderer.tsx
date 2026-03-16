@@ -172,13 +172,17 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const img = new Image();
           img.onload = () => {
             const aspectRatio = img.naturalWidth / img.naturalHeight;
-            const width = 200;
-            const height = Math.round(width / aspectRatio);
+            let width = Math.min(200, CANVAS_W - 20);
+            let height = Math.round(width / aspectRatio);
+            if (height > CANVAS_H - 20) {
+              height = CANVAS_H - 20;
+              width = Math.round(height * aspectRatio);
+            }
             const newEl: CanvasElement = {
               id: uuidv4(),
               type: 'image',
-              x: snap(Math.min(CANVAS_W - width, dropX + i * 20)),
-              y: snap(Math.min(CANVAS_H - height, dropY + i * 20)),
+              x: snap(Math.min(Math.max(0, CANVAS_W - width), dropX + i * 20)),
+              y: snap(Math.min(Math.max(0, CANVAS_H - height), dropY + i * 20)),
               width,
               height,
               content: '',
