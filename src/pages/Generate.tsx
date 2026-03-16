@@ -388,7 +388,7 @@ const Generate = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {lastPdfBlob && (
+          {lastPdfBlob && !isMobile && (
             <Button variant="outline" size="icon" className="h-10 w-10" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </Button>
