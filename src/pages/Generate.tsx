@@ -29,7 +29,7 @@ const Generate = () => {
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(!isMobile);
+  const [showPreview, setShowPreview] = useState(false);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
   const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
@@ -49,6 +49,11 @@ const Generate = () => {
   }, [template]);
 
   const hasTable = !!tableInfo;
+
+  // On desktop, always show preview
+  useEffect(() => {
+    if (!isMobile) setShowPreview(true);
+  }, [isMobile]);
 
   // Initialize tableRows when tableInfo becomes available
   useEffect(() => {
@@ -388,7 +393,7 @@ const Generate = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {lastPdfBlob && (
+          {lastPdfBlob && !isMobile && (
             <Button variant="outline" size="icon" className="h-10 w-10" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </Button>
@@ -444,18 +449,20 @@ const Generate = () => {
             </div>
           )}
 
-          {isMobile && (
+        </div>
+
+        {isMobile && !showPreview && (
+          <div className="shrink-0 border-t border-border bg-card p-4">
             <Button
               variant="outline"
-              className="mt-4 w-full h-11 text-sm"
-              onClick={() => setShowPreview((p) => !p)}
+              className="w-full h-11 text-sm"
+              onClick={() => setShowPreview(true)}
             >
-              {showPreview ? <ChevronUp className="mr-1.5 h-4 w-4" /> : <ChevronDown className="mr-1.5 h-4 w-4" />}
-              {showPreview ? 'Ocultar Prévia' : 'Ver Prévia'}
+              <ChevronDown className="mr-1.5 h-4 w-4" />
+              Ver Prévia
             </Button>
-          )}
-
-        </div>
+          </div>
+        )}
 
         {isMobile && showPreview && (
           <div className="flex flex-col flex-1">
