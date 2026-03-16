@@ -52,9 +52,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
+    const [editingImageId, setEditingImageId] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
+    const imagePanStart = useRef({ x: 0, y: 0, posX: 50, posY: 50, width: 1, height: 1 });
     const canvasElRef = useRef<HTMLDivElement>(null);
 
     const isSelected = (id: string) => selectedIds.includes(id) || selectedId === id;
