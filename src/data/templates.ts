@@ -58,8 +58,8 @@ function makeTemplate(
 const commonVars = ['client_name', 'event_date', 'subtotal', 'tax', 'total'];
 
 export const starterTemplates: Template[] = [
-  makeTemplate('corporate-budget', 'Orçamento Corporativo', 'Corporativo', 'Template profissional para orçamentos corporativos com layout estruturado', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'ORÇAMENTO', fontSize: 28, fontWeight: '700', alignment: 'center' }),
+  makeTemplate('corporate-budget', 'Proposta Corporativa', 'Corporativo', 'Template profissional para propostas corporativas com layout estruturado', [
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'PROPOSTA', fontSize: 28, fontWeight: '700', alignment: 'center' }),
     el({ type: 'divider', x: 40, y: 95, width: 515, height: 2, content: '' }),
     el({ type: 'dynamic-field', x: 40, y: 115, width: 250, height: 30, content: 'Cliente:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 320, y: 115, width: 235, height: 30, content: 'Data:', variable: 'event_date', fieldCategory: 'input' }),
@@ -80,8 +80,8 @@ export const starterTemplates: Template[] = [
     settings: { taxRate: 0.10, showTax: true }, color: '#6366F1',
   }),
 
-  makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Orçamento completo para produção de eventos', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'ORÇAMENTO DE PRODUÇÃO', fontSize: 26, fontWeight: '700', alignment: 'center' }),
+  makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Proposta completa para produção de eventos', [
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'PROPOSTA DE PRODUÇÃO', fontSize: 26, fontWeight: '700', alignment: 'center' }),
     el({ type: 'divider', x: 40, y: 95, width: 515, height: 2, content: '' }),
     el({ type: 'dynamic-field', x: 40, y: 115, width: 250, height: 30, content: 'Evento:', variable: 'event_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 40, y: 150, width: 250, height: 30, content: 'Local:', variable: 'location', fieldCategory: 'input' }),
@@ -100,8 +100,8 @@ export const starterTemplates: Template[] = [
     settings: { taxRate: 0.10, showTax: true }, color: '#F59E0B',
   }),
 
-  makeTemplate('freelancer-quote', 'Orçamento Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 40, content: 'ORÇAMENTO', fontSize: 32, fontWeight: '700', fontFamily: 'Roboto' }),
+  makeTemplate('freelancer-quote', 'Proposta Freelancer', 'Freelance', 'Template limpo e moderno para freelancers', [
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 40, content: 'PROPOSTA', fontSize: 32, fontWeight: '700', fontFamily: 'Roboto' }),
     el({ type: 'dynamic-field', x: 40, y: 100, width: 300, height: 30, content: 'Para:', variable: 'client_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 40, y: 135, width: 300, height: 30, content: 'Data:', variable: 'event_date', fieldCategory: 'input' }),
     el({ type: 'divider', x: 40, y: 180, width: 515, height: 2, content: '' }),
@@ -110,7 +110,7 @@ export const starterTemplates: Template[] = [
       { cells: ['', ''] },
     ]}),
     el({ type: 'total-calculation', x: 350, y: 420, width: 205, height: 35, content: 'Total:', variable: 'total', fontWeight: '700', fontSize: 18, fieldCategory: 'calculated' }),
-    el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Este orçamento é válido por 30 dias.', fieldCategory: 'default' }),
+    el({ type: 'notes', x: 40, y: 490, width: 515, height: 80, content: 'Esta proposta é válida por 30 dias.', fieldCategory: 'default' }),
   ], [...commonVars, 'service_name', 'price', 'tax_rate'], {
     defaultValues: { service_name: 'Desenvolvimento Web', price: '2500', tax_rate: '0' },
     inputFields: ['client_name', 'event_date'],

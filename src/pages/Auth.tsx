@@ -78,7 +78,7 @@ const Auth = () => {
             </div>
             <h1 className="text-2xl font-bold">{isLogin ? 'Entrar' : 'Criar conta'}</h1>
             <p className="mt-1 text-sm text-[hsl(var(--landing-muted))]">
-              {isLogin ? 'Acesse sua conta Budgetly' : 'Comece a criar orçamentos profissionais'}
+              {isLogin ? 'Acesse sua conta Proponix' : 'Comece a criar propostas profissionais'}
             </p>
           </div>
 

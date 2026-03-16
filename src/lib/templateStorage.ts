@@ -69,7 +69,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   defaultTaxRate: 0.10,
   logoUrl: '',
   theme: 'light',
-  pdfBaseName: 'Orçamento',
+  pdfBaseName: 'Proposta',
   defaultTemplateId: '',
 };
 
@@ -405,7 +405,7 @@ export function getNextPdfNumber(): number {
 
 export function generatePdfFileName(): string {
   const settings = getSettings();
-  const baseName = settings.pdfBaseName || 'Orçamento';
+  const baseName = settings.pdfBaseName || 'Proposta';
   const num = getNextPdfNumber();
   return `${baseName} ${String(num).padStart(3, '0')}.pdf`;
 }

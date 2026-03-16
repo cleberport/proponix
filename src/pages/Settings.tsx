@@ -173,8 +173,8 @@ const SettingsPage = () => {
         {/* PDF name */}
         <section className="rounded-xl border border-border bg-card p-4">
           <h2 className="text-sm font-semibold text-foreground mb-3">Nome Padrão do PDF</h2>
-          <Input value={settings.pdfBaseName} onChange={(e) => update({ pdfBaseName: e.target.value })} placeholder="Ex: Orçamento PlayPort" className="h-11 md:h-9" />
-          <p className="mt-1 text-[10px] text-muted-foreground">{settings.pdfBaseName || 'Orçamento'} 001.pdf, {settings.pdfBaseName || 'Orçamento'} 002.pdf...</p>
+          <Input value={settings.pdfBaseName} onChange={(e) => update({ pdfBaseName: e.target.value })} placeholder="Ex: Proposta PlayPort" className="h-11 md:h-9" />
+          <p className="mt-1 text-[10px] text-muted-foreground">{settings.pdfBaseName || 'Proposta'} 001.pdf, {settings.pdfBaseName || 'Proposta'} 002.pdf...</p>
         </section>
 
         {/* Restore */}
