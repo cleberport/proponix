@@ -263,8 +263,9 @@ const Editor = () => {
 
   const handleSave = async () => {
     try {
+      const shouldCreateNewId = isNew || !id || !isUuid(id);
       const template: Template = {
-        id: isNew ? uuidv4() : id!,
+        id: shouldCreateNewId ? uuidv4() : id,
         name: templateName,
         category: baseCategory,
         description: baseDescription,
@@ -284,7 +285,7 @@ const Editor = () => {
       const saved = await saveTemplate(template);
       toast.success('Template salvo!');
 
-      if (isNew) {
+      if (shouldCreateNewId) {
         navigate(`/editor/${saved.id}`, { replace: true });
       }
 

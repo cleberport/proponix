@@ -263,11 +263,12 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const remote = (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
   const remoteIds = new Set(remote.map((template) => template.id));
   const missingFromRemote = cached.filter((template) => !remoteIds.has(template.id));
+  const syncableMissing = missingFromRemote.filter((template) => isUuid(template.id));
 
-  if (missingFromRemote.length > 0) {
+  if (syncableMissing.length > 0) {
     const { error: syncError } = await db
       .from('custom_templates')
-      .upsert(missingFromRemote.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+      .upsert(syncableMissing.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
 
     if (syncError) {
       console.error('Erro ao sincronizar templates locais:', syncError);
