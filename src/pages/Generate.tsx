@@ -466,15 +466,17 @@ const Generate = () => {
 
         {(!isMobile || showPreview) && (
           <main className="flex min-h-[50vh] flex-1 items-start justify-center overflow-auto bg-background p-4 md:p-8">
-            <CanvasRenderer
-              ref={canvasRef}
-              elements={visibleElements}
-              selectedId={null}
-              onSelect={() => {}}
-              onUpdate={() => {}}
-              readOnly
-              variableValues={displayValues}
-            />
+            <div className={isMobile ? 'w-full origin-top-left' : ''} style={isMobile ? { transform: `scale(${Math.min(1, (window.innerWidth - 32) / 595)})`, transformOrigin: 'top center' } : undefined}>
+              <CanvasRenderer
+                ref={canvasRef}
+                elements={visibleElements}
+                selectedId={null}
+                onSelect={() => {}}
+                onUpdate={() => {}}
+                readOnly
+                variableValues={displayValues}
+              />
+            </div>
           </main>
         )}
       </div>
