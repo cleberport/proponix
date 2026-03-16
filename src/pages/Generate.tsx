@@ -13,6 +13,7 @@ import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
 import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import DateRangePicker from '@/components/generate/DateRangePicker';
 
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
