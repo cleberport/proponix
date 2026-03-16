@@ -167,6 +167,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
+      setEditingImageId(null);
       onSelect(null);
       
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
