@@ -454,14 +454,6 @@ const Generate = () => {
             </Button>
           )}
 
-          {isMobile && lastPdfBlob && (
-            <div className="mt-4 flex flex-col gap-2">
-              <Button className="w-full h-12 text-base font-semibold" onClick={handleShare}>
-                <Share2 className="mr-2 h-5 w-5" />
-                Compartilhar
-              </Button>
-            </div>
-          )}
         </div>
 
         {(!isMobile || showPreview) && (
