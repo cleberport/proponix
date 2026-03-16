@@ -50,6 +50,11 @@ const Generate = () => {
 
   const hasTable = !!tableInfo;
 
+  // On desktop, always show preview
+  useEffect(() => {
+    if (!isMobile) setShowPreview(true);
+  }, [isMobile]);
+
   // Initialize tableRows when tableInfo becomes available
   useEffect(() => {
     if (!tableInfo) return;
