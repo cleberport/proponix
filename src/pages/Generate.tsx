@@ -457,19 +457,45 @@ const Generate = () => {
 
         </div>
 
-        {(!isMobile || showPreview) && (
-          <main className="flex min-h-[50vh] flex-1 items-center justify-center overflow-auto bg-background p-2">
-            <div style={{ transform: `scale(${(window.innerWidth - 16) / 595})`, transformOrigin: 'top center', width: 595 }}>
-              <CanvasRenderer
-                ref={canvasRef}
-                elements={visibleElements}
-                selectedId={null}
-                onSelect={() => {}}
-                onUpdate={() => {}}
-                readOnly
-                variableValues={displayValues}
-              />
+        {isMobile && showPreview && (
+          <div className="flex flex-col shrink-0" style={{ height: '50vh' }}>
+            <div className="flex items-center justify-center border-b border-border bg-card p-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-xs"
+                onClick={() => setShowPreview(false)}
+              >
+                <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
+                Ocultar Prévia
+              </Button>
             </div>
+            <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-2">
+              <div style={{ transform: `scale(${(window.innerWidth - 16) / 595})`, transformOrigin: 'top center', width: 595 }}>
+                <CanvasRenderer
+                  ref={canvasRef}
+                  elements={visibleElements}
+                  selectedId={null}
+                  onSelect={() => {}}
+                  onUpdate={() => {}}
+                  readOnly
+                  variableValues={displayValues}
+                />
+              </div>
+            </main>
+          </div>
+        )}
+        {!isMobile && (
+          <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-8">
+            <CanvasRenderer
+              ref={canvasRef}
+              elements={visibleElements}
+              selectedId={null}
+              onSelect={() => {}}
+              onUpdate={() => {}}
+              readOnly
+              variableValues={displayValues}
+            />
           </main>
         )}
       </div>
