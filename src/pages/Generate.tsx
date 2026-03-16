@@ -457,8 +457,8 @@ const Generate = () => {
         </div>
 
         {(!isMobile || showPreview) && (
-          <main className="flex min-h-[50vh] flex-1 items-start justify-center overflow-auto bg-background p-4 md:p-8">
-            <div className={isMobile ? 'w-full origin-top-left' : ''} style={isMobile ? { transform: `scale(${Math.min(1, (window.innerWidth - 32) / 595)})`, transformOrigin: 'top center' } : undefined}>
+          <main className="flex min-h-[50vh] flex-1 items-center justify-center overflow-auto bg-background p-2">
+            <div style={{ transform: `scale(${(window.innerWidth - 16) / 595})`, transformOrigin: 'top center', width: 595 }}>
               <CanvasRenderer
                 ref={canvasRef}
                 elements={visibleElements}
