@@ -267,6 +267,7 @@ const Generate = () => {
   const handleGeneratePDF = useCallback(async () => {
     if (!template) return;
     setGenerating(true);
+    if (isMobile) setShowPreview(false);
     try {
       const fileName = generatePdfFileName();
       const blob = await generateVectorPdf(visiblePages, displayValues, fileName);
