@@ -122,7 +122,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         document.addEventListener('pointermove', handleMove);
         document.addEventListener('pointerup', handleUp);
       },
-      [onSelect, onUpdate, readOnly, selectedIds, elements]
+      [onSelect, onUpdate, readOnly, selectedIds, elements, editingImageId]
     );
 
     const handleImagePanPointerDown = useCallback(
