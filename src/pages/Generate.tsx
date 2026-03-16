@@ -381,7 +381,7 @@ const Generate = () => {
   const calculatedFields = template.calculatedFields || {};
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-[100dvh] flex-col bg-background">
       <header className="flex items-center justify-between border-b border-border bg-card px-3 py-2 shrink-0">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate('/')}>
