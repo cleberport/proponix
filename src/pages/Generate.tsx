@@ -454,27 +454,21 @@ const Generate = () => {
             </Button>
           )}
 
-          {isMobile && lastPdfBlob && (
-            <div className="mt-4 flex flex-col gap-2">
-              <Button className="w-full h-12 text-base font-semibold" onClick={handleShare}>
-                <Share2 className="mr-2 h-5 w-5" />
-                Compartilhar
-              </Button>
-            </div>
-          )}
         </div>
 
         {(!isMobile || showPreview) && (
           <main className="flex min-h-[50vh] flex-1 items-start justify-center overflow-auto bg-background p-4 md:p-8">
-            <CanvasRenderer
-              ref={canvasRef}
-              elements={visibleElements}
-              selectedId={null}
-              onSelect={() => {}}
-              onUpdate={() => {}}
-              readOnly
-              variableValues={displayValues}
-            />
+            <div className={isMobile ? 'w-full origin-top-left' : ''} style={isMobile ? { transform: `scale(${Math.min(1, (window.innerWidth - 32) / 595)})`, transformOrigin: 'top center' } : undefined}>
+              <CanvasRenderer
+                ref={canvasRef}
+                elements={visibleElements}
+                selectedId={null}
+                onSelect={() => {}}
+                onUpdate={() => {}}
+                readOnly
+                variableValues={displayValues}
+              />
+            </div>
           </main>
         )}
       </div>
