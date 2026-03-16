@@ -80,8 +80,8 @@ export const starterTemplates: Template[] = [
     settings: { taxRate: 0.10, showTax: true }, color: '#6366F1',
   }),
 
-  makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Orçamento completo para produção de eventos', [
-    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'ORÇAMENTO DE PRODUÇÃO', fontSize: 26, fontWeight: '700', alignment: 'center' }),
+  makeTemplate('event-production', 'Produção de Eventos', 'Eventos', 'Proposta completa para produção de eventos', [
+    el({ type: 'text', x: 40, y: 40, width: 515, height: 45, content: 'PROPOSTA DE PRODUÇÃO', fontSize: 26, fontWeight: '700', alignment: 'center' }),
     el({ type: 'divider', x: 40, y: 95, width: 515, height: 2, content: '' }),
     el({ type: 'dynamic-field', x: 40, y: 115, width: 250, height: 30, content: 'Evento:', variable: 'event_name', fieldCategory: 'input' }),
     el({ type: 'dynamic-field', x: 40, y: 150, width: 250, height: 30, content: 'Local:', variable: 'location', fieldCategory: 'input' }),
