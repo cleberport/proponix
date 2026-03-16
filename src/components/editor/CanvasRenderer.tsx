@@ -395,6 +395,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+            cursor: el.locked ? 'not-allowed' : (editingImageId === el.id ? 'move' : (readOnly ? 'default' : 'grab')),
           };
 
           const objectPosition = typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number'
