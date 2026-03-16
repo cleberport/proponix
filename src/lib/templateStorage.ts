@@ -293,15 +293,20 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     updatedAt: now,
   };
 
+  let localPersisted = false;
   try {
     // safety net: local cache first, but never break save flow if storage is full
     mergeIntoCache(saved);
+    localPersisted = true;
   } catch (cacheError) {
     console.warn('Não foi possível salvar em cache local:', cacheError);
   }
 
   const userId = await getCurrentUserId();
   if (!userId) {
+    if (!localPersisted) {
+      throw new Error('Falha ao salvar localmente. Reduza o tamanho da imagem e tente novamente.');
+    }
     return saved;
   }
 
@@ -314,6 +319,9 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
 
     if (error) {
       console.error('Erro ao salvar template no backend:', error);
+      if (!localPersisted) {
+        throw new Error(error.message || 'Falha ao salvar template no backend');
+      }
       return saved;
     }
 
@@ -326,6 +334,9 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     return mapped;
   } catch (err) {
     console.error('Erro inesperado ao salvar template:', err);
+    if (!localPersisted) {
+      throw err instanceof Error ? err : new Error('Falha ao salvar template');
+    }
     return saved;
   }
 }
