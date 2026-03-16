@@ -419,8 +419,21 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${el.locked ? 'cursor-not-allowed' : ''}`}
-              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              className={`relative flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${editingImageId === el.id ? 'ring-2 ring-primary ring-inset' : ''}`}
+              onPointerDown={(e) => {
+                if (editingImageId === el.id) {
+                  handleImagePanPointerDown(e, el);
+                  return;
+                }
+                handlePointerDown(e, el, 'drag');
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (!readOnly && !el.locked) {
+                  setEditingImageId((prev) => (prev === el.id ? null : el.id));
+                  onSelect(el.id);
+                }
+              }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {el.imageUrl ? (
