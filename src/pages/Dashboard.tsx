@@ -90,7 +90,7 @@ const Dashboard = () => {
             size="lg"
           >
             <Zap className="h-5 w-5" />
-            Criar Orçamento Rápido
+            Criar Proposta Rápida
           </Button>
         </motion.div>
       )}
