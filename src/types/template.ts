@@ -30,6 +30,8 @@ export interface CanvasElement {
   imageUrl?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none';
   objectPosition?: string; // e.g. 'center', 'top', 'bottom left'
+  objectPositionX?: number; // manual horizontal position in % (0-100)
+  objectPositionY?: number; // manual vertical position in % (0-100)
 
   // Image editing properties
   rotation?: number; // degrees

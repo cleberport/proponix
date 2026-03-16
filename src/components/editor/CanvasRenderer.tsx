@@ -21,14 +21,42 @@ const CANVAS_H = 842;
 const GRID = 10;
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+
+const OBJECT_POSITION_PRESETS: Record<string, { x: number; y: number }> = {
+  'top left': { x: 0, y: 0 },
+  'top center': { x: 50, y: 0 },
+  'top right': { x: 100, y: 0 },
+  'center left': { x: 0, y: 50 },
+  center: { x: 50, y: 50 },
+  'center right': { x: 100, y: 50 },
+  'bottom left': { x: 0, y: 100 },
+  'bottom center': { x: 50, y: 100 },
+  'bottom right': { x: 100, y: 100 },
+  top: { x: 50, y: 0 },
+  bottom: { x: 50, y: 100 },
+  left: { x: 0, y: 50 },
+  right: { x: 100, y: 50 },
+};
+
+const resolveObjectPositionPercent = (el: CanvasElement): { x: number; y: number } => {
+  if (typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number') {
+    return { x: clamp(el.objectPositionX, 0, 100), y: clamp(el.objectPositionY, 0, 100) };
+  }
+
+  const presetKey = (el.objectPosition || 'center').toLowerCase();
+  return OBJECT_POSITION_PRESETS[presetKey] || OBJECT_POSITION_PRESETS.center;
+};
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
+    const [editingImageId, setEditingImageId] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
+    const imagePanStart = useRef({ x: 0, y: 0, posX: 50, posY: 50, width: 1, height: 1 });
     const canvasElRef = useRef<HTMLDivElement>(null);
 
     const isSelected = (id: string) => selectedIds.includes(id) || selectedId === id;
@@ -39,6 +67,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.stopPropagation();
         e.preventDefault();
         onSelect(el.id);
+        if (editingImageId !== el.id) setEditingImageId(null);
         startPos.current = { x: e.clientX, y: e.clientY, elX: el.x, elY: el.y, elW: el.width, elH: el.height };
         if (mode === 'drag') setDragging(el.id);
         else setResizing(el.id);
@@ -93,11 +122,54 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         document.addEventListener('pointermove', handleMove);
         document.addEventListener('pointerup', handleUp);
       },
-      [onSelect, onUpdate, readOnly, selectedIds, elements]
+      [onSelect, onUpdate, readOnly, selectedIds, elements, editingImageId]
+    );
+
+    const handleImagePanPointerDown = useCallback(
+      (e: React.PointerEvent, el: CanvasElement) => {
+        if (readOnly || el.locked) return;
+        e.stopPropagation();
+        e.preventDefault();
+        onSelect(el.id);
+
+        const currentPos = resolveObjectPositionPercent(el);
+        imagePanStart.current = {
+          x: e.clientX,
+          y: e.clientY,
+          posX: currentPos.x,
+          posY: currentPos.y,
+          width: Math.max(1, el.width),
+          height: Math.max(1, el.height),
+        };
+
+        const handleMove = (ev: PointerEvent) => {
+          const dx = ev.clientX - imagePanStart.current.x;
+          const dy = ev.clientY - imagePanStart.current.y;
+
+          const nextX = clamp(imagePanStart.current.posX + (dx / imagePanStart.current.width) * 100, 0, 100);
+          const nextY = clamp(imagePanStart.current.posY + (dy / imagePanStart.current.height) * 100, 0, 100);
+
+          onUpdate(el.id, {
+            objectPositionX: nextX,
+            objectPositionY: nextY,
+            objectFit: el.objectFit === 'contain' ? 'cover' : el.objectFit,
+          });
+        };
+
+        const handleUp = () => {
+          document.removeEventListener('pointermove', handleMove);
+          document.removeEventListener('pointerup', handleUp);
+        };
+
+        document.addEventListener('pointermove', handleMove);
+        document.addEventListener('pointerup', handleUp);
+      },
+      [onSelect, onUpdate, readOnly]
     );
 
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
+      setEditingImageId(null);
       onSelect(null);
       
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -325,11 +397,16 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+            cursor: el.locked ? 'not-allowed' : (editingImageId === el.id ? 'move' : (readOnly ? 'default' : 'grab')),
           };
+
+          const objectPosition = typeof el.objectPositionX === 'number' && typeof el.objectPositionY === 'number'
+            ? `${clamp(el.objectPositionX, 0, 100)}% ${clamp(el.objectPositionY, 0, 100)}%`
+            : (el.objectPosition || 'center');
 
           const imgInnerStyle: React.CSSProperties = {
             objectFit: (el.objectFit as React.CSSProperties['objectFit']) || 'contain',
-            objectPosition: el.objectPosition || 'center',
+            objectPosition,
             filter: filterStr,
             width: '100%',
             height: '100%',
@@ -344,8 +421,21 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${el.locked ? 'cursor-not-allowed' : ''}`}
-              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              className={`relative flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${editingImageId === el.id ? 'ring-2 ring-primary ring-inset' : ''}`}
+              onPointerDown={(e) => {
+                if (editingImageId === el.id) {
+                  handleImagePanPointerDown(e, el);
+                  return;
+                }
+                handlePointerDown(e, el, 'drag');
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (!readOnly && !el.locked) {
+                  setEditingImageId((prev) => (prev === el.id ? null : el.id));
+                  onSelect(el.id);
+                }
+              }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {el.imageUrl ? (
@@ -368,6 +458,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
+                </div>
+              )}
+              {editingImageId === el.id && !el.locked && (
+                <div className="pointer-events-none absolute bottom-1 left-1 rounded bg-card/85 px-1.5 py-0.5 text-[10px] text-foreground">
+                  Reenquadrando • arraste a foto
                 </div>
               )}
               {resizeHandle}
