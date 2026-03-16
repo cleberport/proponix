@@ -233,7 +233,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       };
 
       if (el.type === 'logo' || el.type === 'image') {
-        // height auto
+        // Height managed by container style in image rendering
       } else if (el.type !== 'divider') {
         style.height = el.height;
       }
