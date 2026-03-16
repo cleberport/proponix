@@ -185,7 +185,7 @@
   }
 
   .landing-gradient {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(262 83% 58% / 0.15), transparent);
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(346 100% 59% / 0.15), transparent);
   }
 
   .glass-card {
