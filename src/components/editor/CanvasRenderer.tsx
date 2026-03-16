@@ -152,6 +152,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           onUpdate(el.id, {
             objectPositionX: nextX,
             objectPositionY: nextY,
+            objectFit: el.objectFit === 'contain' ? 'cover' : el.objectFit,
           });
         };
 
