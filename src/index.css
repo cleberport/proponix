@@ -39,9 +39,9 @@
     --canvas: 0 0% 100%;
     --canvas-shadow: 0 4px 24px -4px hsl(240 10% 4% / 0.08);
     --grid-dot: 240 6% 90%;
-    --snap-line: 262 83% 58%;
-    --element-hover: 262 83% 58% / 0.08;
-    --element-selected: 262 83% 58% / 0.15;
+    --snap-line: 346 100% 59%;
+    --element-hover: 346 100% 59% / 0.08;
+    --element-selected: 346 100% 59% / 0.15;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 10% 4%;
