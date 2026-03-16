@@ -14,7 +14,7 @@ const fadeUp = {
 const plans = [
   {
     name: 'Gratuito', price: 'R$ 0', period: '',
-    features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Budgetly'],
+    features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Proponix'],
     cta: 'Começar grátis', highlight: false,
   },
   {
