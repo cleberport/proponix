@@ -119,7 +119,7 @@ const Landing = () => {
               <Button size="lg" variant="outline" onClick={() => {
                 document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
               }}
-                className="h-12 w-full px-8 text-base sm:w-auto border-[hsl(var(--landing-border))] text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))]">
+                className="h-12 w-full px-8 text-base sm:w-auto border-[hsl(var(--landing-border))] bg-transparent text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))]">
                 Ver como funciona
               </Button>
             </motion.div>
