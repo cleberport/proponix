@@ -1,9 +1,14 @@
-import { getSettings } from '@/lib/templateStorage';
+import { useState, useEffect } from 'react';
+import { getSettings, loadSettingsFromServer, AppSettings } from '@/lib/templateStorage';
 import { decimalToPercent } from '@/lib/calculations';
 import { User, Building2, Mail, Phone, Globe, MapPin } from 'lucide-react';
 
 const Profile = () => {
-  const settings = getSettings();
+  const [settings, setSettings] = useState<AppSettings>(getSettings());
+
+  useEffect(() => {
+    loadSettingsFromServer().then(setSettings);
+  }, []);
 
   const infoItems = [
     { label: 'CNPJ', value: settings.companyCnpj, icon: Building2 },
