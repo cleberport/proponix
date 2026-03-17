@@ -501,6 +501,10 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
   const saved = cached.find((template) => template.id === id);
   if (saved) return saved;
 
+  if (!isUuid(id)) {
+    return starterTemplates.find((template) => template.id === id);
+  }
+
   const userId = await getCurrentUserId();
   if (userId) {
     const { data, error } = await db

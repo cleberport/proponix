@@ -34,17 +34,34 @@ const Templates = () => {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    await deleteTemplate(deleteId);
-    await refreshSaved();
-    toast.success('Template excluído');
+
+    const idToDelete = deleteId;
+    setSaved((prev) => prev.filter((template) => template.id !== idToDelete));
     setDeleteId(null);
+
+    try {
+      await deleteTemplate(idToDelete);
+      toast.success('Template excluído');
+    } catch (err) {
+      console.error('Erro ao excluir template:', err);
+      await refreshSaved();
+      toast.error('Erro ao excluir template');
+    }
   };
 
   const handleDuplicate = async (id: string) => {
-    const dup = await duplicateTemplate(id);
-    if (dup) {
-      await refreshSaved();
-      toast.success('Template duplicado');
+    try {
+      const dup = await duplicateTemplate(id);
+      if (dup) {
+        setSaved((prev) => [dup, ...prev.filter((template) => template.id !== dup.id)]);
+        toast.success('Template duplicado');
+        void refreshSaved();
+      } else {
+        toast.error('Template original não encontrado');
+      }
+    } catch (err) {
+      console.error('Erro ao duplicar template:', err);
+      toast.error('Erro ao duplicar template');
     }
   };
 
