@@ -496,6 +496,7 @@ const Generate = () => {
                   variableValues={displayValues}
                   backgroundColor={template?.settings?.backgroundColor}
                 />
+              </div>
             </main>
           </div>
         )}
