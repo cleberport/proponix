@@ -230,6 +230,82 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [selectedId, elements, setElements]);
 
+  // Multi-select alignment operations
+  const alignElements = useCallback((alignment: 'left' | 'center-x' | 'right' | 'top' | 'center-y' | 'bottom' | 'distribute-h' | 'distribute-v') => {
+    if (selectedIds.length < 2) return;
+    const currentEls = pages[currentPage] || [];
+    const selected = currentEls.filter(el => selectedIds.includes(el.id));
+    if (selected.length < 2) return;
+
+    setElements(prev => {
+      const sel = prev.filter(el => selectedIds.includes(el.id));
+      if (sel.length < 2) return prev;
+
+      let updates: Record<string, Partial<CanvasElement>> = {};
+
+      switch (alignment) {
+        case 'left': {
+          const minX = Math.min(...sel.map(e => e.x));
+          sel.forEach(e => { updates[e.id] = { x: minX }; });
+          break;
+        }
+        case 'center-x': {
+          const avgCenterX = sel.reduce((s, e) => s + e.x + e.width / 2, 0) / sel.length;
+          sel.forEach(e => { updates[e.id] = { x: Math.round(avgCenterX - e.width / 2) }; });
+          break;
+        }
+        case 'right': {
+          const maxRight = Math.max(...sel.map(e => e.x + e.width));
+          sel.forEach(e => { updates[e.id] = { x: maxRight - e.width }; });
+          break;
+        }
+        case 'top': {
+          const minY = Math.min(...sel.map(e => e.y));
+          sel.forEach(e => { updates[e.id] = { y: minY }; });
+          break;
+        }
+        case 'center-y': {
+          const avgCenterY = sel.reduce((s, e) => s + e.y + e.height / 2, 0) / sel.length;
+          sel.forEach(e => { updates[e.id] = { y: Math.round(avgCenterY - e.height / 2) }; });
+          break;
+        }
+        case 'bottom': {
+          const maxBottom = Math.max(...sel.map(e => e.y + e.height));
+          sel.forEach(e => { updates[e.id] = { y: maxBottom - e.height }; });
+          break;
+        }
+        case 'distribute-h': {
+          const sorted = [...sel].sort((a, b) => a.x - b.x);
+          const totalWidth = sorted.reduce((s, e) => s + e.width, 0);
+          const minX = sorted[0].x;
+          const maxRight = sorted[sorted.length - 1].x + sorted[sorted.length - 1].width;
+          const gap = (maxRight - minX - totalWidth) / (sorted.length - 1);
+          let currentX = minX;
+          sorted.forEach(e => {
+            updates[e.id] = { x: Math.round(currentX) };
+            currentX += e.width + gap;
+          });
+          break;
+        }
+        case 'distribute-v': {
+          const sorted = [...sel].sort((a, b) => a.y - b.y);
+          const totalHeight = sorted.reduce((s, e) => s + e.height, 0);
+          const minY = sorted[0].y;
+          const maxBottom = sorted[sorted.length - 1].y + sorted[sorted.length - 1].height;
+          const gap = (maxBottom - minY - totalHeight) / (sorted.length - 1);
+          let currentY = minY;
+          sorted.forEach(e => {
+            updates[e.id] = { y: Math.round(currentY) };
+            currentY += e.height + gap;
+          });
+          break;
+        }
+      }
+
+      return prev.map(el => updates[el.id] ? { ...el, ...updates[el.id] } : el);
+    });
+  }, [selectedIds, pages, currentPage, setElements]);
+
   // Page management
   const addPage = useCallback(() => {
     setPages(prev => [...prev, []]);
