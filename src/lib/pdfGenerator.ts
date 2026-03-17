@@ -75,7 +75,7 @@ async function preloadImages(elements: CanvasElement[]): Promise<Map<string, { d
   const imageEls = elements.filter(el => (el.type === 'logo' || el.type === 'image') && el.imageUrl);
   const loaded = await Promise.all(imageEls.map(async el => ({
     id: el.id,
-    ...(await loadImageAsDataUrl(el.imageUrl!)),
+    ...(await loadImageAsDataUrl(el.imageUrl!, el.imageOpacity)),
   })));
   loaded.forEach(item => imageMap.set(item.id, item));
   return imageMap;
