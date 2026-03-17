@@ -101,7 +101,9 @@ const Editor = () => {
       setDefaultValues(existing.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
       setInputFields(existing.inputFields || ['client_name', 'event_name', 'location', 'event_date']);
       setCalculatedFields(existing.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS });
-      setSettings(existing.settings || { taxRate: 0.10, showTax: true });
+      const loadedSettings = existing.settings || { taxRate: 0.10, showTax: true };
+      setSettings(loadedSettings);
+      setCanvasBgColor(loadedSettings.backgroundColor || '#ffffff');
       setTemplateColor(existing.color || TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
       setLoadingTemplate(false);
     };
