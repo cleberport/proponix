@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -230,6 +230,82 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [selectedId, elements, setElements]);
 
+  // Multi-select alignment operations
+  const alignElements = useCallback((alignment: 'left' | 'center-x' | 'right' | 'top' | 'center-y' | 'bottom' | 'distribute-h' | 'distribute-v') => {
+    if (selectedIds.length < 2) return;
+    const currentEls = pages[currentPage] || [];
+    const selected = currentEls.filter(el => selectedIds.includes(el.id));
+    if (selected.length < 2) return;
+
+    setElements(prev => {
+      const sel = prev.filter(el => selectedIds.includes(el.id));
+      if (sel.length < 2) return prev;
+
+      let updates: Record<string, Partial<CanvasElement>> = {};
+
+      switch (alignment) {
+        case 'left': {
+          const minX = Math.min(...sel.map(e => e.x));
+          sel.forEach(e => { updates[e.id] = { x: minX }; });
+          break;
+        }
+        case 'center-x': {
+          const avgCenterX = sel.reduce((s, e) => s + e.x + e.width / 2, 0) / sel.length;
+          sel.forEach(e => { updates[e.id] = { x: Math.round(avgCenterX - e.width / 2) }; });
+          break;
+        }
+        case 'right': {
+          const maxRight = Math.max(...sel.map(e => e.x + e.width));
+          sel.forEach(e => { updates[e.id] = { x: maxRight - e.width }; });
+          break;
+        }
+        case 'top': {
+          const minY = Math.min(...sel.map(e => e.y));
+          sel.forEach(e => { updates[e.id] = { y: minY }; });
+          break;
+        }
+        case 'center-y': {
+          const avgCenterY = sel.reduce((s, e) => s + e.y + e.height / 2, 0) / sel.length;
+          sel.forEach(e => { updates[e.id] = { y: Math.round(avgCenterY - e.height / 2) }; });
+          break;
+        }
+        case 'bottom': {
+          const maxBottom = Math.max(...sel.map(e => e.y + e.height));
+          sel.forEach(e => { updates[e.id] = { y: maxBottom - e.height }; });
+          break;
+        }
+        case 'distribute-h': {
+          const sorted = [...sel].sort((a, b) => a.x - b.x);
+          const totalWidth = sorted.reduce((s, e) => s + e.width, 0);
+          const minX = sorted[0].x;
+          const maxRight = sorted[sorted.length - 1].x + sorted[sorted.length - 1].width;
+          const gap = (maxRight - minX - totalWidth) / (sorted.length - 1);
+          let currentX = minX;
+          sorted.forEach(e => {
+            updates[e.id] = { x: Math.round(currentX) };
+            currentX += e.width + gap;
+          });
+          break;
+        }
+        case 'distribute-v': {
+          const sorted = [...sel].sort((a, b) => a.y - b.y);
+          const totalHeight = sorted.reduce((s, e) => s + e.height, 0);
+          const minY = sorted[0].y;
+          const maxBottom = sorted[sorted.length - 1].y + sorted[sorted.length - 1].height;
+          const gap = (maxBottom - minY - totalHeight) / (sorted.length - 1);
+          let currentY = minY;
+          sorted.forEach(e => {
+            updates[e.id] = { y: Math.round(currentY) };
+            currentY += e.height + gap;
+          });
+          break;
+        }
+      }
+
+      return prev.map(el => updates[el.id] ? { ...el, ...updates[el.id] } : el);
+    });
+  }, [selectedIds, pages, currentPage, setElements]);
+
   // Page management
   const addPage = useCallback(() => {
     setPages(prev => [...prev, []]);
@@ -265,43 +341,52 @@ const Editor = () => {
   }, []);
 
   const handleSave = async () => {
-    try {
-      const shouldCreateNewId = isNew || !id || !isUuid(id);
-      const optimizedLayout = await optimizeTemplatePagesForSave(pages);
-      const template: Template = {
-        id: shouldCreateNewId ? uuidv4() : id,
-        name: templateName,
-        category: baseCategory,
-        description: baseDescription,
-        thumbnail: '',
-        color: templateColor,
-        elements: optimizedLayout.pages[0] || [],
-        pages: optimizedLayout.pages,
-        variables,
-        canvasWidth: 595,
-        canvasHeight: 842,
-        defaultValues,
-        inputFields,
-        calculatedFields,
-        settings: { ...settings, backgroundColor: canvasBgColor },
-      };
+    const shouldCreateNewId = isNew || !id || !isUuid(id);
+    const finalId = shouldCreateNewId ? uuidv4() : id!;
 
-      const saved = await saveTemplate(template);
-      if (optimizedLayout.optimizedCount > 0) {
-        toast.info(`${optimizedLayout.optimizedCount} imagem(ns) foram otimizadas para salvar sem erro.`);
-      }
-      toast.success('Template salvo!');
+    // Build template immediately with raw pages for instant local save
+    const template: Template = {
+      id: finalId,
+      name: templateName,
+      category: baseCategory,
+      description: baseDescription,
+      thumbnail: '',
+      color: templateColor,
+      elements: pages[0] || [],
+      pages: pages,
+      variables,
+      canvasWidth: 595,
+      canvasHeight: 842,
+      defaultValues,
+      inputFields,
+      calculatedFields,
+      settings: { ...settings, backgroundColor: canvasBgColor },
+    };
 
-      if (shouldCreateNewId) {
-        navigate(`/editor/${saved.id}`, { replace: true });
-      }
+    // Instant feedback
+    toast.success('Template salvo!');
 
-      return saved;
-    } catch (err) {
-      console.error('Erro ao salvar template:', err);
-      toast.error('Erro ao salvar template. Tente novamente.');
-      return undefined;
+    if (shouldCreateNewId) {
+      navigate(`/editor/${finalId}`, { replace: true });
     }
+
+    // Background: optimize images + persist to backend
+    (async () => {
+      try {
+        const optimizedLayout = await optimizeTemplatePagesForSave(pages);
+        template.elements = optimizedLayout.pages[0] || [];
+        template.pages = optimizedLayout.pages;
+        await saveTemplate(template);
+        if (optimizedLayout.optimizedCount > 0) {
+          toast.info(`${optimizedLayout.optimizedCount} imagem(ns) otimizadas.`);
+        }
+      } catch (err) {
+        console.error('Erro ao salvar template:', err);
+        toast.error('Erro ao sincronizar template. Tente novamente.');
+      }
+    })();
+
+    return { id: finalId, name: templateName } as any;
   };
 
   const addVariable = () => {
@@ -632,10 +717,14 @@ const Editor = () => {
           <Button
             size="sm"
             className="h-10 md:h-9"
-            onClick={async () => {
-              const saved = await handleSave();
-              const targetId = saved?.id || (!isNew ? id : null);
-              if (targetId) navigate(`/generate/${targetId}`);
+            onClick={() => {
+              const targetId = !isNew && id && isUuid(id) ? id : null;
+              void handleSave();
+              if (targetId) {
+                navigate(`/generate/${targetId}`);
+              }
+              // For new templates, handleSave already navigates to /editor/:id
+              // User can click Gerar again after save completes
             }}
           >
             <Play className="mr-1 h-4 w-4" />
@@ -710,6 +799,37 @@ const Editor = () => {
                 />
               </PopoverContent>
             </Popover>
+
+            {/* Multi-select alignment buttons */}
+            {selectedIds.length > 1 && !isMobile && (
+              <div className="flex items-center gap-0.5 ml-1 border-l border-border pl-2">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar à esquerda" onClick={() => alignElements('left')}>
+                  <AlignStartVertical className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Centralizar horizontalmente" onClick={() => alignElements('center-x')}>
+                  <AlignCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar à direita" onClick={() => alignElements('right')}>
+                  <AlignEndVertical className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar ao topo" onClick={() => alignElements('top')}>
+                  <AlignStartHorizontal className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Centralizar verticalmente" onClick={() => alignElements('center-y')}>
+                  <AlignVerticalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar embaixo" onClick={() => alignElements('bottom')}>
+                  <AlignEndHorizontal className="h-3.5 w-3.5" />
+                </Button>
+                <div className="w-px h-5 bg-border mx-0.5" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Distribuir horizontalmente" onClick={() => alignElements('distribute-h')}>
+                  <AlignHorizontalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Distribuir verticalmente" onClick={() => alignElements('distribute-v')}>
+                  <AlignVerticalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
 
             {/* Desktop page nav */}
             {!isMobile && (

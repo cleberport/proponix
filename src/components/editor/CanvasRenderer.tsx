@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useState, useRef } from 'react';
+import { forwardRef, useCallback, useState, useRef, useEffect } from 'react';
 import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
@@ -20,8 +20,88 @@ interface Props {
 const CANVAS_W = 595;
 const CANVAS_H = 842;
 const GRID = 10;
+const SNAP_THRESHOLD = 5;
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
+
+interface AlignGuide {
+  pos: number;
+  orientation: 'h' | 'v';
+}
+
+function computeElementSnap(
+  el: { x: number; y: number; width: number; height: number },
+  others: { x: number; y: number; width: number; height: number }[],
+): { x: number | null; y: number | null; guides: AlignGuide[] } {
+  const guides: AlignGuide[] = [];
+  let bestDx = SNAP_THRESHOLD + 1;
+  let bestDy = SNAP_THRESHOLD + 1;
+  let snapX: number | null = null;
+  let snapY: number | null = null;
+
+  const dragEdgesX = [el.x, el.x + el.width / 2, el.x + el.width];
+  const dragEdgesY = [el.y, el.y + el.height / 2, el.y + el.height];
+
+  // Include canvas edges + center as snap targets
+  const targets = [
+    ...others,
+    { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H },
+  ];
+
+  for (const other of targets) {
+    const otherEdgesX = [other.x, other.x + other.width / 2, other.x + other.width];
+    const otherEdgesY = [other.y, other.y + other.height / 2, other.y + other.height];
+
+    for (const de of dragEdgesX) {
+      for (const oe of otherEdgesX) {
+        const d = Math.abs(de - oe);
+        if (d <= SNAP_THRESHOLD && d < bestDx) {
+          bestDx = d;
+          snapX = el.x + (oe - de);
+        }
+      }
+    }
+
+    for (const de of dragEdgesY) {
+      for (const oe of otherEdgesY) {
+        const d = Math.abs(de - oe);
+        if (d <= SNAP_THRESHOLD && d < bestDy) {
+          bestDy = d;
+          snapY = el.y + (oe - de);
+        }
+      }
+    }
+  }
+
+  // Generate guide lines for snapped positions
+  if (snapX !== null) {
+    const finalEdgesX = [snapX, snapX + el.width / 2, snapX + el.width];
+    for (const other of targets) {
+      for (const oe of [other.x, other.x + other.width / 2, other.x + other.width]) {
+        for (const fe of finalEdgesX) {
+          if (Math.abs(fe - oe) < 1 && !guides.some(g => g.orientation === 'v' && Math.abs(g.pos - oe) < 1)) {
+            guides.push({ pos: oe, orientation: 'v' });
+          }
+        }
+      }
+    }
+  }
+
+  if (snapY !== null) {
+    const finalEdgesY = [snapY, snapY + el.height / 2, snapY + el.height];
+    for (const other of targets) {
+      for (const oe of [other.y, other.y + other.height / 2, other.y + other.height]) {
+        for (const fe of finalEdgesY) {
+          if (Math.abs(fe - oe) < 1 && !guides.some(g => g.orientation === 'h' && Math.abs(g.pos - oe) < 1)) {
+            guides.push({ pos: oe, orientation: 'h' });
+          }
+        }
+      }
+    }
+  }
+
+  return { x: snapX, y: snapY, guides };
+}
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
@@ -30,8 +110,14 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     const [editingImageId, setEditingImageId] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
+    const [guides, setGuides] = useState<AlignGuide[]>([]);
     const startPos = useRef({ x: 0, y: 0, elX: 0, elY: 0, elW: 0, elH: 0 });
     const canvasElRef = useRef<HTMLDivElement>(null);
+    const elementsRef = useRef(elements);
+
+    useEffect(() => {
+      elementsRef.current = elements;
+    }, [elements]);
 
     const isSelected = (id: string) => selectedIds.includes(id) || selectedId === id;
 
@@ -50,7 +136,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const aspectRatio = isLogo && el.height > 0 ? el.width / el.height : 0;
 
         const multiDragStart = selectedIds.includes(el.id) && selectedIds.length > 1 && mode === 'drag'
-          ? elements.filter(e => selectedIds.includes(e.id)).map(e => ({ id: e.id, x: e.x, y: e.y }))
+          ? elementsRef.current.filter(e => selectedIds.includes(e.id)).map(e => ({ id: e.id, x: e.x, y: e.y }))
           : null;
 
         const handleMove = (ev: PointerEvent) => {
@@ -64,13 +150,28 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   y: snap(Math.max(0, item.y + dy)),
                 });
               });
+              setGuides([]);
             } else {
               const maxX = Math.max(0, CANVAS_W - el.width);
               const maxY = Math.max(0, CANVAS_H - el.height);
-              onUpdate(el.id, {
-                x: snap(Math.max(0, Math.min(maxX, startPos.current.elX + dx))),
-                y: snap(Math.max(0, Math.min(maxY, startPos.current.elY + dy))),
-              });
+              let newX = Math.max(0, Math.min(maxX, startPos.current.elX + dx));
+              let newY = Math.max(0, Math.min(maxY, startPos.current.elY + dy));
+
+              // Compute snap against other elements
+              const others = elementsRef.current.filter(e => e.id !== el.id);
+              const snapResult = computeElementSnap(
+                { x: newX, y: newY, width: el.width, height: el.height },
+                others,
+              );
+
+              if (snapResult.x !== null) newX = Math.max(0, Math.min(maxX, snapResult.x));
+              else newX = snap(newX);
+
+              if (snapResult.y !== null) newY = Math.max(0, Math.min(maxY, snapResult.y));
+              else newY = snap(newY);
+
+              setGuides(snapResult.guides);
+              onUpdate(el.id, { x: newX, y: newY });
             }
           } else {
             if (isLogo && aspectRatio > 0) {
@@ -89,6 +190,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const handleUp = () => {
           setDragging(null);
           setResizing(null);
+          setGuides([]);
           document.removeEventListener('pointermove', handleMove);
           document.removeEventListener('pointerup', handleUp);
         };
@@ -96,7 +198,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         document.addEventListener('pointermove', handleMove);
         document.addEventListener('pointerup', handleUp);
       },
-      [onSelect, onUpdate, readOnly, selectedIds, elements, editingImageId]
+      [onSelect, onUpdate, readOnly, selectedIds, editingImageId]
     );
 
     const handleImagePanPointerDown = useCallback(
@@ -159,7 +261,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         const y2 = Math.max(y, my);
         
         if (Math.abs(x2 - x1) > 5 && Math.abs(y2 - y1) > 5) {
-          const selected = elements.filter(el => {
+          const selected = elementsRef.current.filter(el => {
             const elRight = el.x + el.width;
             const elBottom = el.y + el.height;
             return el.x < x2 && elRight > x1 && el.y < y2 && elBottom > y1;
@@ -176,7 +278,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
-    }, [readOnly, onSelect, onMultiSelect, elements]);
+    }, [readOnly, onSelect, onMultiSelect]);
 
     // Drag & drop images
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -256,9 +358,12 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const resolveVariable = (el: CanvasElement): string => {
       if (variableValues && el.variable) {
-        return variableValues[el.variable] || `{{${el.variable}}}`;
+        const val = variableValues[el.variable];
+        if (val) return val;
+        // In readOnly mode, don't show placeholder
+        return readOnly ? '' : `{{${el.variable}}}`;
       }
-      return el.variable ? `{{${el.variable}}}` : '';
+      return readOnly ? '' : (el.variable ? `{{${el.variable}}}` : '');
     };
 
     const boxSelectRect = boxSelect ? {
@@ -318,7 +423,10 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
         case 'dynamic-field':
         case 'price-field':
-        case 'total-calculation':
+        case 'total-calculation': {
+          const varValue = resolveVariable(el);
+          // In readOnly, hide the entire element label when variable has no value
+          const showContent = el.content && (!readOnly || varValue);
           return (
             <div
               key={el.id}
@@ -327,13 +435,14 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              {el.content && <span>{resolveContent(el)}</span>}
+              {showContent && <span>{resolveContent(el)}</span>}
               <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono'}`} style={readOnly ? {} : { color: el.color || 'hsl(var(--primary))' }}>
-                {resolveVariable(el)}
+                {varValue}
               </span>
               {resizeHandle}
             </div>
           );
+        }
 
         case 'divider':
           return (
@@ -379,7 +488,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             cursor: el.locked ? 'not-allowed' : (isFraming ? 'grab' : (readOnly ? 'default' : 'grab')),
           };
 
-          // In framing mode, image is rendered larger than container and offset
           const imgInnerStyle: React.CSSProperties = {
             filter: filterStr,
             position: 'absolute',
@@ -414,7 +522,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 if (!readOnly && !el.locked && el.imageUrl) {
                   const entering = editingImageId !== el.id;
                   setEditingImageId(entering ? el.id : null);
-                  // Auto-zoom to 120% on first enter if at 100%
                   if (entering && (el.imageScale || 1) <= 1) {
                     onUpdate(el.id, { imageScale: 1.2 });
                   }
@@ -522,6 +629,20 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         onDrop={handleDrop}
       >
         {elements.map(renderElement)}
+
+        {/* Alignment guide lines */}
+        {guides.map((guide, i) => (
+          <div
+            key={`guide-${i}`}
+            className="pointer-events-none absolute"
+            style={
+              guide.orientation === 'v'
+                ? { left: guide.pos, top: 0, width: 1, height: CANVAS_H, backgroundColor: 'hsl(var(--primary))', opacity: 0.7, zIndex: 9999 }
+                : { top: guide.pos, left: 0, height: 1, width: CANVAS_W, backgroundColor: 'hsl(var(--primary))', opacity: 0.7, zIndex: 9999 }
+            }
+          />
+        ))}
+
         {boxSelectRect && (
           <div
             className="absolute border-2 border-primary/50 bg-primary/10 pointer-events-none"
