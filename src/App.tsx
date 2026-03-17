@@ -3,22 +3,31 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { getSettings } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import AppLayout from "./components/AppLayout";
+
+// Eagerly loaded (landing + auth are entry points)
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import Pricing from "./pages/Pricing";
-import Dashboard from "./pages/Dashboard";
 
-import Documents from "./pages/Documents";
-import Profile from "./pages/Profile";
-import SettingsPage from "./pages/Settings";
-import Editor from "./pages/Editor";
-import Generate from "./pages/Generate";
-import NotFound from "./pages/NotFound";
+// Lazy-loaded pages for code splitting
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Documents = lazy(() => import("./pages/Documents"));
+const Profile = lazy(() => import("./pages/Profile"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const Editor = lazy(() => import("./pages/Editor"));
+const Generate = lazy(() => import("./pages/Generate"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const PageLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
