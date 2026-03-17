@@ -33,7 +33,7 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
   return lines;
 }
 
-function loadImageAsDataUrl(url: string): Promise<{ data: string; w: number; h: number }> {
+function loadImageAsDataUrl(url: string, opacity?: number): Promise<{ data: string; w: number; h: number }> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -45,6 +45,11 @@ function loadImageAsDataUrl(url: string): Promise<{ data: string; w: number; h: 
       const ctx = canvas.getContext('2d')!;
       // Don't fill background — preserve transparency for PNGs
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Apply opacity if needed (0-100 scale, default 100)
+      const alpha = (opacity ?? 100) / 100;
+      if (alpha < 1) {
+        ctx.globalAlpha = alpha;
+      }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve({ data: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
     };
