@@ -74,6 +74,45 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_documents: {
+        Row: {
+          client_name: string
+          created_at: string
+          file_name: string
+          generated_at: string
+          id: string
+          template_id: string
+          template_name: string
+          updated_at: string
+          user_id: string
+          values: Json
+        }
+        Insert: {
+          client_name?: string
+          created_at?: string
+          file_name: string
+          generated_at?: string
+          id?: string
+          template_id: string
+          template_name?: string
+          updated_at?: string
+          user_id: string
+          values?: Json
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          file_name?: string
+          generated_at?: string
+          id?: string
+          template_id?: string
+          template_name?: string
+          updated_at?: string
+          user_id?: string
+          values?: Json
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           company_address: string

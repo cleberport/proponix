@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDocumentHistory, deleteDocumentFromHistory } from '@/lib/templateStorage';
+import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
 import { FileText, Trash2, RefreshCw, Calendar, Pencil, Copy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,6 +13,10 @@ const Documents = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState(getDocumentHistory());
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadDocumentHistoryFromServer().then(setHistory);
+  }, []);
 
   const handleDelete = () => {
     if (!deleteId) return;
