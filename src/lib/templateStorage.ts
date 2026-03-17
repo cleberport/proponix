@@ -88,13 +88,15 @@ const toTemplateSettings = (value: unknown): TemplateSettings => {
     return { taxRate: 0.10, showTax: true };
   }
 
-  const settings = value as { taxRate?: unknown; showTax?: unknown };
+  const settings = value as { taxRate?: unknown; showTax?: unknown; backgroundColor?: unknown };
   const taxRate = typeof settings.taxRate === 'number' ? settings.taxRate : parseFloat(String(settings.taxRate ?? '0.10'));
   const showTax = typeof settings.showTax === 'boolean' ? settings.showTax : String(settings.showTax ?? 'true') === 'true';
+  const backgroundColor = typeof settings.backgroundColor === 'string' ? settings.backgroundColor : undefined;
 
   return {
     taxRate: Number.isFinite(taxRate) ? taxRate : 0.10,
     showTax,
+    ...(backgroundColor ? { backgroundColor } : {}),
   };
 };
 
