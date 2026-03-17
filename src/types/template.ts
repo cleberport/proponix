@@ -65,6 +65,7 @@ export interface TableRow {
 export interface TemplateSettings {
   taxRate: number;
   showTax: boolean;
+  backgroundColor?: string;
 }
 
 export const TEMPLATE_COLORS = [
