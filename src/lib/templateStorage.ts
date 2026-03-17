@@ -214,6 +214,27 @@ const mapTemplateToDb = (template: SavedTemplate, userId: string) => {
   };
 };
 
+const mapDocumentToDb = (doc: GeneratedDocument, userId: string) => ({
+  id: doc.id,
+  user_id: userId,
+  template_id: doc.templateId,
+  template_name: doc.templateName,
+  client_name: doc.clientName || '',
+  file_name: doc.fileName,
+  generated_at: doc.generatedAt,
+  values: doc.values || {},
+});
+
+const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument => ({
+  id: row.id,
+  templateId: row.template_id,
+  templateName: row.template_name,
+  clientName: row.client_name,
+  fileName: row.file_name,
+  generatedAt: row.generated_at,
+  values: toStringRecord(row.values),
+});
+
 const getCurrentUserId = async (): Promise<string | null> => {
   const { data } = await supabase.auth.getUser();
   return data.user?.id ?? null;
