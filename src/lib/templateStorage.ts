@@ -417,11 +417,9 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
   }
 
   try {
-    const { data, error } = await db
+    const { error } = await db
       .from('custom_templates')
-      .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' })
-      .select('*')
-      .single();
+      .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' });
 
     if (error) {
       console.error('Erro ao salvar template no backend:', error);
@@ -431,13 +429,7 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
       return saved;
     }
 
-    const mapped = mapRowToSavedTemplate(data as CustomTemplateRow);
-    try {
-      mergeIntoCache(mapped);
-    } catch (cacheError) {
-      console.warn('Template salvo no backend, mas falhou no cache local:', cacheError);
-    }
-    return mapped;
+    return saved;
   } catch (err) {
     console.error('Erro inesperado ao salvar template:', err);
     if (!localPersisted) {
