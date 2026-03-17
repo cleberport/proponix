@@ -14,6 +14,7 @@ import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTabl
 import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DateRangePicker from '@/components/generate/DateRangePicker';
+import { saveAllInputs, getInputHistory } from '@/lib/inputHistory';
 
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
