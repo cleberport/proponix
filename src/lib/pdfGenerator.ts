@@ -245,20 +245,68 @@ function renderPageElements(
           const offsetY = el.imageOffsetY || 0;
           const opacity = el.imageOpacity ?? 100;
 
-          // Pre-crop image on canvas to exactly match CSS object-fit: cover
+          const filters = {
+            brightness: el.imageBrightness,
+            contrast: el.imageContrast,
+            saturation: el.imageSaturation,
+          };
+
+          const hasCrop = (el.cropX || 0) > 0 || (el.cropY || 0) > 0 ||
+            (el.cropWidth != null && el.cropWidth < 100) ||
+            (el.cropHeight != null && el.cropHeight < 100);
+          const cropRect = hasCrop ? {
+            cropX: el.cropX || 0,
+            cropY: el.cropY || 0,
+            cropW: el.cropWidth || 100,
+            cropH: el.cropHeight || 100,
+          } : undefined;
+
           const croppedDataUrl = cropImageCover(
             img,
-            el.width,   // use canvas-coordinate dimensions
+            el.width,
             el.height,
             scale,
             offsetX,
             offsetY,
-            opacity
+            opacity,
+            filters,
+            cropRect
           );
 
-          try {
-            pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
-          } catch {}
+          // Handle rotation
+          if (el.rotation) {
+            pdf.saveGraphicsState();
+            const cx = x + w / 2;
+            const cy = y + h / 2;
+            const rad = (el.rotation * Math.PI) / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            // Apply rotation transform matrix around center
+            (pdf as any).internal.write(
+              `${cos.toFixed(6)} ${sin.toFixed(6)} ${(-sin).toFixed(6)} ${cos.toFixed(6)} ${cx.toFixed(2)} ${(PDF_H - cy).toFixed(2)} cm`
+            );
+            try {
+              pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
+            } catch {}
+            pdf.restoreGraphicsState();
+          } else {
+            try {
+              pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+            } catch {}
+          }
+
+          // Border
+          if ((el.borderWidth || 0) > 0) {
+            const bColor = el.borderColor ? hexToRgb(el.borderColor) : [0, 0, 0] as [number, number, number];
+            pdf.setDrawColor(...bColor);
+            pdf.setLineWidth(el.borderWidth || 1);
+            if (el.borderRadius && el.borderRadius > 0) {
+              const r = Math.min(el.borderRadius, w / 2, h / 2);
+              pdf.roundedRect(x, y, w, h, r, r, 'S');
+            } else {
+              pdf.rect(x, y, w, h, 'S');
+            }
+          }
         }
         break;
       }
