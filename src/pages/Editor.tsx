@@ -800,6 +800,37 @@ const Editor = () => {
               </PopoverContent>
             </Popover>
 
+            {/* Multi-select alignment buttons */}
+            {selectedIds.length > 1 && !isMobile && (
+              <div className="flex items-center gap-0.5 ml-1 border-l border-border pl-2">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar à esquerda" onClick={() => alignElements('left')}>
+                  <AlignStartVertical className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Centralizar horizontalmente" onClick={() => alignElements('center-x')}>
+                  <AlignCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar à direita" onClick={() => alignElements('right')}>
+                  <AlignEndVertical className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar ao topo" onClick={() => alignElements('top')}>
+                  <AlignStartHorizontal className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Centralizar verticalmente" onClick={() => alignElements('center-y')}>
+                  <AlignVerticalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Alinhar embaixo" onClick={() => alignElements('bottom')}>
+                  <AlignEndHorizontal className="h-3.5 w-3.5" />
+                </Button>
+                <div className="w-px h-5 bg-border mx-0.5" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Distribuir horizontalmente" onClick={() => alignElements('distribute-h')}>
+                  <AlignHorizontalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Distribuir verticalmente" onClick={() => alignElements('distribute-v')}>
+                  <AlignVerticalJustifyCenter className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+
             {/* Desktop page nav */}
             {!isMobile && (
               <div className="flex items-center gap-1 ml-2 border-l border-border pl-2">
