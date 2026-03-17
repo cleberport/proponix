@@ -328,7 +328,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {el.content && <span>{resolveContent(el)}</span>}
-              <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono text-primary'}`}>
+              <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono'}`} style={readOnly ? {} : { color: el.color || 'hsl(var(--primary))' }}>
                 {resolveVariable(el)}
               </span>
               {resizeHandle}
