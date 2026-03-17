@@ -44,8 +44,11 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
 }
 
 /**
- * Pre-crop an image to match CSS object-fit: cover behavior,
- * applying scale, offset, and opacity. Returns a data URL at exact container dimensions.
+ * Pre-crop an image to exactly match what CSS renders:
+ * Container (overflow:hidden) → <img> (position:absolute, width:scale*100%, height:scale*100%,
+ * object-fit:cover, transform:translate(offsetX,offsetY))
+ *
+ * Returns a PNG data URL at exact container pixel dimensions (×2 for sharpness).
  */
 function cropImageCover(
   img: HTMLImageElement,
@@ -55,79 +58,70 @@ function cropImageCover(
   offsetX: number,
   offsetY: number,
   opacity: number,
-  filters?: {
-    brightness?: number;
-    contrast?: number;
-    saturation?: number;
-  },
-  cropRect?: {
-    cropX: number;
-    cropY: number;
-    cropW: number;
-    cropH: number;
-  }
+  filters?: { brightness?: number; contrast?: number; saturation?: number },
+  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number }
 ): string {
+  const RES = 2; // 2× resolution for sharpness
   const canvas = document.createElement('canvas');
-  // Use a reasonable resolution (2x for sharpness)
-  const resScale = Math.min(2, 2400 / Math.max(containerW, containerH));
-  const cw = Math.round(containerW * resScale);
-  const ch = Math.round(containerH * resScale);
-  canvas.width = cw;
-  canvas.height = ch;
+  canvas.width = Math.round(containerW * RES);
+  canvas.height = Math.round(containerH * RES);
   const ctx = canvas.getContext('2d')!;
-  ctx.clearRect(0, 0, cw, ch);
 
-  const alpha = (opacity ?? 100) / 100;
-  if (alpha < 1) ctx.globalAlpha = alpha;
+  // Alpha
+  ctx.globalAlpha = Math.min(1, Math.max(0, (opacity ?? 100) / 100));
 
-  // Apply CSS-like filters
-  const filterParts: string[] = [];
-  if (filters?.brightness != null && filters.brightness !== 100)
-    filterParts.push(`brightness(${filters.brightness / 100})`);
-  if (filters?.contrast != null && filters.contrast !== 100)
-    filterParts.push(`contrast(${filters.contrast / 100})`);
-  if (filters?.saturation != null && filters.saturation !== 100)
-    filterParts.push(`saturate(${filters.saturation / 100})`);
-  if (filterParts.length > 0) ctx.filter = filterParts.join(' ');
+  // CSS-like filters
+  const fp: string[] = [];
+  if (filters?.brightness != null && filters.brightness !== 100) fp.push(`brightness(${filters.brightness / 100})`);
+  if (filters?.contrast != null && filters.contrast !== 100) fp.push(`contrast(${filters.contrast / 100})`);
+  if (filters?.saturation != null && filters.saturation !== 100) fp.push(`saturate(${filters.saturation / 100})`);
+  if (fp.length) ctx.filter = fp.join(' ');
 
-  const imgAR = img.naturalWidth / img.naturalHeight;
-
-  // Step 1: compute "cover" draw size for the img element (which is scale * container)
-  const imgElW = containerW * scale;
-  const imgElH = containerH * scale;
-
-  // Step 2: within that img element, object-fit: cover determines actual image render size
-  const imgElAR = imgElW / imgElH;
-  let renderW: number, renderH: number;
-  if (imgAR > imgElAR) {
-    renderH = imgElH;
-    renderW = renderH * imgAR;
-  } else {
-    renderW = imgElW;
-    renderH = renderW / imgAR;
-  }
-
-  // Step 3: center within the img element, then apply offset
-  const imgContentX = (imgElW - renderW) / 2;
-  const imgContentY = (imgElH - renderH) / 2;
-
-  const drawX = (offsetX + imgContentX) * resScale;
-  const drawY = (offsetY + imgContentY) * resScale;
-  const drawW = renderW * resScale;
-  const drawH = renderH * resScale;
-
-  // Apply clip-path (crop) if specified
+  // Clip-path (crop) if specified
   if (cropRect && (cropRect.cropX > 0 || cropRect.cropY > 0 || cropRect.cropW < 100 || cropRect.cropH < 100)) {
-    const cx = (cropRect.cropX / 100) * cw;
-    const cy = (cropRect.cropY / 100) * ch;
-    const cwCrop = (cropRect.cropW / 100) * cw;
-    const chCrop = (cropRect.cropH / 100) * ch;
+    const cx = (cropRect.cropX / 100) * canvas.width;
+    const cy = (cropRect.cropY / 100) * canvas.height;
+    const cw = (cropRect.cropW / 100) * canvas.width;
+    const ch = (cropRect.cropH / 100) * canvas.height;
     ctx.beginPath();
-    ctx.rect(cx, cy, cwCrop, chCrop);
+    ctx.rect(cx, cy, cw, ch);
     ctx.clip();
   }
 
-  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, drawX, drawY, drawW, drawH);
+  // --- Replicate exact CSS layout ---
+  // The <img> element size (in container CSS pixels)
+  const imgElW = containerW * scale;
+  const imgElH = containerH * scale;
+
+  // object-fit: cover — scale image to fill imgEl, preserving aspect ratio
+  const natW = img.naturalWidth;
+  const natH = img.naturalHeight;
+  const imgAR = natW / natH;
+  const elAR = imgElW / imgElH;
+
+  let drawW: number, drawH: number;
+  if (imgAR > elAR) {
+    // Image wider than element → match heights, crop sides
+    drawH = imgElH;
+    drawW = imgElH * imgAR;
+  } else {
+    // Image taller than element → match widths, crop top/bottom
+    drawW = imgElW;
+    drawH = imgElW / imgAR;
+  }
+
+  // Center the cover-fitted image within the <img> element
+  const imgX = (imgElW - drawW) / 2;
+  const imgY = (imgElH - drawH) / 2;
+
+  // Apply the translate(offsetX, offsetY) from CSS transform
+  // Final draw position relative to the container (which clips via overflow:hidden)
+  const finalX = (offsetX + imgX) * RES;
+  const finalY = (offsetY + imgY) * RES;
+  const finalW = drawW * RES;
+  const finalH = drawH * RES;
+
+  ctx.drawImage(img, 0, 0, natW, natH, finalX, finalY, finalW, finalH);
 
   return canvas.toDataURL('image/png');
 }
