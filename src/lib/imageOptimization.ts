@@ -97,9 +97,8 @@ export async function optimizeImageFile(
 ): Promise<string> {
   const rawDataUrl = await readFileAsDataUrl(file);
 
-  // Always keep PNG format for PNG files to preserve transparency
   const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-  const preferredFormat = isPng ? 'image/png' : (options.preferredFormat ?? 'image/jpeg');
+  const preferredFormat = options.preferredFormat ?? (isPng ? 'image/png' : 'image/jpeg');
 
   return optimizeImageDataUrl(rawDataUrl, {
     ...options,
@@ -119,15 +118,24 @@ export async function optimizeTemplatePagesForSave(
           if (!el.imageUrl || !isImageDataUrl(el.imageUrl)) return el;
 
           const sourceBytes = estimateDataUrlBytes(el.imageUrl);
-          if (sourceBytes < 700_000) return el;
+          const targetBytes = el.type === 'logo' ? 900_000 : 450_000;
+          if (sourceBytes < targetBytes) return el;
 
-          // Preserve PNG format for images that have transparency (PNG source)
-          const isPngSource = el.imageUrl.startsWith('data:image/png') || el.type === 'logo';
-          const optimizedUrl = await optimizeImageDataUrl(el.imageUrl, {
-            maxDimension: el.type === 'logo' ? 1400 : 1800,
-            targetBytes: el.type === 'logo' ? 900_000 : 800_000,
-            preferredFormat: isPngSource ? 'image/png' : 'image/jpeg',
+          let optimizedUrl = await optimizeImageDataUrl(el.imageUrl, {
+            maxDimension: el.type === 'logo' ? 1400 : 1600,
+            targetBytes,
+            minQuality: el.type === 'logo' ? 0.45 : 0.35,
+            preferredFormat: el.type === 'logo' ? 'image/png' : 'image/jpeg',
           });
+
+          if (el.type !== 'logo' && estimateDataUrlBytes(optimizedUrl) > targetBytes) {
+            optimizedUrl = await optimizeImageDataUrl(optimizedUrl, {
+              maxDimension: 1400,
+              targetBytes: 350_000,
+              minQuality: 0.3,
+              preferredFormat: 'image/jpeg',
+            });
+          }
 
           if (optimizedUrl !== el.imageUrl) {
             optimizedCount += 1;
