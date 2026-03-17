@@ -89,24 +89,26 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <ThemeInit>
-            <Routes>
-              {/* Public */}
-              <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
-              <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
-              <Route path="/pricing" element={<Pricing />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public */}
+                <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
+                <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
+                <Route path="/pricing" element={<Pricing />} />
 
-              {/* Protected */}
-              <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-              <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
-              <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
-              <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
+                {/* Protected */}
+                <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
+                <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
+                <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </ThemeInit>
         </BrowserRouter>
       </TooltipProvider>
