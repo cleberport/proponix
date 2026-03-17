@@ -511,25 +511,102 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
 }
 
 // Document history
-export function getDocumentHistory(): GeneratedDocument[] {
+const getCachedDocumentHistory = (): GeneratedDocument[] => {
   const raw = localStorage.getItem(HISTORY_KEY);
   return raw ? JSON.parse(raw) : [];
+};
+
+const setCachedDocumentHistory = (history: GeneratedDocument[]) => {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+};
+
+const sortDocumentHistory = (history: GeneratedDocument[]) => {
+  return [...history].sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime());
+};
+
+export function getDocumentHistory(): GeneratedDocument[] {
+  return getCachedDocumentHistory();
+}
+
+export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
+  const cached = getCachedDocumentHistory();
+  const userId = await getCurrentUserId();
+  if (!userId) return cached;
+
+  const { data, error } = await db
+    .from('generated_documents')
+    .select('*')
+    .eq('user_id', userId)
+    .order('generated_at', { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.error('Erro ao buscar histórico no servidor:', error);
+    return cached;
+  }
+
+  const remote = (data as GeneratedDocumentRow[] | null)?.map(mapRowToGeneratedDocument) || [];
+  const remoteIds = new Set(remote.map((doc) => doc.id));
+  const missingFromRemote = cached.filter((doc) => !remoteIds.has(doc.id));
+
+  if (missingFromRemote.length > 0) {
+    const { error: syncError } = await db
+      .from('generated_documents')
+      .upsert(missingFromRemote.map((doc) => mapDocumentToDb(doc, userId)), { onConflict: 'id' });
+
+    if (syncError) {
+      console.error('Erro ao sincronizar histórico local:', syncError);
+    }
+  }
+
+  const merged = sortDocumentHistory([...remote, ...missingFromRemote]).slice(0, 100);
+  setCachedDocumentHistory(merged);
+  return merged;
+}
+
+async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const { error } = await db
+    .from('generated_documents')
+    .upsert(mapDocumentToDb(doc, userId), { onConflict: 'id' });
+
+  if (error) {
+    console.error('Erro ao salvar histórico no servidor:', error);
+  }
+}
+
+async function deleteDocumentFromServer(id: string): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const { error } = await db
+    .from('generated_documents')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Erro ao excluir histórico no servidor:', error);
+  }
 }
 
 export function addDocumentToHistory(doc: GeneratedDocument): void {
-  const history = getDocumentHistory();
-  history.unshift(doc);
-  if (history.length > 100) history.length = 100;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  const history = getCachedDocumentHistory().filter((item) => item.id !== doc.id);
+  const next = sortDocumentHistory([doc, ...history]).slice(0, 100);
+  setCachedDocumentHistory(next);
+  void syncDocumentToServer(doc);
 }
 
 export function deleteDocumentFromHistory(id: string): void {
-  const history = getDocumentHistory().filter((d) => d.id !== id);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  const history = getCachedDocumentHistory().filter((d) => d.id !== id);
+  setCachedDocumentHistory(history);
+  void deleteDocumentFromServer(id);
 }
 
 export function getDocumentById(id: string): GeneratedDocument | undefined {
-  return getDocumentHistory().find((d) => d.id === id);
+  return getCachedDocumentHistory().find((d) => d.id === id);
 }
 
 // PDF counter for sequential naming
