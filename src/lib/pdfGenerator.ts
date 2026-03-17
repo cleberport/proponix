@@ -54,14 +54,24 @@ function cropImageCover(
   scale: number,
   offsetX: number,
   offsetY: number,
-  opacity: number
+  opacity: number,
+  filters?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+  },
+  cropRect?: {
+    cropX: number;
+    cropY: number;
+    cropW: number;
+    cropH: number;
+  }
 ): string {
   const canvas = document.createElement('canvas');
-  // Use a reasonable resolution (max 1200px on longest side)
-  const maxDim = 1200;
-  const ratio = Math.min(1, maxDim / Math.max(containerW, containerH));
-  const cw = Math.round(containerW * ratio);
-  const ch = Math.round(containerH * ratio);
+  // Use a reasonable resolution (2x for sharpness)
+  const resScale = Math.min(2, 2400 / Math.max(containerW, containerH));
+  const cw = Math.round(containerW * resScale);
+  const ch = Math.round(containerH * resScale);
   canvas.width = cw;
   canvas.height = ch;
   const ctx = canvas.getContext('2d')!;
@@ -70,8 +80,17 @@ function cropImageCover(
   const alpha = (opacity ?? 100) / 100;
   if (alpha < 1) ctx.globalAlpha = alpha;
 
+  // Apply CSS-like filters
+  const filterParts: string[] = [];
+  if (filters?.brightness != null && filters.brightness !== 100)
+    filterParts.push(`brightness(${filters.brightness / 100})`);
+  if (filters?.contrast != null && filters.contrast !== 100)
+    filterParts.push(`contrast(${filters.contrast / 100})`);
+  if (filters?.saturation != null && filters.saturation !== 100)
+    filterParts.push(`saturate(${filters.saturation / 100})`);
+  if (filterParts.length > 0) ctx.filter = filterParts.join(' ');
+
   const imgAR = img.naturalWidth / img.naturalHeight;
-  const containerAR = containerW / containerH;
 
   // Step 1: compute "cover" draw size for the img element (which is scale * container)
   const imgElW = containerW * scale;
@@ -81,26 +100,32 @@ function cropImageCover(
   const imgElAR = imgElW / imgElH;
   let renderW: number, renderH: number;
   if (imgAR > imgElAR) {
-    // Image wider than element → match height, overflow width
     renderH = imgElH;
     renderW = renderH * imgAR;
   } else {
-    // Image taller → match width, overflow height
     renderW = imgElW;
     renderH = renderW / imgAR;
   }
 
-  // Step 3: center within the img element, then position img element at (0,0) + offset
-  // The img element starts at (0,0) relative to container (CSS top:0 left:0)
-  // Image content is centered within the img element by object-fit: cover
+  // Step 3: center within the img element, then apply offset
   const imgContentX = (imgElW - renderW) / 2;
   const imgContentY = (imgElH - renderH) / 2;
 
-  // Final position: img element offset + image centering within element
-  const drawX = (offsetX + imgContentX) * ratio;
-  const drawY = (offsetY + imgContentY) * ratio;
-  const drawW = renderW * ratio;
-  const drawH = renderH * ratio;
+  const drawX = (offsetX + imgContentX) * resScale;
+  const drawY = (offsetY + imgContentY) * resScale;
+  const drawW = renderW * resScale;
+  const drawH = renderH * resScale;
+
+  // Apply clip-path (crop) if specified
+  if (cropRect && (cropRect.cropX > 0 || cropRect.cropY > 0 || cropRect.cropW < 100 || cropRect.cropH < 100)) {
+    const cx = (cropRect.cropX / 100) * cw;
+    const cy = (cropRect.cropY / 100) * ch;
+    const cwCrop = (cropRect.cropW / 100) * cw;
+    const chCrop = (cropRect.cropH / 100) * ch;
+    ctx.beginPath();
+    ctx.rect(cx, cy, cwCrop, chCrop);
+    ctx.clip();
+  }
 
   ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, drawX, drawY, drawW, drawH);
 
@@ -220,20 +245,68 @@ function renderPageElements(
           const offsetY = el.imageOffsetY || 0;
           const opacity = el.imageOpacity ?? 100;
 
-          // Pre-crop image on canvas to exactly match CSS object-fit: cover
+          const filters = {
+            brightness: el.imageBrightness,
+            contrast: el.imageContrast,
+            saturation: el.imageSaturation,
+          };
+
+          const hasCrop = (el.cropX || 0) > 0 || (el.cropY || 0) > 0 ||
+            (el.cropWidth != null && el.cropWidth < 100) ||
+            (el.cropHeight != null && el.cropHeight < 100);
+          const cropRect = hasCrop ? {
+            cropX: el.cropX || 0,
+            cropY: el.cropY || 0,
+            cropW: el.cropWidth || 100,
+            cropH: el.cropHeight || 100,
+          } : undefined;
+
           const croppedDataUrl = cropImageCover(
             img,
-            el.width,   // use canvas-coordinate dimensions
+            el.width,
             el.height,
             scale,
             offsetX,
             offsetY,
-            opacity
+            opacity,
+            filters,
+            cropRect
           );
 
-          try {
-            pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
-          } catch {}
+          // Handle rotation
+          if (el.rotation) {
+            pdf.saveGraphicsState();
+            const cx = x + w / 2;
+            const cy = y + h / 2;
+            const rad = (el.rotation * Math.PI) / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            // Apply rotation transform matrix around center
+            (pdf as any).internal.write(
+              `${cos.toFixed(6)} ${sin.toFixed(6)} ${(-sin).toFixed(6)} ${cos.toFixed(6)} ${cx.toFixed(2)} ${(PDF_H - cy).toFixed(2)} cm`
+            );
+            try {
+              pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
+            } catch {}
+            pdf.restoreGraphicsState();
+          } else {
+            try {
+              pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+            } catch {}
+          }
+
+          // Border
+          if ((el.borderWidth || 0) > 0) {
+            const bColor = el.borderColor ? hexToRgb(el.borderColor) : [0, 0, 0] as [number, number, number];
+            pdf.setDrawColor(...bColor);
+            pdf.setLineWidth(el.borderWidth || 1);
+            if (el.borderRadius && el.borderRadius > 0) {
+              const r = Math.min(el.borderRadius, w / 2, h / 2);
+              pdf.roundedRect(x, y, w, h, r, r, 'S');
+            } else {
+              pdf.rect(x, y, w, h, 'S');
+            }
+          }
         }
         break;
       }
