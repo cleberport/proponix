@@ -121,10 +121,12 @@ export async function optimizeTemplatePagesForSave(
           const sourceBytes = estimateDataUrlBytes(el.imageUrl);
           if (sourceBytes < 700_000) return el;
 
+          // Preserve PNG format for images that have transparency (PNG source)
+          const isPngSource = el.imageUrl.startsWith('data:image/png') || el.type === 'logo';
           const optimizedUrl = await optimizeImageDataUrl(el.imageUrl, {
             maxDimension: el.type === 'logo' ? 1400 : 1800,
             targetBytes: el.type === 'logo' ? 900_000 : 800_000,
-            preferredFormat: el.type === 'logo' ? 'image/png' : 'image/jpeg',
+            preferredFormat: isPngSource ? 'image/png' : 'image/jpeg',
           });
 
           if (optimizedUrl !== el.imageUrl) {
