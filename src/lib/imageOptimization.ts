@@ -121,14 +121,19 @@ export async function optimizeTemplatePagesForSave(
           const targetBytes = el.type === 'logo' ? 900_000 : 450_000;
           if (sourceBytes < targetBytes) return el;
 
+          // Preserve PNG format for images that have transparency
+          const sourceIsPng = el.imageUrl.startsWith('data:image/png');
+          const preferredFormat: 'image/png' | 'image/jpeg' =
+            el.type === 'logo' || sourceIsPng ? 'image/png' : 'image/jpeg';
+
           let optimizedUrl = await optimizeImageDataUrl(el.imageUrl, {
             maxDimension: el.type === 'logo' ? 1400 : 1600,
             targetBytes,
             minQuality: el.type === 'logo' ? 0.45 : 0.35,
-            preferredFormat: el.type === 'logo' ? 'image/png' : 'image/jpeg',
+            preferredFormat,
           });
 
-          if (el.type !== 'logo' && estimateDataUrlBytes(optimizedUrl) > targetBytes) {
+          if (el.type !== 'logo' && !sourceIsPng && estimateDataUrlBytes(optimizedUrl) > targetBytes) {
             optimizedUrl = await optimizeImageDataUrl(optimizedUrl, {
               maxDimension: 1400,
               targetBytes: 350_000,
