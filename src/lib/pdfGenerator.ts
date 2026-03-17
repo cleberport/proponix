@@ -153,8 +153,41 @@ function renderPageElements(
       case 'image': {
         const imgInfo = imageMap.get(el.id);
         if (imgInfo?.data) {
-          const ar = imgInfo.w / imgInfo.h;
-          try { pdf.addImage(imgInfo.data, 'PNG', x, y, w, w / ar); } catch {}
+          const h = scaleH(el.height);
+          const imgAR = imgInfo.w / imgInfo.h;
+          const containerAR = w / h;
+          const scale = el.imageScale || 1;
+          const offsetX = el.imageOffsetX || 0;
+          const offsetY = el.imageOffsetY || 0;
+
+          // Cover: scale image to fill container, then apply user scale & offset
+          let drawW: number, drawH: number;
+          if (imgAR > containerAR) {
+            // Image is wider → match height
+            drawH = h * scale;
+            drawW = drawH * imgAR;
+          } else {
+            // Image is taller → match width
+            drawW = w * scale;
+            drawH = drawW / imgAR;
+          }
+
+          // Center by default, then apply user pan offsets (scaled to PDF coords)
+          const centerOffX = (w - drawW) / 2;
+          const centerOffY = (h - drawH) / 2;
+          const pdfOffX = scaleW(offsetX);
+          const pdfOffY = scaleH(offsetY);
+          const drawX = x + centerOffX + pdfOffX;
+          const drawY = y + centerOffY + pdfOffY;
+
+          // Clip to element bounds
+          pdf.saveGraphicsState();
+          pdf.rect(x, y, w, h);
+          // @ts-ignore – jsPDF internal clip after rect path
+          (pdf as any).clip();
+          (pdf as any).discardPath();
+          try { pdf.addImage(imgInfo.data, 'PNG', drawX, drawY, drawW, drawH); } catch {}
+          pdf.restoreGraphicsState();
         }
         break;
       }
