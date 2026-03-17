@@ -20,6 +20,7 @@ import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { optimizeTemplatePagesForSave } from '@/lib/imageOptimization';
+import { supabase } from '@/integrations/supabase/client';
 
 const GRID = 10;
 const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -348,6 +349,15 @@ const Editor = () => {
     try {
       const optimizedLayout = await optimizeTemplatePagesForSave(pages);
 
+      // Upload images to storage instead of saving base64 in the database
+      let finalPages = optimizedLayout.pages;
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (userId) {
+        const { uploadPageImagesToStorage } = await import('@/lib/imageStorage');
+        finalPages = await uploadPageImagesToStorage(finalPages, userId, finalId);
+      }
+
       const template: Template = {
         id: finalId,
         name: templateName,
@@ -355,8 +365,8 @@ const Editor = () => {
         description: baseDescription,
         thumbnail: '',
         color: templateColor,
-        elements: optimizedLayout.pages[0] || [],
-        pages: optimizedLayout.pages,
+        elements: finalPages[0] || [],
+        pages: finalPages,
         variables,
         canvasWidth: 595,
         canvasHeight: 842,
