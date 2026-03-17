@@ -133,7 +133,7 @@ export async function optimizeTemplatePagesForSave(
             preferredFormat,
           });
 
-          if (el.type !== 'logo' && estimateDataUrlBytes(optimizedUrl) > targetBytes) {
+          if (el.type !== 'logo' && !sourceIsPng && estimateDataUrlBytes(optimizedUrl) > targetBytes) {
             optimizedUrl = await optimizeImageDataUrl(optimizedUrl, {
               maxDimension: 1400,
               targetBytes: 350_000,
