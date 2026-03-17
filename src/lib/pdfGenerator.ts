@@ -119,14 +119,13 @@ function resolveVariable(el: CanvasElement, variableValues: Record<string, strin
   return el.variable ? (variableValues[el.variable] || '') : '';
 }
 
-async function preloadImages(elements: CanvasElement[]): Promise<Map<string, { data: string; w: number; h: number }>> {
-  const imageMap = new Map<string, { data: string; w: number; h: number }>();
+async function preloadImages(elements: CanvasElement[]): Promise<Map<string, HTMLImageElement>> {
+  const imageMap = new Map<string, HTMLImageElement>();
   const imageEls = elements.filter(el => (el.type === 'logo' || el.type === 'image') && el.imageUrl);
-  const loaded = await Promise.all(imageEls.map(async el => ({
-    id: el.id,
-    ...(await loadImageAsDataUrl(el.imageUrl!, el.imageOpacity)),
-  })));
-  loaded.forEach(item => imageMap.set(item.id, item));
+  await Promise.all(imageEls.map(async el => {
+    const img = await loadImage(el.imageUrl!);
+    if (img) imageMap.set(el.id, img);
+  }));
   return imageMap;
 }
 
