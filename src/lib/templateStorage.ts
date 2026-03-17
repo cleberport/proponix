@@ -30,6 +30,19 @@ interface CustomTemplateRow {
   updated_at: string;
 }
 
+interface GeneratedDocumentRow {
+  id: string;
+  user_id: string;
+  template_id: string;
+  template_name: string;
+  client_name: string;
+  file_name: string;
+  generated_at: string;
+  values: unknown;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AppSettings {
   profileName: string;
   companyName: string;
