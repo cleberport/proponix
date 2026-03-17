@@ -151,14 +151,23 @@ const Generate = () => {
     if (!template) return [] as string[];
     const pages = getTemplatePages(template);
     const vars: string[] = [];
+    const varPattern = /\{\{(\w+)\}\}/g;
     for (const page of pages) {
       for (const el of page) {
+        if (el.isVisible === false) continue;
+        // Collect variables from dynamic-field and price-field elements
         if (
-          el.isVisible !== false &&
           (el.type === 'dynamic-field' || el.type === 'price-field') &&
           el.variable
         ) {
           vars.push(el.variable);
+        }
+        // Also scan text/notes content for {{variable}} references
+        if ((el.type === 'text' || el.type === 'notes') && el.content) {
+          let match: RegExpExecArray | null;
+          while ((match = varPattern.exec(el.content)) !== null) {
+            vars.push(match[1]);
+          }
         }
       }
     }
