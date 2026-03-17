@@ -182,14 +182,15 @@ function renderPageElements(
           const drawX = x + centerOffX + pdfOffX;
           const drawY = y + centerOffY + pdfOffY;
 
-          // Clip to element bounds
-          pdf.saveGraphicsState();
-          pdf.rect(x, y, w, h);
-          // @ts-ignore – jsPDF internal clip after rect path
-          (pdf as any).clip();
-          (pdf as any).discardPath();
+          // Clip to element bounds using raw PDF operators for reliable clipping
+          const internal = pdf.internal as any;
+          internal.write('q'); // save graphics state
+          // Rectangle clip path: x y w h re W n (rect, clip, discard path)
+          internal.write(
+            `${x.toFixed(2)} ${(PDF_H - y - h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re W n`
+          );
           try { pdf.addImage(imgInfo.data, 'PNG', drawX, drawY, drawW, drawH); } catch {}
-          pdf.restoreGraphicsState();
+          internal.write('Q'); // restore graphics state
         }
         break;
       }
