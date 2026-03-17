@@ -14,6 +14,7 @@ import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTabl
 import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DateRangePicker from '@/components/generate/DateRangePicker';
+import { saveAllInputs, getInputHistory } from '@/lib/inputHistory';
 
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
@@ -304,6 +305,9 @@ const Generate = () => {
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
 
+      // Save inputs to history for future autocomplete
+      saveAllInputs(userInputs);
+
       addDocumentToHistory({
         id: crypto.randomUUID(),
         templateId: template.id,
@@ -432,27 +436,42 @@ const Generate = () => {
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         <div className={`w-full md:w-80 overflow-y-auto border-b md:border-b-0 md:border-r border-border bg-card p-4 md:p-5 ${isMobile ? (showPreview ? 'hidden' : 'flex-1 min-h-0') : ''}`}>
           <div className="flex flex-col gap-4">
-            {inputFields.map((v) => (
-              <div key={v}>
-                <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
-                {v === 'event_date' ? (
-                  <DateRangePicker
-                    value={getInputValue(v)}
-                    onChange={(val) => handleChange(v, val)}
-                  />
-                ) : (
-                  <Input
-                    value={getInputValue(v)}
-                    onChange={(e) => handleChange(v, e.target.value)}
-                    placeholder={getPlaceholder(v)}
-                    className="h-12 text-base md:h-10 md:text-sm"
-                    inputMode={v === 'price' ? 'numeric' : 'text'}
-                    onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
-                    onBlur={v === 'price' ? handlePriceBlur : undefined}
-                  />
-                )}
-              </div>
-            ))}
+            {inputFields.map((v) => {
+              const suggestions = getInputHistory(v);
+              const listId = `suggestions-${v}`;
+              return (
+                <div key={v}>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatLabel(v)}</Label>
+                  {v === 'event_date' ? (
+                    <DateRangePicker
+                      value={getInputValue(v)}
+                      onChange={(val) => handleChange(v, val)}
+                    />
+                  ) : (
+                    <>
+                      <Input
+                        value={getInputValue(v)}
+                        onChange={(e) => handleChange(v, e.target.value)}
+                        placeholder={getPlaceholder(v)}
+                        className="h-12 text-base md:h-10 md:text-sm"
+                        inputMode={v === 'price' ? 'numeric' : 'text'}
+                        onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
+                        onBlur={v === 'price' ? handlePriceBlur : undefined}
+                        list={suggestions.length > 0 ? listId : undefined}
+                        autoComplete="off"
+                      />
+                      {suggestions.length > 0 && (
+                        <datalist id={listId}>
+                          {suggestions.map((s, i) => (
+                            <option key={i} value={s} />
+                          ))}
+                        </datalist>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
 
             {hasTable && tableInfo && (
               <DynamicTableInput
