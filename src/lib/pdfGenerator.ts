@@ -247,7 +247,7 @@ export async function generateVectorPdf(
 
   for (let i = 0; i < pages.length; i++) {
     if (i > 0) pdf.addPage();
-    renderPageElements(pdf, pages[i], variableValues, imageMap);
+    renderPageElements(pdf, pages[i], variableValues, imageMap, options?.backgroundColor);
   }
 
   // Instant download
