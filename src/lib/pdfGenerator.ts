@@ -212,45 +212,28 @@ function renderPageElements(
 
       case 'logo':
       case 'image': {
-        const imgInfo = imageMap.get(el.id);
-        if (imgInfo?.data) {
+        const img = imageMap.get(el.id);
+        if (img) {
           const h = scaleH(el.height);
-          const imgAR = imgInfo.w / imgInfo.h;
-          const containerAR = w / h;
           const scale = el.imageScale || 1;
           const offsetX = el.imageOffsetX || 0;
           const offsetY = el.imageOffsetY || 0;
+          const opacity = el.imageOpacity ?? 100;
 
-          // Cover: scale image to fill container, then apply user scale & offset
-          let drawW: number, drawH: number;
-          if (imgAR > containerAR) {
-            // Image is wider → match height
-            drawH = h * scale;
-            drawW = drawH * imgAR;
-          } else {
-            // Image is taller → match width
-            drawW = w * scale;
-            drawH = drawW / imgAR;
-          }
-
-          // Center by default, then apply user pan offsets (scaled to PDF coords)
-          const centerOffX = (w - drawW) / 2;
-          const centerOffY = (h - drawH) / 2;
-          const pdfOffX = scaleW(offsetX);
-          const pdfOffY = scaleH(offsetY);
-          const drawX = x + centerOffX + pdfOffX;
-          const drawY = y + centerOffY + pdfOffY;
-
-          // Clip to element bounds using raw PDF operators for reliable clipping
-          const internal = pdf.internal as any;
-          internal.write('q'); // save graphics state
-
-          // Rectangle clip path: x y w h re W n (rect, clip, discard path)
-          internal.write(
-            `${x.toFixed(2)} ${(PDF_H - y - h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re W n`
+          // Pre-crop image on canvas to exactly match CSS object-fit: cover
+          const croppedDataUrl = cropImageCover(
+            img,
+            el.width,   // use canvas-coordinate dimensions
+            el.height,
+            scale,
+            offsetX,
+            offsetY,
+            opacity
           );
-          try { pdf.addImage(imgInfo.data, 'PNG', drawX, drawY, drawW, drawH); } catch {}
-          internal.write('Q'); // restore graphics state
+
+          try {
+            pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+          } catch {}
         }
         break;
       }
