@@ -173,7 +173,9 @@ const Generate = () => {
   }, [calculatedFieldNames, hasTable]);
 
   const inputFields = useMemo(() => {
-    const baseFields = (template?.inputFields || []).filter((f) => !excludedFields.has(f));
+    // Only show input fields that are actually used by dynamic elements in the template
+    const dynamicSet = new Set(allDynamicVars);
+    const baseFields = (template?.inputFields || []).filter((f) => !excludedFields.has(f) && dynamicSet.has(f));
     const seen = new Set(baseFields);
     const merged = [...baseFields];
     for (const v of allDynamicVars) {

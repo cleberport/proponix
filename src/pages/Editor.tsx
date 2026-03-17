@@ -641,10 +641,14 @@ const Editor = () => {
           <Button
             size="sm"
             className="h-10 md:h-9"
-            onClick={async () => {
-              const saved = await handleSave();
-              const targetId = saved?.id || (!isNew ? id : null);
-              if (targetId) navigate(`/generate/${targetId}`);
+            onClick={() => {
+              const targetId = !isNew && id && isUuid(id) ? id : null;
+              void handleSave();
+              if (targetId) {
+                navigate(`/generate/${targetId}`);
+              }
+              // For new templates, handleSave already navigates to /editor/:id
+              // User can click Gerar again after save completes
             }}
           >
             <Play className="mr-1 h-4 w-4" />
