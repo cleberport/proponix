@@ -221,6 +221,76 @@ export function getSettings(): AppSettings {
 
 export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  // Fire-and-forget sync to server
+  void syncSettingsToServer(settings);
+}
+
+export async function loadSettingsFromServer(): Promise<AppSettings> {
+  const local = getSettings();
+  const userId = await getCurrentUserId();
+  if (!userId) return local;
+
+  const { data, error } = await db
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !data) return local;
+
+  const remote: AppSettings = {
+    profileName: data.profile_name ?? '',
+    companyName: data.company_name ?? '',
+    companyCnpj: data.company_cnpj ?? '',
+    companyEmail: data.company_email ?? '',
+    companyPhone: data.company_phone ?? '',
+    companyWebsite: data.company_website ?? '',
+    companyAddress: data.company_address ?? '',
+    defaultTaxRate: Number(data.default_tax_rate) || 0.10,
+    logoUrl: data.logo_url ?? '',
+    logoWidth: data.logo_width ?? undefined,
+    logoHeight: data.logo_height ?? undefined,
+    logoAspectRatio: data.logo_aspect_ratio ? Number(data.logo_aspect_ratio) : undefined,
+    theme: (data.theme === 'dark' ? 'dark' : 'light'),
+    pdfBaseName: data.pdf_base_name ?? 'Proposta',
+    defaultTemplateId: data.default_template_id ?? '',
+  };
+
+  // Update local cache with server data
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(remote));
+  return remote;
+}
+
+async function syncSettingsToServer(settings: AppSettings): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const row = {
+    user_id: userId,
+    profile_name: settings.profileName,
+    company_name: settings.companyName,
+    company_cnpj: settings.companyCnpj,
+    company_email: settings.companyEmail,
+    company_phone: settings.companyPhone,
+    company_website: settings.companyWebsite,
+    company_address: settings.companyAddress,
+    default_tax_rate: settings.defaultTaxRate,
+    logo_url: settings.logoUrl,
+    logo_width: settings.logoWidth ?? null,
+    logo_height: settings.logoHeight ?? null,
+    logo_aspect_ratio: settings.logoAspectRatio ?? null,
+    theme: settings.theme,
+    pdf_base_name: settings.pdfBaseName,
+    default_template_id: settings.defaultTemplateId,
+  };
+
+  const { error } = await db
+    .from('user_settings')
+    .upsert(row, { onConflict: 'user_id' });
+
+  if (error) {
+    console.error('Erro ao salvar configurações no servidor:', error);
+  }
 }
 
 export function getHiddenStarterIds(): string[] {
