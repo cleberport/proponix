@@ -33,29 +33,78 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
   return lines;
 }
 
-function loadImageAsDataUrl(url: string, opacity?: number): Promise<{ data: string; w: number; h: number }> {
+function loadImage(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const scale = Math.min(1, 800 / img.naturalWidth);
-      canvas.width = Math.round(img.naturalWidth * scale);
-      canvas.height = Math.round(img.naturalHeight * scale);
-      const ctx = canvas.getContext('2d')!;
-      // Don't fill background — preserve transparency for PNGs
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Apply opacity if needed (0-100 scale, default 100)
-      const alpha = (opacity ?? 100) / 100;
-      if (alpha < 1) {
-        ctx.globalAlpha = alpha;
-      }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve({ data: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
-    };
-    img.onerror = () => resolve({ data: '', w: 0, h: 0 });
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
     img.src = url;
   });
+}
+
+/**
+ * Pre-crop an image to match CSS object-fit: cover behavior,
+ * applying scale, offset, and opacity. Returns a data URL at exact container dimensions.
+ */
+function cropImageCover(
+  img: HTMLImageElement,
+  containerW: number,
+  containerH: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+  opacity: number
+): string {
+  const canvas = document.createElement('canvas');
+  // Use a reasonable resolution (max 1200px on longest side)
+  const maxDim = 1200;
+  const ratio = Math.min(1, maxDim / Math.max(containerW, containerH));
+  const cw = Math.round(containerW * ratio);
+  const ch = Math.round(containerH * ratio);
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, cw, ch);
+
+  const alpha = (opacity ?? 100) / 100;
+  if (alpha < 1) ctx.globalAlpha = alpha;
+
+  const imgAR = img.naturalWidth / img.naturalHeight;
+  const containerAR = containerW / containerH;
+
+  // Step 1: compute "cover" draw size for the img element (which is scale * container)
+  const imgElW = containerW * scale;
+  const imgElH = containerH * scale;
+
+  // Step 2: within that img element, object-fit: cover determines actual image render size
+  const imgElAR = imgElW / imgElH;
+  let renderW: number, renderH: number;
+  if (imgAR > imgElAR) {
+    // Image wider than element → match height, overflow width
+    renderH = imgElH;
+    renderW = renderH * imgAR;
+  } else {
+    // Image taller → match width, overflow height
+    renderW = imgElW;
+    renderH = renderW / imgAR;
+  }
+
+  // Step 3: center within the img element, then position img element at (0,0) + offset
+  // The img element starts at (0,0) relative to container (CSS top:0 left:0)
+  // Image content is centered within the img element by object-fit: cover
+  const imgContentX = (imgElW - renderW) / 2;
+  const imgContentY = (imgElH - renderH) / 2;
+
+  // Final position: img element offset + image centering within element
+  const drawX = (offsetX + imgContentX) * ratio;
+  const drawY = (offsetY + imgContentY) * ratio;
+  const drawW = renderW * ratio;
+  const drawH = renderH * ratio;
+
+  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, drawX, drawY, drawW, drawH);
+
+  return canvas.toDataURL('image/png');
 }
 
 function resolveContent(el: CanvasElement, variableValues: Record<string, string>): string {
@@ -70,14 +119,13 @@ function resolveVariable(el: CanvasElement, variableValues: Record<string, strin
   return el.variable ? (variableValues[el.variable] || '') : '';
 }
 
-async function preloadImages(elements: CanvasElement[]): Promise<Map<string, { data: string; w: number; h: number }>> {
-  const imageMap = new Map<string, { data: string; w: number; h: number }>();
+async function preloadImages(elements: CanvasElement[]): Promise<Map<string, HTMLImageElement>> {
+  const imageMap = new Map<string, HTMLImageElement>();
   const imageEls = elements.filter(el => (el.type === 'logo' || el.type === 'image') && el.imageUrl);
-  const loaded = await Promise.all(imageEls.map(async el => ({
-    id: el.id,
-    ...(await loadImageAsDataUrl(el.imageUrl!, el.imageOpacity)),
-  })));
-  loaded.forEach(item => imageMap.set(item.id, item));
+  await Promise.all(imageEls.map(async el => {
+    const img = await loadImage(el.imageUrl!);
+    if (img) imageMap.set(el.id, img);
+  }));
   return imageMap;
 }
 
@@ -85,7 +133,7 @@ function renderPageElements(
   pdf: jsPDF,
   elements: CanvasElement[],
   variableValues: Record<string, string>,
-  imageMap: Map<string, { data: string; w: number; h: number }>,
+  imageMap: Map<string, HTMLImageElement>,
   bgColor?: string
 ) {
   // Background
@@ -164,45 +212,28 @@ function renderPageElements(
 
       case 'logo':
       case 'image': {
-        const imgInfo = imageMap.get(el.id);
-        if (imgInfo?.data) {
+        const img = imageMap.get(el.id);
+        if (img) {
           const h = scaleH(el.height);
-          const imgAR = imgInfo.w / imgInfo.h;
-          const containerAR = w / h;
           const scale = el.imageScale || 1;
           const offsetX = el.imageOffsetX || 0;
           const offsetY = el.imageOffsetY || 0;
+          const opacity = el.imageOpacity ?? 100;
 
-          // Cover: scale image to fill container, then apply user scale & offset
-          let drawW: number, drawH: number;
-          if (imgAR > containerAR) {
-            // Image is wider → match height
-            drawH = h * scale;
-            drawW = drawH * imgAR;
-          } else {
-            // Image is taller → match width
-            drawW = w * scale;
-            drawH = drawW / imgAR;
-          }
-
-          // Center by default, then apply user pan offsets (scaled to PDF coords)
-          const centerOffX = (w - drawW) / 2;
-          const centerOffY = (h - drawH) / 2;
-          const pdfOffX = scaleW(offsetX);
-          const pdfOffY = scaleH(offsetY);
-          const drawX = x + centerOffX + pdfOffX;
-          const drawY = y + centerOffY + pdfOffY;
-
-          // Clip to element bounds using raw PDF operators for reliable clipping
-          const internal = pdf.internal as any;
-          internal.write('q'); // save graphics state
-
-          // Rectangle clip path: x y w h re W n (rect, clip, discard path)
-          internal.write(
-            `${x.toFixed(2)} ${(PDF_H - y - h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re W n`
+          // Pre-crop image on canvas to exactly match CSS object-fit: cover
+          const croppedDataUrl = cropImageCover(
+            img,
+            el.width,   // use canvas-coordinate dimensions
+            el.height,
+            scale,
+            offsetX,
+            offsetY,
+            opacity
           );
-          try { pdf.addImage(imgInfo.data, 'PNG', drawX, drawY, drawW, drawH); } catch {}
-          internal.write('Q'); // restore graphics state
+
+          try {
+            pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+          } catch {}
         }
         break;
       }
