@@ -121,11 +121,14 @@ function renderPageElements(
           const lines = wrapText(pdf, content, w);
           const lineH = fontSize * 1.4;
           const align = el.alignment || 'left';
+          // CSS renders text from top of element box; baseline ≈ top + ascent
+          // Use a consistent ascent ratio to match browser rendering
+          const ascent = fontSize * 0.82;
           lines.forEach((line, i) => {
             let tx = x;
             if (align === 'center') tx = x + w / 2;
             else if (align === 'right') tx = x + w;
-            pdf.text(line, tx, y + fontSize + i * lineH, { align });
+            pdf.text(line, tx, y + ascent + i * lineH, { align });
           });
         }
         break;
@@ -141,10 +144,13 @@ function renderPageElements(
         pdf.setTextColor(...color);
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
+        // Canvas uses flex items-center → vertically center text within element height
+        const h = scaleH(el.height);
+        const textBaseline = y + h / 2 + fontSize * 0.3;
         let tx = x;
         if (align === 'center') tx = x + w / 2;
         else if (align === 'right') tx = x + w;
-        pdf.text(displayText, tx, y + fontSize, { align });
+        pdf.text(displayText, tx, textBaseline, { align });
         break;
       }
 
