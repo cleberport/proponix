@@ -449,7 +449,10 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
 
 export async function duplicateTemplate(id: string): Promise<SavedTemplate | null> {
   const original = await getTemplateById(id);
-  if (!original) return null;
+  if (!original) {
+    console.error('duplicateTemplate: template não encontrado', id);
+    return null;
+  }
 
   const copy: Template = {
     ...original,

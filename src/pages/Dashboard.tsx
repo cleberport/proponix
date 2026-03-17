@@ -68,10 +68,17 @@ const Dashboard = () => {
   };
 
   const handleDuplicate = async (id: string) => {
-    const dup = await duplicateTemplate(id);
-    if (dup) {
-      await refreshSaved();
-      toast.success('Template duplicado');
+    try {
+      const dup = await duplicateTemplate(id);
+      if (dup) {
+        await refreshSaved();
+        toast.success('Template duplicado');
+      } else {
+        toast.error('Template original não encontrado');
+      }
+    } catch (err) {
+      console.error('Erro ao duplicar template:', err);
+      toast.error('Erro ao duplicar template');
     }
   };
 
