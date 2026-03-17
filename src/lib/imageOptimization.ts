@@ -77,10 +77,12 @@ export async function optimizeImageDataUrl(dataUrl: string, options: OptimizeIma
   ctx.drawImage(image, 0, 0, constrained.width, constrained.height);
 
   const preferredFormat = options.preferredFormat ?? 'image/jpeg';
-  let quality = 0.82;
+  const isPng = preferredFormat === 'image/png';
+  let quality = isPng ? 1 : 0.82;
   let optimized = canvas.toDataURL(preferredFormat, quality);
 
-  while (estimateDataUrlBytes(optimized) > targetBytes && preferredFormat === 'image/jpeg' && quality > minQuality) {
+  // Only iteratively reduce quality for JPEG
+  while (!isPng && estimateDataUrlBytes(optimized) > targetBytes && quality > minQuality) {
     quality = Math.max(minQuality, quality - 0.08);
     optimized = canvas.toDataURL('image/jpeg', quality);
     if (quality === minQuality) break;
