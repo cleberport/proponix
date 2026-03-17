@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getSettings, saveSettings, AppSettings, restoreDefaultTemplates, getStarterTemplates, getSavedTemplates } from '@/lib/templateStorage';
+import { getSettings, saveSettings, loadSettingsFromServer, AppSettings, restoreDefaultTemplates, getStarterTemplates, getSavedTemplates } from '@/lib/templateStorage';
 import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,12 +15,16 @@ const SettingsPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const loadSavedTemplates = async () => {
-      const templates = await getSavedTemplates();
+    const init = async () => {
+      const [serverSettings, templates] = await Promise.all([
+        loadSettingsFromServer(),
+        getSavedTemplates(),
+      ]);
+      setSettings(serverSettings);
       setSavedTemplates(templates);
     };
 
-    void loadSavedTemplates();
+    void init();
   }, []);
 
   const allTemplates = useMemo(() => {

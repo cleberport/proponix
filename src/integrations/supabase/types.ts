@@ -74,6 +74,72 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          company_address: string
+          company_cnpj: string
+          company_email: string
+          company_name: string
+          company_phone: string
+          company_website: string
+          created_at: string
+          default_tax_rate: number
+          default_template_id: string
+          id: string
+          logo_aspect_ratio: number | null
+          logo_height: number | null
+          logo_url: string
+          logo_width: number | null
+          pdf_base_name: string
+          profile_name: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_address?: string
+          company_cnpj?: string
+          company_email?: string
+          company_name?: string
+          company_phone?: string
+          company_website?: string
+          created_at?: string
+          default_tax_rate?: number
+          default_template_id?: string
+          id?: string
+          logo_aspect_ratio?: number | null
+          logo_height?: number | null
+          logo_url?: string
+          logo_width?: number | null
+          pdf_base_name?: string
+          profile_name?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_address?: string
+          company_cnpj?: string
+          company_email?: string
+          company_name?: string
+          company_phone?: string
+          company_website?: string
+          created_at?: string
+          default_tax_rate?: number
+          default_template_id?: string
+          id?: string
+          logo_aspect_ratio?: number | null
+          logo_height?: number | null
+          logo_url?: string
+          logo_width?: number | null
+          pdf_base_name?: string
+          profile_name?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
