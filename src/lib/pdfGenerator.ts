@@ -33,29 +33,78 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
   return lines;
 }
 
-function loadImageAsDataUrl(url: string, opacity?: number): Promise<{ data: string; w: number; h: number }> {
+function loadImage(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const scale = Math.min(1, 800 / img.naturalWidth);
-      canvas.width = Math.round(img.naturalWidth * scale);
-      canvas.height = Math.round(img.naturalHeight * scale);
-      const ctx = canvas.getContext('2d')!;
-      // Don't fill background — preserve transparency for PNGs
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Apply opacity if needed (0-100 scale, default 100)
-      const alpha = (opacity ?? 100) / 100;
-      if (alpha < 1) {
-        ctx.globalAlpha = alpha;
-      }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve({ data: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
-    };
-    img.onerror = () => resolve({ data: '', w: 0, h: 0 });
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
     img.src = url;
   });
+}
+
+/**
+ * Pre-crop an image to match CSS object-fit: cover behavior,
+ * applying scale, offset, and opacity. Returns a data URL at exact container dimensions.
+ */
+function cropImageCover(
+  img: HTMLImageElement,
+  containerW: number,
+  containerH: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+  opacity: number
+): string {
+  const canvas = document.createElement('canvas');
+  // Use a reasonable resolution (max 1200px on longest side)
+  const maxDim = 1200;
+  const ratio = Math.min(1, maxDim / Math.max(containerW, containerH));
+  const cw = Math.round(containerW * ratio);
+  const ch = Math.round(containerH * ratio);
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, cw, ch);
+
+  const alpha = (opacity ?? 100) / 100;
+  if (alpha < 1) ctx.globalAlpha = alpha;
+
+  const imgAR = img.naturalWidth / img.naturalHeight;
+  const containerAR = containerW / containerH;
+
+  // Step 1: compute "cover" draw size for the img element (which is scale * container)
+  const imgElW = containerW * scale;
+  const imgElH = containerH * scale;
+
+  // Step 2: within that img element, object-fit: cover determines actual image render size
+  const imgElAR = imgElW / imgElH;
+  let renderW: number, renderH: number;
+  if (imgAR > imgElAR) {
+    // Image wider than element → match height, overflow width
+    renderH = imgElH;
+    renderW = renderH * imgAR;
+  } else {
+    // Image taller → match width, overflow height
+    renderW = imgElW;
+    renderH = renderW / imgAR;
+  }
+
+  // Step 3: center within the img element, then position img element at (0,0) + offset
+  // The img element starts at (0,0) relative to container (CSS top:0 left:0)
+  // Image content is centered within the img element by object-fit: cover
+  const imgContentX = (imgElW - renderW) / 2;
+  const imgContentY = (imgElH - renderH) / 2;
+
+  // Final position: img element offset + image centering within element
+  const drawX = (offsetX + imgContentX) * ratio;
+  const drawY = (offsetY + imgContentY) * ratio;
+  const drawW = renderW * ratio;
+  const drawH = renderH * ratio;
+
+  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, drawX, drawY, drawW, drawH);
+
+  return canvas.toDataURL('image/png');
 }
 
 function resolveContent(el: CanvasElement, variableValues: Record<string, string>): string {
