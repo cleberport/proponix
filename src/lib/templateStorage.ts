@@ -454,17 +454,22 @@ export async function duplicateTemplate(id: string): Promise<SavedTemplate | nul
     return null;
   }
 
+  const source = typeof structuredClone === 'function'
+    ? structuredClone(original)
+    : JSON.parse(JSON.stringify(original)) as Template;
+
   const copy: Template = {
-    ...original,
+    ...source,
     id: crypto.randomUUID(),
-    name: `${original.name} (Cópia)`,
+    name: `${source.name} (Cópia)`,
   };
 
   return saveTemplate(copy);
 }
 
 export async function deleteTemplate(id: string): Promise<void> {
-  const updatedLocal = getCachedSavedTemplates().filter((t) => t.id !== id);
+  const previousLocal = getCachedSavedTemplates();
+  const updatedLocal = previousLocal.filter((t) => t.id !== id);
   setCachedSavedTemplates(updatedLocal);
 
   const userId = await getCurrentUserId();
@@ -477,7 +482,9 @@ export async function deleteTemplate(id: string): Promise<void> {
     .eq('user_id', userId);
 
   if (error) {
+    setCachedSavedTemplates(previousLocal);
     console.error('Erro ao excluir template no backend:', error);
+    throw error;
   }
 }
 
@@ -493,6 +500,10 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
   const cached = getCachedSavedTemplates();
   const saved = cached.find((template) => template.id === id);
   if (saved) return saved;
+
+  if (!isUuid(id)) {
+    return starterTemplates.find((template) => template.id === id);
+  }
 
   const userId = await getCurrentUserId();
   if (userId) {

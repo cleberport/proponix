@@ -343,50 +343,48 @@ const Editor = () => {
   const handleSave = async () => {
     const shouldCreateNewId = isNew || !id || !isUuid(id);
     const finalId = shouldCreateNewId ? uuidv4() : id!;
+    const savingToastId = toast.loading('Salvando template...');
 
-    // Build template immediately with raw pages for instant local save
-    const template: Template = {
-      id: finalId,
-      name: templateName,
-      category: baseCategory,
-      description: baseDescription,
-      thumbnail: '',
-      color: templateColor,
-      elements: pages[0] || [],
-      pages: pages,
-      variables,
-      canvasWidth: 595,
-      canvasHeight: 842,
-      defaultValues,
-      inputFields,
-      calculatedFields,
-      settings: { ...settings, backgroundColor: canvasBgColor },
-    };
+    try {
+      const optimizedLayout = await optimizeTemplatePagesForSave(pages);
 
-    // Instant feedback
-    toast.success('Template salvo!');
+      const template: Template = {
+        id: finalId,
+        name: templateName,
+        category: baseCategory,
+        description: baseDescription,
+        thumbnail: '',
+        color: templateColor,
+        elements: optimizedLayout.pages[0] || [],
+        pages: optimizedLayout.pages,
+        variables,
+        canvasWidth: 595,
+        canvasHeight: 842,
+        defaultValues,
+        inputFields,
+        calculatedFields,
+        settings: { ...settings, backgroundColor: canvasBgColor },
+      };
 
-    if (shouldCreateNewId) {
-      navigate(`/editor/${finalId}`, { replace: true });
-    }
+      await saveTemplate(template);
 
-    // Background: optimize images + persist to backend
-    (async () => {
-      try {
-        const optimizedLayout = await optimizeTemplatePagesForSave(pages);
-        template.elements = optimizedLayout.pages[0] || [];
-        template.pages = optimizedLayout.pages;
-        await saveTemplate(template);
-        if (optimizedLayout.optimizedCount > 0) {
-          toast.info(`${optimizedLayout.optimizedCount} imagem(ns) otimizadas.`);
-        }
-      } catch (err) {
-        console.error('Erro ao salvar template:', err);
-        toast.error('Erro ao sincronizar template. Tente novamente.');
+      if (shouldCreateNewId) {
+        navigate(`/editor/${finalId}`, { replace: true });
       }
-    })();
 
-    return { id: finalId, name: templateName } as any;
+      toast.success('Template salvo!');
+      if (optimizedLayout.optimizedCount > 0) {
+        toast.info(`${optimizedLayout.optimizedCount} imagem(ns) otimizadas.`);
+      }
+
+      return { id: finalId, name: templateName } as any;
+    } catch (err) {
+      console.error('Erro ao salvar template:', err);
+      toast.error('Erro ao salvar template. Tente novamente.');
+      throw err;
+    } finally {
+      toast.dismiss(savingToastId);
+    }
   };
 
   const addVariable = () => {

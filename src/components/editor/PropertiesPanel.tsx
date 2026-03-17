@@ -9,6 +9,7 @@ import { Trash2, Plus, Upload, X } from 'lucide-react';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import ImageEditingPanel from './ImageEditingPanel';
+import { optimizeImageFile } from '@/lib/imageOptimization';
 
 interface Props {
   element: CanvasElement | null;
@@ -20,15 +21,19 @@ interface Props {
 const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const url = ev.target?.result as string;
+
+    try {
+      const url = await optimizeImageFile(file, {
+        maxDimension: element?.type === 'logo' ? 1400 : 1800,
+        targetBytes: element?.type === 'logo' ? 900_000 : 800_000,
+        preferredFormat: element?.type === 'logo' ? 'image/png' : 'image/jpeg',
+      });
+
       const img = new Image();
       img.onload = () => {
-        // For logos, calculate proportional height
         const aspectRatio = img.naturalWidth / img.naturalHeight;
         const newHeight = Math.round((element?.width || 150) / aspectRatio);
         onUpdate({
@@ -38,8 +43,11 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         });
       };
       img.src = url;
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Erro ao carregar imagem:', error);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   if (!element) {
