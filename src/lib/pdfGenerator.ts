@@ -80,10 +80,12 @@ function renderPageElements(
   pdf: jsPDF,
   elements: CanvasElement[],
   variableValues: Record<string, string>,
-  imageMap: Map<string, { data: string; w: number; h: number }>
+  imageMap: Map<string, { data: string; w: number; h: number }>,
+  bgColor?: string
 ) {
-  // White background
-  pdf.setFillColor(255, 255, 255);
+  // Background
+  const bg = bgColor && bgColor !== '#ffffff' ? hexToRgb(bgColor) : [255, 255, 255] as [number, number, number];
+  pdf.setFillColor(...bg);
   pdf.rect(0, 0, PDF_W, PDF_H, 'F');
 
   for (const el of elements) {
