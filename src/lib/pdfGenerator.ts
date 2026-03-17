@@ -231,7 +231,8 @@ function renderPageElements(
 export async function generateVectorPdf(
   elementsOrPages: CanvasElement[] | CanvasElement[][],
   variableValues: Record<string, string>,
-  fileName: string
+  fileName: string,
+  options?: { backgroundColor?: string }
 ): Promise<Blob> {
   // Normalize to pages array
   const pages: CanvasElement[][] = Array.isArray(elementsOrPages[0]) && Array.isArray((elementsOrPages as any[])[0])
