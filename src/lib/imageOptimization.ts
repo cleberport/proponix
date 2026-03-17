@@ -95,7 +95,9 @@ export async function optimizeImageFile(
 ): Promise<string> {
   const rawDataUrl = await readFileAsDataUrl(file);
 
-  const preferredFormat = options.preferPng && file.type === 'image/png' ? 'image/png' : (options.preferredFormat ?? 'image/jpeg');
+  // Always keep PNG format for PNG files to preserve transparency
+  const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+  const preferredFormat = isPng ? 'image/png' : (options.preferredFormat ?? 'image/jpeg');
 
   return optimizeImageDataUrl(rawDataUrl, {
     ...options,
