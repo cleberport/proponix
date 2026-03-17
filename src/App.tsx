@@ -3,22 +3,31 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { getSettings } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import AppLayout from "./components/AppLayout";
+
+// Eagerly loaded (landing + auth are entry points)
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import Pricing from "./pages/Pricing";
-import Dashboard from "./pages/Dashboard";
 
-import Documents from "./pages/Documents";
-import Profile from "./pages/Profile";
-import SettingsPage from "./pages/Settings";
-import Editor from "./pages/Editor";
-import Generate from "./pages/Generate";
-import NotFound from "./pages/NotFound";
+// Lazy-loaded pages for code splitting
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Documents = lazy(() => import("./pages/Documents"));
+const Profile = lazy(() => import("./pages/Profile"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const Editor = lazy(() => import("./pages/Editor"));
+const Generate = lazy(() => import("./pages/Generate"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const PageLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -80,24 +89,26 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <ThemeInit>
-            <Routes>
-              {/* Public */}
-              <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
-              <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
-              <Route path="/pricing" element={<Pricing />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public */}
+                <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
+                <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
+                <Route path="/pricing" element={<Pricing />} />
 
-              {/* Protected */}
-              <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-              <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
-              <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
-              <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
+                {/* Protected */}
+                <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
+                <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
+                <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </ThemeInit>
         </BrowserRouter>
       </TooltipProvider>
