@@ -15,12 +15,16 @@ const SettingsPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const loadSavedTemplates = async () => {
-      const templates = await getSavedTemplates();
+    const init = async () => {
+      const [serverSettings, templates] = await Promise.all([
+        loadSettingsFromServer(),
+        getSavedTemplates(),
+      ]);
+      setSettings(serverSettings);
       setSavedTemplates(templates);
     };
 
-    void loadSavedTemplates();
+    void init();
   }, []);
 
   const allTemplates = useMemo(() => {
