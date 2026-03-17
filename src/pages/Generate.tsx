@@ -509,6 +509,7 @@ const Generate = () => {
               onUpdate={() => {}}
               readOnly
               variableValues={displayValues}
+              backgroundColor={template?.settings?.backgroundColor}
             />
           </main>
         )}
