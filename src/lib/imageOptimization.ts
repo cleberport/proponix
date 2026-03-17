@@ -77,10 +77,12 @@ export async function optimizeImageDataUrl(dataUrl: string, options: OptimizeIma
   ctx.drawImage(image, 0, 0, constrained.width, constrained.height);
 
   const preferredFormat = options.preferredFormat ?? 'image/jpeg';
-  let quality = 0.82;
+  const isPng = preferredFormat === 'image/png';
+  let quality = isPng ? 1 : 0.82;
   let optimized = canvas.toDataURL(preferredFormat, quality);
 
-  while (estimateDataUrlBytes(optimized) > targetBytes && preferredFormat === 'image/jpeg' && quality > minQuality) {
+  // Only iteratively reduce quality for JPEG
+  while (!isPng && estimateDataUrlBytes(optimized) > targetBytes && quality > minQuality) {
     quality = Math.max(minQuality, quality - 0.08);
     optimized = canvas.toDataURL('image/jpeg', quality);
     if (quality === minQuality) break;
@@ -95,7 +97,9 @@ export async function optimizeImageFile(
 ): Promise<string> {
   const rawDataUrl = await readFileAsDataUrl(file);
 
-  const preferredFormat = options.preferPng && file.type === 'image/png' ? 'image/png' : (options.preferredFormat ?? 'image/jpeg');
+  // Always keep PNG format for PNG files to preserve transparency
+  const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+  const preferredFormat = isPng ? 'image/png' : (options.preferredFormat ?? 'image/jpeg');
 
   return optimizeImageDataUrl(rawDataUrl, {
     ...options,
@@ -117,10 +121,12 @@ export async function optimizeTemplatePagesForSave(
           const sourceBytes = estimateDataUrlBytes(el.imageUrl);
           if (sourceBytes < 700_000) return el;
 
+          // Preserve PNG format for images that have transparency (PNG source)
+          const isPngSource = el.imageUrl.startsWith('data:image/png') || el.type === 'logo';
           const optimizedUrl = await optimizeImageDataUrl(el.imageUrl, {
             maxDimension: el.type === 'logo' ? 1400 : 1800,
             targetBytes: el.type === 'logo' ? 900_000 : 800_000,
-            preferredFormat: el.type === 'logo' ? 'image/png' : 'image/jpeg',
+            preferredFormat: isPngSource ? 'image/png' : 'image/jpeg',
           });
 
           if (optimizedUrl !== el.imageUrl) {

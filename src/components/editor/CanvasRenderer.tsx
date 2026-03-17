@@ -208,7 +208,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             const url = await optimizeImageFile(file, {
               maxDimension: 1800,
               targetBytes: 800_000,
-              preferredFormat: 'image/jpeg',
             });
 
             const img = new Image();
