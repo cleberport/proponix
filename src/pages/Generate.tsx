@@ -305,6 +305,9 @@ const Generate = () => {
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
 
+      // Save inputs to history for future autocomplete
+      saveAllInputs(userInputs);
+
       addDocumentToHistory({
         id: crypto.randomUUID(),
         templateId: template.id,
