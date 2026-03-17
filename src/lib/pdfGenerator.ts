@@ -191,19 +191,6 @@ function renderPageElements(
           const internal = pdf.internal as any;
           internal.write('q'); // save graphics state
 
-          // Apply opacity if set (imageOpacity: 0-100, default 100)
-          const opacity = (el.imageOpacity ?? 100) / 100;
-          if (opacity < 1) {
-            // Register a graphics state with the desired alpha
-            const gStateKey = `GS_O${Math.round(opacity * 100)}`;
-            const resources = (pdf as any).internal.getCurrentPageInfo().pageContext.extGStates;
-            if (!resources[gStateKey]) {
-              resources[gStateKey] = { ca: opacity, CA: opacity };
-            }
-            const gStateObjId = (pdf as any).internal.addGState(gStateKey, resources[gStateKey]);
-            internal.write(`/GS${gStateObjId} gs`);
-          }
-
           // Rectangle clip path: x y w h re W n (rect, clip, discard path)
           internal.write(
             `${x.toFixed(2)} ${(PDF_H - y - h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re W n`
