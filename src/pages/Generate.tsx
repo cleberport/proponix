@@ -118,21 +118,32 @@ const Generate = () => {
         }
         if (templateHasTable) excluded.add('price');
 
-        (fetchedTemplate.inputFields || []).forEach((field) => {
-          if (!excluded.has(field)) init[field] = '';
-        });
-
+        // Collect all variables actually used in the canvas
+        const usedVars = new Set<string>();
+        const varPattern = /\{\{(\w+)\}\}/g;
         for (const page of pages) {
           for (const el of page) {
-            if (
-              el.isVisible !== false &&
-              (el.type === 'dynamic-field' || el.type === 'price-field') &&
-              el.variable &&
-              !excluded.has(el.variable) &&
-              !(el.variable in init)
-            ) {
-              init[el.variable] = '';
+            if (el.isVisible === false) continue;
+            if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable) {
+              usedVars.add(el.variable);
             }
+            if ((el.type === 'text' || el.type === 'notes') && el.content) {
+              let match: RegExpExecArray | null;
+              while ((match = varPattern.exec(el.content)) !== null) {
+                usedVars.add(match[1]);
+              }
+            }
+          }
+        }
+
+        // Only initialize inputs for variables actually used in the canvas
+        (fetchedTemplate.inputFields || []).forEach((field) => {
+          if (!excluded.has(field) && usedVars.has(field)) init[field] = '';
+        });
+
+        for (const v of usedVars) {
+          if (!excluded.has(v) && !(v in init)) {
+            init[v] = '';
           }
         }
 
