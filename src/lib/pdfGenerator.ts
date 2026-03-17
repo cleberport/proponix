@@ -133,7 +133,7 @@ function renderPageElements(
   pdf: jsPDF,
   elements: CanvasElement[],
   variableValues: Record<string, string>,
-  imageMap: Map<string, { data: string; w: number; h: number }>,
+  imageMap: Map<string, HTMLImageElement>,
   bgColor?: string
 ) {
   // Background
