@@ -3,10 +3,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Upload, Lock, Unlock, RotateCw, Crop, RefreshCw } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { Upload, Lock, Unlock, RotateCw, RefreshCw } from 'lucide-react';
+import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { optimizeImageFile } from '@/lib/imageOptimization';
 
@@ -17,7 +16,6 @@ interface Props {
 
 const ImageEditingPanel = ({ element, onUpdate }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showCropControls, setShowCropControls] = useState(false);
 
   const CANVAS_W = 595;
   const CANVAS_H = 842;
@@ -42,7 +40,14 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
           newHeight = CANVAS_H - 20;
           newWidth = Math.round(newHeight * aspectRatio);
         }
-        onUpdate({ imageUrl: url, width: newWidth, height: newHeight });
+        onUpdate({
+          imageUrl: url,
+          width: newWidth,
+          height: newHeight,
+          imageScale: 1,
+          imageOffsetX: 0,
+          imageOffsetY: 0,
+        });
       };
       img.src = url;
     } catch (error) {
@@ -61,7 +66,7 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
     });
   };
 
-  const resetPanZoom = () => {
+  const resetFraming = () => {
     onUpdate({
       imageScale: 1,
       imageOffsetX: 0,
@@ -69,18 +74,16 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
     });
   };
 
-  const resetCrop = () => {
-    onUpdate({
-      cropX: 0,
-      cropY: 0,
-      cropWidth: 100,
-      cropHeight: 100,
-    });
-    setShowCropControls(false);
-  };
-
   return (
     <div className="flex flex-col gap-3">
+      {/* Tip */}
+      <div className="rounded-md bg-accent/50 px-3 py-2">
+        <p className="text-[11px] text-foreground leading-relaxed">
+          <strong>Duplo clique</strong> na imagem para enquadrar.
+          Arraste para reposicionar, <strong>scroll</strong> para zoom.
+        </p>
+      </div>
+
       {/* Replace Image */}
       <input
         ref={fileInputRef}
@@ -101,49 +104,16 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
 
       <Separator />
 
-      {/* Lock */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          {element.locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" /> : <Unlock className="h-3.5 w-3.5 text-muted-foreground" />}
-          <Label className="text-xs text-muted-foreground">Travar posição</Label>
-        </div>
-        <Switch
-          checked={element.locked || false}
-          onCheckedChange={(checked) => onUpdate({ locked: checked })}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Frame Fit */}
-      <div>
-        <Label className="text-xs text-muted-foreground">Ajuste no Quadro</Label>
-        <Select
-          value={element.objectFit || 'contain'}
-          onValueChange={(v) => onUpdate({ objectFit: v as CanvasElement['objectFit'] })}
-        >
-          <SelectTrigger className="h-7 text-xs mt-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="contain">Caber (Fit)</SelectItem>
-            <SelectItem value="cover">Preencher (Fill)</SelectItem>
-            <SelectItem value="fill">Esticar (Stretch)</SelectItem>
-            <SelectItem value="none">Tamanho Original</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Zoom & Pan */}
+      {/* Zoom (secondary control) */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <Label className="text-xs text-muted-foreground">Zoom & Enquadramento</Label>
-          <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={resetPanZoom}>
+          <Label className="text-xs text-muted-foreground">Zoom</Label>
+          <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={resetFraming}>
+            <RefreshCw className="h-3 w-3 mr-1" />
             Resetar
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-[10px] text-muted-foreground w-10">Zoom</Label>
           <Slider
             value={[Math.round((element.imageScale || 1) * 100)]}
             min={100}
@@ -154,39 +124,20 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
           />
           <span className="text-[10px] text-muted-foreground w-10 text-right">{Math.round((element.imageScale || 1) * 100)}%</span>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1.5">
-          Aumente o zoom e dê <strong>duplo clique</strong> na imagem para arrastar e enquadrar.
-        </p>
       </div>
 
-      {/* Object Position (preset grid) */}
-      <div>
-        <Label className="text-xs text-muted-foreground">Posição Rápida</Label>
-        <div className="grid grid-cols-3 gap-1 mt-1">
-          {[
-            { label: '↖', value: 'top left' },
-            { label: '↑', value: 'top center' },
-            { label: '↗', value: 'top right' },
-            { label: '←', value: 'center left' },
-            { label: '⊙', value: 'center' },
-            { label: '→', value: 'center right' },
-            { label: '↙', value: 'bottom left' },
-            { label: '↓', value: 'bottom center' },
-            { label: '↘', value: 'bottom right' },
-          ].map((pos) => (
-            <button
-              key={pos.value}
-              onClick={() => onUpdate({ objectPosition: pos.value, imageOffsetX: 0, imageOffsetY: 0 })}
-              className={`h-7 rounded border text-xs transition-colors ${
-                (element.objectPosition || 'center') === pos.value && !(element.imageOffsetX || element.imageOffsetY)
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:bg-accent'
-              }`}
-            >
-              {pos.label}
-            </button>
-          ))}
+      <Separator />
+
+      {/* Lock */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          {element.locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" /> : <Unlock className="h-3.5 w-3.5 text-muted-foreground" />}
+          <Label className="text-xs text-muted-foreground">Travar posição</Label>
         </div>
+        <Switch
+          checked={element.locked || false}
+          onCheckedChange={(checked) => onUpdate({ locked: checked })}
+        />
       </div>
 
       <Separator />
@@ -215,81 +166,6 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
             <RotateCw className="h-3.5 w-3.5" />
           </Button>
         </div>
-      </div>
-
-      <Separator />
-
-      {/* Crop */}
-      <div>
-        <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Recorte (Crop)</Label>
-          <div className="flex gap-1">
-            <Button
-              variant={showCropControls ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-6 px-2 text-[10px]"
-              onClick={() => setShowCropControls(!showCropControls)}
-            >
-              <Crop className="h-3 w-3 mr-1" />
-              {showCropControls ? 'Fechar' : 'Editar'}
-            </Button>
-            {showCropControls && (
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={resetCrop}>
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </div>
-        {showCropControls && (
-          <div className="mt-2 flex flex-col gap-2 rounded-md border border-border bg-accent/30 p-2">
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-[10px] text-muted-foreground">X (%)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={90}
-                  value={element.cropX || 0}
-                  onChange={(e) => onUpdate({ cropX: Math.max(0, Math.min(90, +e.target.value)) })}
-                  className="h-6 text-[10px]"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-muted-foreground">Y (%)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={90}
-                  value={element.cropY || 0}
-                  onChange={(e) => onUpdate({ cropY: Math.max(0, Math.min(90, +e.target.value)) })}
-                  className="h-6 text-[10px]"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-muted-foreground">Largura (%)</Label>
-                <Input
-                  type="number"
-                  min={10}
-                  max={100}
-                  value={element.cropWidth || 100}
-                  onChange={(e) => onUpdate({ cropWidth: Math.max(10, Math.min(100, +e.target.value)) })}
-                  className="h-6 text-[10px]"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-muted-foreground">Altura (%)</Label>
-                <Input
-                  type="number"
-                  min={10}
-                  max={100}
-                  value={element.cropHeight || 100}
-                  onChange={(e) => onUpdate({ cropHeight: Math.max(10, Math.min(100, +e.target.value)) })}
-                  className="h-6 text-[10px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <Separator />

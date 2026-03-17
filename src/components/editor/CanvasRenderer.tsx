@@ -361,6 +361,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           if (el.imageSaturation != null && el.imageSaturation !== 100) filterParts.push(`saturate(${el.imageSaturation / 100})`);
           const filterStr = filterParts.length > 0 ? filterParts.join(' ') : undefined;
 
+          const isFraming = editingImageId === el.id;
+          const scale = el.imageScale || 1;
+          const offsetX = el.imageOffsetX || 0;
+          const offsetY = el.imageOffsetY || 0;
+
           const imgContainerStyle: React.CSSProperties = {
             ...style,
             height: el.height || 'auto',
@@ -372,25 +377,24 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-            cursor: el.locked ? 'not-allowed' : (editingImageId === el.id ? 'move' : (readOnly ? 'default' : 'grab')),
+            cursor: el.locked ? 'not-allowed' : (isFraming ? 'grab' : (readOnly ? 'default' : 'grab')),
           };
 
-          const scale = el.imageScale || 1;
-          const offsetX = el.imageOffsetX || 0;
-          const offsetY = el.imageOffsetY || 0;
-
+          // In framing mode, image is rendered larger than container and offset
           const imgInnerStyle: React.CSSProperties = {
             filter: filterStr,
-            width: '100%',
-            height: '100%',
-            objectFit: scale > 1 ? 'cover' : ((el.objectFit as React.CSSProperties['objectFit']) || 'contain'),
-            objectPosition: el.objectPosition || 'center',
-            transform: `scale(${scale}) translate(${offsetX / scale}px, ${offsetY / scale}px)`,
-            transformOrigin: 'center center',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: `${scale * 100}%`,
+            height: `${scale * 100}%`,
+            objectFit: 'cover',
+            objectPosition: 'center',
+            transform: `translate(${offsetX}px, ${offsetY}px)`,
+            pointerEvents: 'none',
           };
 
           if (hasCrop) {
-            // Use clip-path for cropping
             imgInnerStyle.clipPath = `inset(${cropY}% ${100 - cropX - cropW}% ${100 - cropY - cropH}% ${cropX}%)`;
           }
 
@@ -398,9 +402,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`relative flex items-center justify-center ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${editingImageId === el.id ? 'ring-2 ring-primary ring-inset' : ''}`}
+              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${isFraming ? 'ring-2 ring-blue-500' : ''}`}
               onPointerDown={(e) => {
-                if (editingImageId === el.id) {
+                if (isFraming) {
                   handleImagePanPointerDown(e, el);
                   return;
                 }
@@ -408,10 +412,22 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
-                if (!readOnly && !el.locked) {
-                  setEditingImageId((prev) => (prev === el.id ? null : el.id));
+                if (!readOnly && !el.locked && el.imageUrl) {
+                  const entering = editingImageId !== el.id;
+                  setEditingImageId(entering ? el.id : null);
+                  // Auto-zoom to 120% on first enter if at 100%
+                  if (entering && (el.imageScale || 1) <= 1) {
+                    onUpdate(el.id, { imageScale: 1.2 });
+                  }
                   onSelect(el.id);
                 }
+              }}
+              onWheel={(e) => {
+                if (!isFraming || el.locked) return;
+                e.stopPropagation();
+                const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                const newScale = Math.max(1, Math.min(3, (el.imageScale || 1) + delta));
+                onUpdate(el.id, { imageScale: newScale });
               }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
@@ -419,27 +435,26 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <img
                   src={el.imageUrl}
                   alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
-                  className="rounded"
                   style={imgInnerStyle}
                   draggable={false}
                 />
               ) : (
-                <div className="flex flex-col items-center gap-1 py-4">
+                <div className="flex flex-col items-center justify-center h-full gap-1 py-4">
                   <span className="text-xs text-muted-foreground">{el.type === 'logo' ? '🖼 Logo' : '🖼 Imagem'}</span>
-                  <span className="text-[10px] text-muted-foreground">Arraste uma imagem ou selecione para enviar</span>
+                  <span className="text-[10px] text-muted-foreground">Arraste ou clique para enviar</span>
                 </div>
               )}
               {el.locked && elSelected && (
-                <div className="absolute top-1 left-1 rounded bg-card/80 p-0.5">
+                <div className="absolute top-1 left-1 rounded bg-card/80 p-0.5 z-10">
                   <svg className="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
                 </div>
               )}
-              {editingImageId === el.id && !el.locked && (
-                <div className="pointer-events-none absolute bottom-1 left-1 rounded bg-card/85 px-1.5 py-0.5 text-[10px] text-foreground">
-                  Reenquadrando • arraste a foto
+              {isFraming && !el.locked && (
+                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[10px] text-background font-medium z-10">
+                  Arraste para enquadrar · Scroll para zoom
                 </div>
               )}
               {resizeHandle}
