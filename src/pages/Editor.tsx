@@ -348,6 +348,15 @@ const Editor = () => {
     try {
       const optimizedLayout = await optimizeTemplatePagesForSave(pages);
 
+      // Upload images to storage instead of saving base64 in the database
+      let finalPages = optimizedLayout.pages;
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (userId) {
+        const { uploadPageImagesToStorage } = await import('@/lib/imageStorage');
+        finalPages = await uploadPageImagesToStorage(finalPages, userId, finalId);
+      }
+
       const template: Template = {
         id: finalId,
         name: templateName,
@@ -355,8 +364,8 @@ const Editor = () => {
         description: baseDescription,
         thumbnail: '',
         color: templateColor,
-        elements: optimizedLayout.pages[0] || [],
-        pages: optimizedLayout.pages,
+        elements: finalPages[0] || [],
+        pages: finalPages,
         variables,
         canvasWidth: 595,
         canvasHeight: 842,
