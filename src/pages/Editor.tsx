@@ -283,7 +283,7 @@ const Editor = () => {
         defaultValues,
         inputFields,
         calculatedFields,
-        settings,
+        settings: { ...settings, backgroundColor: canvasBgColor },
       };
 
       const saved = await saveTemplate(template);
