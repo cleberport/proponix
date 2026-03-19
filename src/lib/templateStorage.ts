@@ -342,16 +342,34 @@ const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument
 });
 
 const getCurrentUserId = async (): Promise<string | null> => {
+  if (authUserIdHint) return authUserIdHint;
+
   const { data: sessionData } = await supabase.auth.getSession();
   const sessionUserId = sessionData.session?.user?.id;
-  if (sessionUserId) return sessionUserId;
+  if (sessionUserId) {
+    authUserIdHint = sessionUserId;
+    return sessionUserId;
+  }
 
   const { data, error } = await supabase.auth.getUser();
   if (error) {
     console.warn('Não foi possível validar usuário autenticado:', error.message);
   }
 
-  return data.user?.id ?? null;
+  const fallbackUserId = data.user?.id ?? null;
+  if (fallbackUserId) {
+    authUserIdHint = fallbackUserId;
+  }
+
+  return fallbackUserId;
+};
+
+const resolveCurrentUserId = async (): Promise<string | null> => {
+  const immediateUserId = await getCurrentUserId();
+  if (immediateUserId) return immediateUserId;
+
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return getCurrentUserId();
 };
 
 const mergeIntoCache = (template: SavedTemplate) => {
