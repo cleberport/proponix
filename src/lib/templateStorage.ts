@@ -133,7 +133,7 @@ const getLegacyTemplateIdMap = (): Record<string, string> => {
       Object.entries(parsed as Record<string, unknown>).filter(
         ([legacyId, mappedId]) => typeof legacyId === 'string' && typeof mappedId === 'string' && isUuid(mappedId)
       )
-    );
+    ) as Record<string, string>;
   } catch {
     return {};
   }
