@@ -10,6 +10,9 @@ const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
 
 const db = supabase as any;
 
+let savedTemplatesSyncPromise: Promise<SavedTemplate[]> | null = null;
+let documentHistorySyncPromise: Promise<GeneratedDocument[]> | null = null;
+
 interface CustomTemplateRow {
   id: string;
   user_id: string;
