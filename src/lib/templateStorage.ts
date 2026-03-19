@@ -502,7 +502,7 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
   savedTemplatesSyncPromise = (async () => {
     const cached = getCachedSavedTemplates();
-    const userId = await getCurrentUserId();
+    const userId = await resolveCurrentUserId();
     if (!userId) return cached;
 
     const remote = await fetchRemoteSavedTemplates(userId);
