@@ -525,17 +525,42 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
 }
 
 // Document history
+const sortDocumentHistory = (history: GeneratedDocument[]) => {
+  return [...history].sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime());
+};
+
+const normalizeDocumentId = (doc: GeneratedDocument): GeneratedDocument => {
+  if (isUuid(doc.id)) return doc;
+  return { ...doc, id: crypto.randomUUID() };
+};
+
+const normalizeDocumentHistory = (history: GeneratedDocument[]): GeneratedDocument[] => {
+  let changed = false;
+
+  const normalized = history.map((doc) => {
+    if (isUuid(doc.id)) return doc;
+    changed = true;
+    return { ...doc, id: crypto.randomUUID() };
+  });
+
+  return changed ? sortDocumentHistory(normalized) : history;
+};
+
 const getCachedDocumentHistory = (): GeneratedDocument[] => {
   const raw = localStorage.getItem(HISTORY_KEY);
-  return raw ? JSON.parse(raw) : [];
+  const parsed = raw ? JSON.parse(raw) : [];
+  const history = Array.isArray(parsed) ? (parsed as GeneratedDocument[]) : [];
+  const normalized = normalizeDocumentHistory(history);
+
+  if (normalized !== history) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(normalized));
+  }
+
+  return normalized;
 };
 
 const setCachedDocumentHistory = (history: GeneratedDocument[]) => {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-};
-
-const sortDocumentHistory = (history: GeneratedDocument[]) => {
-  return [...history].sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime());
 };
 
 export function getDocumentHistory(): GeneratedDocument[] {
@@ -564,9 +589,10 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
   const missingFromRemote = cached.filter((doc) => !remoteIds.has(doc.id));
 
   if (missingFromRemote.length > 0) {
+    const payload = missingFromRemote.map((doc) => mapDocumentToDb(doc, userId));
     const { error: syncError } = await db
       .from('generated_documents')
-      .upsert(missingFromRemote.map((doc) => mapDocumentToDb(doc, userId)), { onConflict: 'id' });
+      .upsert(payload, { onConflict: 'id' });
 
     if (syncError) {
       console.error('Erro ao sincronizar histórico local:', syncError);
@@ -607,10 +633,11 @@ async function deleteDocumentFromServer(id: string): Promise<void> {
 }
 
 export function addDocumentToHistory(doc: GeneratedDocument): void {
-  const history = getCachedDocumentHistory().filter((item) => item.id !== doc.id);
-  const next = sortDocumentHistory([doc, ...history]).slice(0, 100);
+  const normalizedDoc = normalizeDocumentId(doc);
+  const history = getCachedDocumentHistory().filter((item) => item.id !== normalizedDoc.id);
+  const next = sortDocumentHistory([normalizedDoc, ...history]).slice(0, 100);
   setCachedDocumentHistory(next);
-  void syncDocumentToServer(doc);
+  void syncDocumentToServer(normalizedDoc);
 }
 
 export function deleteDocumentFromHistory(id: string): void {
