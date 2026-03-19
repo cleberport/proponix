@@ -393,7 +393,7 @@ export function saveSettings(settings: AppSettings): void {
 
 export async function loadSettingsFromServer(): Promise<AppSettings> {
   const local = getSettings();
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return local;
 
   const { data, error } = await db
