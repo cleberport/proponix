@@ -343,10 +343,10 @@ const AUTH_LOOKUP_TIMEOUT_MS = 6000;
 const DATA_SYNC_TIMEOUT_MS = 10000;
 const AUTH_RETRY_DELAY_MS = 300;
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T | null> => {
+const withTimeout = async <T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T | null> => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  const safePromise = promise.catch((error) => {
+  const safePromise = Promise.resolve(promise).catch((error) => {
     console.error(`[sync] ${label} falhou:`, error);
     return null as T | null;
   });
