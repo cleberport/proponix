@@ -72,6 +72,7 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
       setSession(nextSession);
+      setAuthUserIdHint(nextSession?.user?.id ?? null);
     });
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
