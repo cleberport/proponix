@@ -650,7 +650,7 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
     return starterTemplates.find((template) => template.id === id || template.id === resolvedId);
   }
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (userId) {
     const { data, error } = await db
       .from('custom_templates')
