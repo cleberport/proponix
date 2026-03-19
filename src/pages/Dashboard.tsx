@@ -12,22 +12,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SavedTemplate } from '@/types/template';
 
-// Use cache for instant display
-const getCachedTemplates = (): SavedTemplate[] => {
-  try {
-    const raw = localStorage.getItem('budget-template-builder-templates');
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [starters, setStarters] = useState(getStarterTemplates());
-  // Initialize with cache for instant display
-  const [saved, setSaved] = useState<SavedTemplate[]>(getCachedTemplates());
-  const [loadingSaved, setLoadingSaved] = useState(false);
+  const [saved, setSaved] = useState<SavedTemplate[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
@@ -123,6 +113,13 @@ const Dashboard = () => {
           <span className="sm:hidden">Novo</span>
         </Button>
       </div>
+
+      {loadingSaved && saved.length === 0 && (
+        <div className="mb-8 flex items-center justify-center py-12">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span className="ml-3 text-sm text-muted-foreground">Carregando templates...</span>
+        </div>
+      )}
 
       {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
