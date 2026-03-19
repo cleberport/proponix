@@ -614,7 +614,7 @@ export async function deleteTemplate(id: string): Promise<void> {
   const updatedLocal = previousLocal.filter((t) => t.id !== id);
   setCachedSavedTemplates(updatedLocal);
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
