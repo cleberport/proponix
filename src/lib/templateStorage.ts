@@ -428,7 +428,7 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
 }
 
 async function syncSettingsToServer(settings: AppSettings): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const row = {
