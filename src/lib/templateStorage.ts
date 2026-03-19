@@ -11,8 +11,6 @@ const LEGACY_TEMPLATE_ID_MAP_KEY = 'budget-template-builder-legacy-template-id-m
 
 const db = supabase as any;
 
-let savedTemplatesSyncPromise: Promise<SavedTemplate[]> | null = null;
-let documentHistorySyncPromise: Promise<GeneratedDocument[]> | null = null;
 let authUserIdHint: string | null = null;
 
 export const setAuthUserIdHint = (userId: string | null) => {
