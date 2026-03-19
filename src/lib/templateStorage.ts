@@ -770,7 +770,7 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 }
 
 async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
