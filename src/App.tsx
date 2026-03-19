@@ -9,6 +9,7 @@ import {
   getSavedTemplates,
   loadDocumentHistoryFromServer,
   loadSettingsFromServer,
+  setAuthUserIdHint,
 } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
@@ -71,11 +72,13 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
       setSession(nextSession);
+      setAuthUserIdHint(nextSession?.user?.id ?? null);
     });
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (!isMounted) return;
       setSession(initialSession);
+      setAuthUserIdHint(initialSession?.user?.id ?? null);
       setLoading(false);
     });
 

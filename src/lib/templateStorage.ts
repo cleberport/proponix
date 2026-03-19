@@ -13,6 +13,11 @@ const db = supabase as any;
 
 let savedTemplatesSyncPromise: Promise<SavedTemplate[]> | null = null;
 let documentHistorySyncPromise: Promise<GeneratedDocument[]> | null = null;
+let authUserIdHint: string | null = null;
+
+export const setAuthUserIdHint = (userId: string | null) => {
+  authUserIdHint = userId;
+};
 
 interface CustomTemplateRow {
   id: string;
@@ -337,16 +342,34 @@ const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument
 });
 
 const getCurrentUserId = async (): Promise<string | null> => {
+  if (authUserIdHint) return authUserIdHint;
+
   const { data: sessionData } = await supabase.auth.getSession();
   const sessionUserId = sessionData.session?.user?.id;
-  if (sessionUserId) return sessionUserId;
+  if (sessionUserId) {
+    authUserIdHint = sessionUserId;
+    return sessionUserId;
+  }
 
   const { data, error } = await supabase.auth.getUser();
   if (error) {
     console.warn('Não foi possível validar usuário autenticado:', error.message);
   }
 
-  return data.user?.id ?? null;
+  const fallbackUserId = data.user?.id ?? null;
+  if (fallbackUserId) {
+    authUserIdHint = fallbackUserId;
+  }
+
+  return fallbackUserId;
+};
+
+const resolveCurrentUserId = async (): Promise<string | null> => {
+  const immediateUserId = await getCurrentUserId();
+  if (immediateUserId) return immediateUserId;
+
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return getCurrentUserId();
 };
 
 const mergeIntoCache = (template: SavedTemplate) => {
@@ -370,7 +393,7 @@ export function saveSettings(settings: AppSettings): void {
 
 export async function loadSettingsFromServer(): Promise<AppSettings> {
   const local = getSettings();
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return local;
 
   const { data, error } = await db
@@ -405,7 +428,7 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
 }
 
 async function syncSettingsToServer(settings: AppSettings): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const row = {
@@ -479,7 +502,7 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
   savedTemplatesSyncPromise = (async () => {
     const cached = getCachedSavedTemplates();
-    const userId = await getCurrentUserId();
+    const userId = await resolveCurrentUserId();
     if (!userId) return cached;
 
     const remote = await fetchRemoteSavedTemplates(userId);
@@ -535,7 +558,7 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     console.warn('Não foi possível salvar em cache local:', cacheError);
   }
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) {
     if (!localPersisted) {
       throw new Error('Falha ao salvar localmente. Reduza o tamanho da imagem e tente novamente.');
@@ -591,7 +614,7 @@ export async function deleteTemplate(id: string): Promise<void> {
   const updatedLocal = previousLocal.filter((t) => t.id !== id);
   setCachedSavedTemplates(updatedLocal);
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
@@ -627,7 +650,7 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
     return starterTemplates.find((template) => template.id === id || template.id === resolvedId);
   }
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (userId) {
     const { data, error } = await db
       .from('custom_templates')
@@ -710,7 +733,7 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 
   documentHistorySyncPromise = (async () => {
     const cached = getCachedDocumentHistory();
-    const userId = await getCurrentUserId();
+    const userId = await resolveCurrentUserId();
     if (!userId) return cached;
 
     const remote = await fetchRemoteDocumentHistory(userId);
@@ -747,7 +770,7 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 }
 
 async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
@@ -760,7 +783,7 @@ async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
 }
 
 async function deleteDocumentFromServer(id: string): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
