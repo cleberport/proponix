@@ -114,6 +114,13 @@ const Dashboard = () => {
         </Button>
       </div>
 
+      {loadingSaved && saved.length === 0 && (
+        <div className="mb-8 flex items-center justify-center py-12">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span className="ml-3 text-sm text-muted-foreground">Carregando templates...</span>
+        </div>
+      )}
+
       {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
