@@ -558,7 +558,7 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
     console.warn('Não foi possível salvar em cache local:', cacheError);
   }
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) {
     if (!localPersisted) {
       throw new Error('Falha ao salvar localmente. Reduza o tamanho da imagem e tente novamente.');
