@@ -12,22 +12,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SavedTemplate } from '@/types/template';
 
-// Use cache for instant display
-const getCachedTemplates = (): SavedTemplate[] => {
-  try {
-    const raw = localStorage.getItem('budget-template-builder-templates');
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [starters, setStarters] = useState(getStarterTemplates());
-  // Initialize with cache for instant display
-  const [saved, setSaved] = useState<SavedTemplate[]>(getCachedTemplates());
-  const [loadingSaved, setLoadingSaved] = useState(false);
+  const [saved, setSaved] = useState<SavedTemplate[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
