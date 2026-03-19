@@ -339,34 +339,54 @@ const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument
   values: toStringRecord(row.values),
 });
 
+const AUTH_LOOKUP_TIMEOUT_MS = 6000;
+const DATA_SYNC_TIMEOUT_MS = 10000;
+const AUTH_RETRY_DELAY_MS = 300;
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T | null> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const safePromise = promise.catch((error) => {
+    console.error(`[sync] ${label} falhou:`, error);
+    return null as T | null;
+  });
+
+  const timeoutPromise = new Promise<null>((resolve) => {
+    timeoutId = setTimeout(() => {
+      console.warn(`[sync] ${label} excedeu ${timeoutMs}ms; usando fallback local`);
+      resolve(null);
+    }, timeoutMs);
+  });
+
+  const result = await Promise.race([safePromise, timeoutPromise]);
+  if (timeoutId) clearTimeout(timeoutId);
+
+  return result as T | null;
+};
+
 const getCurrentUserId = async (): Promise<string | null> => {
   if (authUserIdHint) return authUserIdHint;
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const sessionUserId = sessionData.session?.user?.id;
+  const sessionResult = await withTimeout(
+    supabase.auth.getSession(),
+    AUTH_LOOKUP_TIMEOUT_MS,
+    'auth.getSession'
+  );
+
+  const sessionUserId = sessionResult?.data?.session?.user?.id ?? null;
   if (sessionUserId) {
     authUserIdHint = sessionUserId;
     return sessionUserId;
   }
 
-  const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    console.warn('Não foi possível validar usuário autenticado:', error.message);
-  }
-
-  const fallbackUserId = data.user?.id ?? null;
-  if (fallbackUserId) {
-    authUserIdHint = fallbackUserId;
-  }
-
-  return fallbackUserId;
+  return null;
 };
 
 const resolveCurrentUserId = async (): Promise<string | null> => {
   const immediateUserId = await getCurrentUserId();
   if (immediateUserId) return immediateUserId;
 
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, AUTH_RETRY_DELAY_MS));
   return getCurrentUserId();
 };
 
@@ -481,23 +501,33 @@ export function getStarterTemplates(): Template[] {
 }
 
 const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[] | null> => {
-  const { data, error } = await db
-    .from('custom_templates')
-    .select('*')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false });
+  const queryResult = await withTimeout(
+    db
+      .from('custom_templates')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false }),
+    DATA_SYNC_TIMEOUT_MS,
+    'custom_templates.select'
+  );
+
+  if (!queryResult) {
+    return null;
+  }
+
+  const { data, error } = queryResult as { data: CustomTemplateRow[] | null; error: unknown };
 
   if (error) {
     console.error('Erro ao buscar templates do backend:', error);
     return null;
   }
 
-  return (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
+  return (data ?? []).map(mapRowToSavedTemplate);
 };
 
 export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const cached = getCachedSavedTemplates();
-  const userId = await resolveCurrentUserId();
+  const userId = await withTimeout(resolveCurrentUserId(), AUTH_LOOKUP_TIMEOUT_MS, 'resolveCurrentUserId');
   if (!userId) {
     console.warn('[sync] getSavedTemplates: sem userId, retornando cache local');
     return cached;
@@ -514,10 +544,15 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
 
   if (localOnly.length > 0) {
-    const { error: syncError } = await db
-      .from('custom_templates')
-      .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+    const syncResult = await withTimeout(
+      db
+        .from('custom_templates')
+        .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' }),
+      DATA_SYNC_TIMEOUT_MS,
+      'custom_templates.upsert'
+    );
 
+    const syncError = (syncResult as { error?: unknown } | null)?.error;
     if (syncError) {
       console.error('Erro ao sincronizar templates locais:', syncError);
     }
