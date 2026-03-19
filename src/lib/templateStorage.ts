@@ -342,6 +342,92 @@ const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument
 const AUTH_LOOKUP_TIMEOUT_MS = 6000;
 const DATA_SYNC_TIMEOUT_MS = 10000;
 const AUTH_RETRY_DELAY_MS = 300;
+const PENDING_TEMPLATE_SYNC_KEY = 'budget-template-builder-pending-template-sync';
+
+type PendingTemplateSyncState = {
+  upsertIds: string[];
+  deletedIds: string[];
+};
+
+const uniqueUuidIds = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+
+  return [...new Set(
+    value.filter((item): item is string => typeof item === 'string' && isUuid(item))
+  )];
+};
+
+const readPendingTemplateSyncState = (): PendingTemplateSyncState => {
+  try {
+    const raw = localStorage.getItem(PENDING_TEMPLATE_SYNC_KEY);
+    if (!raw) return { upsertIds: [], deletedIds: [] };
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { upsertIds: [], deletedIds: [] };
+    }
+
+    const payload = parsed as { upsertIds?: unknown; deletedIds?: unknown };
+
+    return {
+      upsertIds: uniqueUuidIds(payload.upsertIds),
+      deletedIds: uniqueUuidIds(payload.deletedIds),
+    };
+  } catch {
+    return { upsertIds: [], deletedIds: [] };
+  }
+};
+
+const writePendingTemplateSyncState = (state: PendingTemplateSyncState) => {
+  if (state.upsertIds.length === 0 && state.deletedIds.length === 0) {
+    localStorage.removeItem(PENDING_TEMPLATE_SYNC_KEY);
+    return;
+  }
+
+  localStorage.setItem(PENDING_TEMPLATE_SYNC_KEY, JSON.stringify(state));
+};
+
+const markTemplatePendingUpsert = (id: string) => {
+  if (!isUuid(id)) return;
+
+  const state = readPendingTemplateSyncState();
+  const next: PendingTemplateSyncState = {
+    upsertIds: state.upsertIds.includes(id) ? state.upsertIds : [id, ...state.upsertIds],
+    deletedIds: state.deletedIds.filter((deletedId) => deletedId !== id),
+  };
+
+  writePendingTemplateSyncState(next);
+};
+
+const markTemplatePendingDelete = (id: string) => {
+  if (!isUuid(id)) return;
+
+  const state = readPendingTemplateSyncState();
+  const next: PendingTemplateSyncState = {
+    upsertIds: state.upsertIds.filter((upsertId) => upsertId !== id),
+    deletedIds: state.deletedIds.includes(id) ? state.deletedIds : [id, ...state.deletedIds],
+  };
+
+  writePendingTemplateSyncState(next);
+};
+
+const clearTemplatePendingUpsert = (id: string) => {
+  const state = readPendingTemplateSyncState();
+  const next: PendingTemplateSyncState = {
+    upsertIds: state.upsertIds.filter((upsertId) => upsertId !== id),
+    deletedIds: state.deletedIds,
+  };
+  writePendingTemplateSyncState(next);
+};
+
+const clearTemplatePendingDelete = (id: string) => {
+  const state = readPendingTemplateSyncState();
+  const next: PendingTemplateSyncState = {
+    upsertIds: state.upsertIds,
+    deletedIds: state.deletedIds.filter((deletedId) => deletedId !== id),
+  };
+  writePendingTemplateSyncState(next);
+};
 
 const withTimeout = async <T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T | null> => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -525,15 +611,78 @@ const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[
   return (data ?? []).map(mapRowToSavedTemplate);
 };
 
+const applyPendingTemplateSync = async (userId: string, cached: SavedTemplate[]) => {
+  const pending = readPendingTemplateSyncState();
+  if (pending.upsertIds.length === 0 && pending.deletedIds.length === 0) {
+    return;
+  }
+
+  const next: PendingTemplateSyncState = {
+    upsertIds: [...pending.upsertIds],
+    deletedIds: [...pending.deletedIds],
+  };
+
+  if (pending.deletedIds.length > 0) {
+    const deleteResult = await withTimeout(
+      db
+        .from('custom_templates')
+        .delete()
+        .in('id', pending.deletedIds)
+        .eq('user_id', userId),
+      DATA_SYNC_TIMEOUT_MS,
+      'custom_templates.delete.pending'
+    );
+
+    const deleteError = (deleteResult as { error?: unknown } | null)?.error;
+    if (deleteResult && !deleteError) {
+      next.deletedIds = [];
+    } else if (deleteError) {
+      console.error('[sync] Falha ao processar deleções pendentes:', deleteError);
+    }
+  }
+
+  if (pending.upsertIds.length > 0) {
+    const templatesById = new Map(cached.map((template) => [template.id, template]));
+    const pendingUpserts = pending.upsertIds
+      .filter((id) => !next.deletedIds.includes(id))
+      .map((id) => templatesById.get(id))
+      .filter((template): template is SavedTemplate => Boolean(template));
+
+    if (pendingUpserts.length === 0) {
+      next.upsertIds = [];
+    } else {
+      const upsertResult = await withTimeout(
+        db
+          .from('custom_templates')
+          .upsert(pendingUpserts.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' }),
+        DATA_SYNC_TIMEOUT_MS,
+        'custom_templates.upsert.pending'
+      );
+
+      const upsertError = (upsertResult as { error?: unknown } | null)?.error;
+      if (upsertResult && !upsertError) {
+        const syncedIds = new Set(pendingUpserts.map((template) => template.id));
+        next.upsertIds = next.upsertIds.filter((id) => !syncedIds.has(id));
+      } else if (upsertError) {
+        console.error('[sync] Falha ao processar upserts pendentes:', upsertError);
+      }
+    }
+  }
+
+  writePendingTemplateSyncState(next);
+};
+
 export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const cached = getCachedSavedTemplates();
 
   try {
-    const userId = await withTimeout(resolveCurrentUserId(), AUTH_LOOKUP_TIMEOUT_MS, 'resolveCurrentUserId');
+    const userId = await resolveCurrentUserId();
     if (!userId) {
       console.warn('[sync] getSavedTemplates: sem userId, retornando cache local');
       return cached;
     }
+
+    await applyPendingTemplateSync(userId, cached);
 
     const remote = await fetchRemoteSavedTemplates(userId);
     if (!remote) {
@@ -541,35 +690,7 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
       return cached;
     }
 
-    // Push local-only templates to server
-    const remoteIds = new Set(remote.map((template) => template.id));
-    const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
-
-    if (localOnly.length > 0) {
-      const syncResult = await withTimeout(
-        db
-          .from('custom_templates')
-          .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' }),
-        DATA_SYNC_TIMEOUT_MS,
-        'custom_templates.upsert'
-      );
-
-      const syncError = (syncResult as { error?: unknown } | null)?.error;
-      if (syncError) {
-        console.error('Erro ao sincronizar templates locais:', syncError);
-      }
-
-      // Re-fetch to get reconciled state
-      const reconciled = (await fetchRemoteSavedTemplates(userId)) ?? remote;
-      try {
-        setCachedSavedTemplates(reconciled);
-      } catch (cacheError) {
-        console.warn('[sync] Falha ao atualizar cache local de templates:', cacheError);
-      }
-      return reconciled;
-    }
-
-    // Server is source of truth - always update local cache
+    // Backend é a fonte da verdade: sempre sobrescreve cache local quando disponível.
     try {
       setCachedSavedTemplates(remote);
     } catch (cacheError) {
@@ -607,6 +728,7 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
 
   const userId = await resolveCurrentUserId();
   if (!userId) {
+    markTemplatePendingUpsert(saved.id);
     if (!localPersisted) {
       throw new Error('Falha ao salvar localmente. Reduza o tamanho da imagem e tente novamente.');
     }
@@ -614,20 +736,30 @@ export async function saveTemplate(template: Template): Promise<SavedTemplate> {
   }
 
   try {
-    const { error } = await db
-      .from('custom_templates')
-      .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' });
+    const result = await withTimeout(
+      db
+        .from('custom_templates')
+        .upsert(mapTemplateToDb(saved, userId), { onConflict: 'id' }),
+      DATA_SYNC_TIMEOUT_MS,
+      'custom_templates.upsert'
+    );
 
-    if (error) {
-      console.error('Erro ao salvar template no backend:', error);
+    const error = (result as { error?: { message?: string } } | null)?.error;
+    if (!result || error) {
+      markTemplatePendingUpsert(saved.id);
+      if (error) {
+        console.error('Erro ao salvar template no backend:', error);
+      }
       if (!localPersisted) {
-        throw new Error(error.message || 'Falha ao salvar template no backend');
+        throw new Error(error?.message || 'Falha ao salvar template no backend');
       }
       return saved;
     }
 
+    clearTemplatePendingUpsert(saved.id);
     return saved;
   } catch (err) {
+    markTemplatePendingUpsert(saved.id);
     console.error('Erro inesperado ao salvar template:', err);
     if (!localPersisted) {
       throw err instanceof Error ? err : new Error('Falha ao salvar template');
@@ -660,21 +792,33 @@ export async function deleteTemplate(id: string): Promise<void> {
   const previousLocal = getCachedSavedTemplates();
   const updatedLocal = previousLocal.filter((t) => t.id !== id);
   setCachedSavedTemplates(updatedLocal);
+  markTemplatePendingDelete(id);
 
   const userId = await resolveCurrentUserId();
   if (!userId) return;
 
-  const { error } = await db
-    .from('custom_templates')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', userId);
+  const result = await withTimeout(
+    db
+      .from('custom_templates')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId),
+    DATA_SYNC_TIMEOUT_MS,
+    'custom_templates.delete'
+  );
 
-  if (error) {
-    setCachedSavedTemplates(previousLocal);
-    console.error('Erro ao excluir template no backend:', error);
-    throw error;
+  const error = (result as { error?: unknown } | null)?.error;
+  if (!result || error) {
+    if (error) {
+      setCachedSavedTemplates(previousLocal);
+      console.error('Erro ao excluir template no backend:', error);
+      throw error;
+    }
+    return;
   }
+
+  clearTemplatePendingDelete(id);
+  clearTemplatePendingUpsert(id);
 }
 
 export function restoreDefaultTemplates(): void {
