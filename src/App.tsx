@@ -4,7 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { getSettings } from "@/lib/templateStorage";
+import {
+  getSettings,
+  getSavedTemplates,
+  loadDocumentHistoryFromServer,
+  loadSettingsFromServer,
+} from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import AppLayout from "./components/AppLayout";
@@ -73,6 +78,17 @@ const App = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    void Promise.allSettled([
+      loadSettingsFromServer(),
+      getSavedTemplates(),
+      loadDocumentHistoryFromServer(),
+    ]);
+  }, [session?.user?.id]);
 
   if (loading) {
     return (
