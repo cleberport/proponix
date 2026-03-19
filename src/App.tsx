@@ -9,6 +9,7 @@ import {
   getSavedTemplates,
   loadDocumentHistoryFromServer,
   loadSettingsFromServer,
+  setAuthUserIdHint,
 } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
