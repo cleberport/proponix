@@ -588,11 +588,7 @@ export function getDocumentHistory(): GeneratedDocument[] {
   return getCachedDocumentHistory();
 }
 
-export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
-  const cached = getCachedDocumentHistory();
-  const userId = await getCurrentUserId();
-  if (!userId) return cached;
-
+const fetchRemoteDocumentHistory = async (userId: string): Promise<GeneratedDocument[] | null> => {
   const { data, error } = await db
     .from('generated_documents')
     .select('*')
@@ -602,27 +598,51 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 
   if (error) {
     console.error('Erro ao buscar histórico no servidor:', error);
-    return cached;
+    return null;
   }
 
-  const remote = (data as GeneratedDocumentRow[] | null)?.map(mapRowToGeneratedDocument) || [];
-  const remoteIds = new Set(remote.map((doc) => doc.id));
-  const missingFromRemote = cached.filter((doc) => !remoteIds.has(doc.id));
+  return (data as GeneratedDocumentRow[] | null)?.map(mapRowToGeneratedDocument) || [];
+};
 
-  if (missingFromRemote.length > 0) {
-    const payload = missingFromRemote.map((doc) => mapDocumentToDb(doc, userId));
-    const { error: syncError } = await db
-      .from('generated_documents')
-      .upsert(payload, { onConflict: 'id' });
+export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
+  if (documentHistorySyncPromise) return documentHistorySyncPromise;
 
-    if (syncError) {
-      console.error('Erro ao sincronizar histórico local:', syncError);
+  documentHistorySyncPromise = (async () => {
+    const cached = getCachedDocumentHistory();
+    const userId = await getCurrentUserId();
+    if (!userId) return cached;
+
+    const remote = await fetchRemoteDocumentHistory(userId);
+    if (!remote) return cached;
+
+    const remoteIds = new Set(remote.map((doc) => doc.id));
+    const localOnly = cached.filter((doc) => !remoteIds.has(doc.id) && isUuid(doc.id));
+
+    if (localOnly.length > 0) {
+      const payload = localOnly.map((doc) => mapDocumentToDb(doc, userId));
+      const { error: syncError } = await db
+        .from('generated_documents')
+        .upsert(payload, { onConflict: 'id' });
+
+      if (syncError) {
+        console.error('Erro ao sincronizar histórico local:', syncError);
+      }
     }
-  }
 
-  const merged = sortDocumentHistory([...remote, ...missingFromRemote]).slice(0, 100);
-  setCachedDocumentHistory(merged);
-  return merged;
+    const reconciled = localOnly.length > 0
+      ? (await fetchRemoteDocumentHistory(userId)) ?? remote
+      : remote;
+
+    const sorted = sortDocumentHistory(reconciled).slice(0, 100);
+    setCachedDocumentHistory(sorted);
+    return sorted;
+  })();
+
+  try {
+    return await documentHistorySyncPromise;
+  } finally {
+    documentHistorySyncPromise = null;
+  }
 }
 
 async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
