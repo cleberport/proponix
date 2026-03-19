@@ -361,11 +361,7 @@ export function getStarterTemplates(): Template[] {
   return starterTemplates.filter((t) => !hidden.includes(t.id));
 }
 
-export async function getSavedTemplates(): Promise<SavedTemplate[]> {
-  const cached = getCachedSavedTemplates();
-  const userId = await getCurrentUserId();
-  if (!userId) return cached;
-
+const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[] | null> => {
   const { data, error } = await db
     .from('custom_templates')
     .select('*')
@@ -374,27 +370,49 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
   if (error) {
     console.error('Erro ao buscar templates do backend:', error);
-    return cached;
+    return null;
   }
 
-  const remote = (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
-  const remoteIds = new Set(remote.map((template) => template.id));
-  const missingFromRemote = cached.filter((template) => !remoteIds.has(template.id));
-  const syncableMissing = missingFromRemote.filter((template) => isUuid(template.id));
+  return (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
+};
 
-  if (syncableMissing.length > 0) {
-    const { error: syncError } = await db
-      .from('custom_templates')
-      .upsert(syncableMissing.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+export async function getSavedTemplates(): Promise<SavedTemplate[]> {
+  if (savedTemplatesSyncPromise) return savedTemplatesSyncPromise;
 
-    if (syncError) {
-      console.error('Erro ao sincronizar templates locais:', syncError);
+  savedTemplatesSyncPromise = (async () => {
+    const cached = getCachedSavedTemplates();
+    const userId = await getCurrentUserId();
+    if (!userId) return cached;
+
+    const remote = await fetchRemoteSavedTemplates(userId);
+    if (!remote) return cached;
+
+    const remoteIds = new Set(remote.map((template) => template.id));
+    const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
+
+    if (localOnly.length > 0) {
+      const { error: syncError } = await db
+        .from('custom_templates')
+        .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+
+      if (syncError) {
+        console.error('Erro ao sincronizar templates locais:', syncError);
+      }
     }
-  }
 
-  const merged = sortByUpdatedAtDesc([...remote, ...missingFromRemote.filter((template) => !remoteIds.has(template.id))]);
-  setCachedSavedTemplates(merged);
-  return merged;
+    const reconciled = localOnly.length > 0
+      ? (await fetchRemoteSavedTemplates(userId)) ?? remote
+      : remote;
+
+    setCachedSavedTemplates(reconciled);
+    return reconciled;
+  })();
+
+  try {
+    return await savedTemplatesSyncPromise;
+  } finally {
+    savedTemplatesSyncPromise = null;
+  }
 }
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {
