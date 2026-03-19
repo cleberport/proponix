@@ -7,6 +7,7 @@ const SETTINGS_KEY = 'budget-template-builder-settings';
 const HISTORY_KEY = 'budget-template-builder-history';
 const PDF_COUNTER_KEY = 'budget-template-builder-pdf-counter';
 const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
+const LEGACY_TEMPLATE_ID_MAP_KEY = 'budget-template-builder-legacy-template-id-map';
 
 const db = supabase as any;
 
@@ -120,6 +121,89 @@ const isUuid = (value: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 };
 
+const getLegacyTemplateIdMap = (): Record<string, string> => {
+  try {
+    const raw = localStorage.getItem(LEGACY_TEMPLATE_ID_MAP_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(
+        ([legacyId, mappedId]) => typeof legacyId === 'string' && typeof mappedId === 'string' && isUuid(mappedId)
+      )
+    ) as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
+const setLegacyTemplateIdMap = (map: Record<string, string>) => {
+  localStorage.setItem(LEGACY_TEMPLATE_ID_MAP_KEY, JSON.stringify(map));
+};
+
+const remapLocalHistoryTemplateIds = (legacyMap: Record<string, string>) => {
+  if (Object.keys(legacyMap).length === 0) return;
+
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return;
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+
+    let changed = false;
+    const remapped = parsed.map((item) => {
+      if (!item || typeof item !== 'object') return item;
+      const doc = item as GeneratedDocument;
+      const mappedTemplateId = legacyMap[doc.templateId];
+      if (!mappedTemplateId || mappedTemplateId === doc.templateId) return doc;
+      changed = true;
+      return { ...doc, templateId: mappedTemplateId };
+    });
+
+    if (changed) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(remapped));
+    }
+  } catch {
+    // ignore malformed local cache
+  }
+};
+
+const normalizeSavedTemplates = (templates: SavedTemplate[]): SavedTemplate[] => {
+  const existingMap = getLegacyTemplateIdMap();
+  const nextMap = { ...existingMap };
+  let templatesChanged = false;
+
+  const normalized = templates.map((template) => {
+    if (isUuid(template.id)) return template;
+
+    const mappedId = nextMap[template.id] ?? crypto.randomUUID();
+    if (!nextMap[template.id]) {
+      nextMap[template.id] = mappedId;
+    }
+
+    templatesChanged = true;
+    const now = new Date().toISOString();
+
+    return {
+      ...template,
+      id: mappedId,
+      createdAt: template.createdAt || now,
+      updatedAt: template.updatedAt || now,
+    };
+  });
+
+  const mapChanged = JSON.stringify(existingMap) !== JSON.stringify(nextMap);
+  if (mapChanged) {
+    setLegacyTemplateIdMap(nextMap);
+    remapLocalHistoryTemplateIds(nextMap);
+  }
+
+  return templatesChanged ? normalized : templates;
+};
+
 const toCanvasElements = (value: unknown): CanvasElement[] => {
   if (!Array.isArray(value)) return [];
   return value as CanvasElement[];
@@ -154,8 +238,22 @@ const toTemplateLayout = (value: unknown): { elements: CanvasElement[]; pages?: 
 };
 
 const getCachedSavedTemplates = (): SavedTemplate[] => {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    const templates = Array.isArray(parsed) ? (parsed as SavedTemplate[]) : [];
+    const normalized = normalizeSavedTemplates(templates);
+
+    if (normalized !== templates) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    }
+
+    return normalized;
+  } catch (error) {
+    console.warn('Cache local de templates inválido. Limpando armazenamento local.', error);
+    localStorage.removeItem(STORAGE_KEY);
+    return [];
+  }
 };
 
 const setCachedSavedTemplates = (templates: SavedTemplate[]) => {
@@ -519,11 +617,14 @@ export function restoreDefaultTemplates(): void {
 
 export async function getTemplateById(id: string): Promise<Template | undefined> {
   const cached = getCachedSavedTemplates();
-  const saved = cached.find((template) => template.id === id);
+  const legacyMap = getLegacyTemplateIdMap();
+  const resolvedId = legacyMap[id] ?? id;
+
+  const saved = cached.find((template) => template.id === resolvedId);
   if (saved) return saved;
 
-  if (!isUuid(id)) {
-    return starterTemplates.find((template) => template.id === id);
+  if (!isUuid(resolvedId)) {
+    return starterTemplates.find((template) => template.id === id || template.id === resolvedId);
   }
 
   const userId = await getCurrentUserId();
@@ -531,7 +632,7 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
     const { data, error } = await db
       .from('custom_templates')
       .select('*')
-      .eq('id', id)
+      .eq('id', resolvedId)
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -542,7 +643,7 @@ export async function getTemplateById(id: string): Promise<Template | undefined>
     }
   }
 
-  return starterTemplates.find((template) => template.id === id);
+  return starterTemplates.find((template) => template.id === id || template.id === resolvedId);
 }
 
 // Document history
