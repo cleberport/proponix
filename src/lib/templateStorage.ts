@@ -733,7 +733,7 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 
   documentHistorySyncPromise = (async () => {
     const cached = getCachedDocumentHistory();
-    const userId = await getCurrentUserId();
+    const userId = await resolveCurrentUserId();
     if (!userId) return cached;
 
     const remote = await fetchRemoteDocumentHistory(userId);
