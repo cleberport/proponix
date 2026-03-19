@@ -783,7 +783,7 @@ async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
 }
 
 async function deleteDocumentFromServer(id: string): Promise<void> {
-  const userId = await getCurrentUserId();
+  const userId = await resolveCurrentUserId();
   if (!userId) return;
 
   const { error } = await db
