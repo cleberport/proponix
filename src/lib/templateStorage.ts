@@ -236,7 +236,15 @@ const mapRowToGeneratedDocument = (row: GeneratedDocumentRow): GeneratedDocument
 });
 
 const getCurrentUserId = async (): Promise<string | null> => {
-  const { data } = await supabase.auth.getUser();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUserId = sessionData.session?.user?.id;
+  if (sessionUserId) return sessionUserId;
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    console.warn('Não foi possível validar usuário autenticado:', error.message);
+  }
+
   return data.user?.id ?? null;
 };
 
