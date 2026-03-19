@@ -78,6 +78,7 @@ const App = () => {
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (!isMounted) return;
       setSession(initialSession);
+      setAuthUserIdHint(initialSession?.user?.id ?? null);
       setLoading(false);
     });
 
