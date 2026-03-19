@@ -498,42 +498,41 @@ const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[
 };
 
 export async function getSavedTemplates(): Promise<SavedTemplate[]> {
-  if (savedTemplatesSyncPromise) return savedTemplatesSyncPromise;
+  const cached = getCachedSavedTemplates();
+  const userId = await resolveCurrentUserId();
+  if (!userId) {
+    console.warn('[sync] getSavedTemplates: sem userId, retornando cache local');
+    return cached;
+  }
 
-  savedTemplatesSyncPromise = (async () => {
-    const cached = getCachedSavedTemplates();
-    const userId = await resolveCurrentUserId();
-    if (!userId) return cached;
+  const remote = await fetchRemoteSavedTemplates(userId);
+  if (!remote) {
+    console.warn('[sync] getSavedTemplates: falha ao buscar do servidor, retornando cache local');
+    return cached;
+  }
 
-    const remote = await fetchRemoteSavedTemplates(userId);
-    if (!remote) return cached;
+  // Push local-only templates to server
+  const remoteIds = new Set(remote.map((template) => template.id));
+  const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
 
-    const remoteIds = new Set(remote.map((template) => template.id));
-    const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
+  if (localOnly.length > 0) {
+    const { error: syncError } = await db
+      .from('custom_templates')
+      .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
 
-    if (localOnly.length > 0) {
-      const { error: syncError } = await db
-        .from('custom_templates')
-        .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
-
-      if (syncError) {
-        console.error('Erro ao sincronizar templates locais:', syncError);
-      }
+    if (syncError) {
+      console.error('Erro ao sincronizar templates locais:', syncError);
     }
 
-    const reconciled = localOnly.length > 0
-      ? (await fetchRemoteSavedTemplates(userId)) ?? remote
-      : remote;
-
+    // Re-fetch to get reconciled state
+    const reconciled = (await fetchRemoteSavedTemplates(userId)) ?? remote;
     setCachedSavedTemplates(reconciled);
     return reconciled;
-  })();
-
-  try {
-    return await savedTemplatesSyncPromise;
-  } finally {
-    savedTemplatesSyncPromise = null;
   }
+
+  // Server is source of truth - always update local cache
+  setCachedSavedTemplates(remote);
+  return remote;
 }
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {
