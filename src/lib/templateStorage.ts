@@ -527,45 +527,60 @@ const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[
 
 export async function getSavedTemplates(): Promise<SavedTemplate[]> {
   const cached = getCachedSavedTemplates();
-  const userId = await withTimeout(resolveCurrentUserId(), AUTH_LOOKUP_TIMEOUT_MS, 'resolveCurrentUserId');
-  if (!userId) {
-    console.warn('[sync] getSavedTemplates: sem userId, retornando cache local');
-    return cached;
-  }
 
-  const remote = await fetchRemoteSavedTemplates(userId);
-  if (!remote) {
-    console.warn('[sync] getSavedTemplates: falha ao buscar do servidor, retornando cache local');
-    return cached;
-  }
-
-  // Push local-only templates to server
-  const remoteIds = new Set(remote.map((template) => template.id));
-  const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
-
-  if (localOnly.length > 0) {
-    const syncResult = await withTimeout(
-      db
-        .from('custom_templates')
-        .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' }),
-      DATA_SYNC_TIMEOUT_MS,
-      'custom_templates.upsert'
-    );
-
-    const syncError = (syncResult as { error?: unknown } | null)?.error;
-    if (syncError) {
-      console.error('Erro ao sincronizar templates locais:', syncError);
+  try {
+    const userId = await withTimeout(resolveCurrentUserId(), AUTH_LOOKUP_TIMEOUT_MS, 'resolveCurrentUserId');
+    if (!userId) {
+      console.warn('[sync] getSavedTemplates: sem userId, retornando cache local');
+      return cached;
     }
 
-    // Re-fetch to get reconciled state
-    const reconciled = (await fetchRemoteSavedTemplates(userId)) ?? remote;
-    setCachedSavedTemplates(reconciled);
-    return reconciled;
-  }
+    const remote = await fetchRemoteSavedTemplates(userId);
+    if (!remote) {
+      console.warn('[sync] getSavedTemplates: falha ao buscar do servidor, retornando cache local');
+      return cached;
+    }
 
-  // Server is source of truth - always update local cache
-  setCachedSavedTemplates(remote);
-  return remote;
+    // Push local-only templates to server
+    const remoteIds = new Set(remote.map((template) => template.id));
+    const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
+
+    if (localOnly.length > 0) {
+      const syncResult = await withTimeout(
+        db
+          .from('custom_templates')
+          .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' }),
+        DATA_SYNC_TIMEOUT_MS,
+        'custom_templates.upsert'
+      );
+
+      const syncError = (syncResult as { error?: unknown } | null)?.error;
+      if (syncError) {
+        console.error('Erro ao sincronizar templates locais:', syncError);
+      }
+
+      // Re-fetch to get reconciled state
+      const reconciled = (await fetchRemoteSavedTemplates(userId)) ?? remote;
+      try {
+        setCachedSavedTemplates(reconciled);
+      } catch (cacheError) {
+        console.warn('[sync] Falha ao atualizar cache local de templates:', cacheError);
+      }
+      return reconciled;
+    }
+
+    // Server is source of truth - always update local cache
+    try {
+      setCachedSavedTemplates(remote);
+    } catch (cacheError) {
+      console.warn('[sync] Falha ao atualizar cache local de templates:', cacheError);
+    }
+
+    return remote;
+  } catch (error) {
+    console.error('[sync] getSavedTemplates falhou, usando cache local:', error);
+    return cached;
+  }
 }
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {

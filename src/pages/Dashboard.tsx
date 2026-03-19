@@ -24,9 +24,15 @@ const Dashboard = () => {
 
   const refreshSaved = useCallback(async () => {
     setLoadingSaved(true);
-    const templates = await getSavedTemplates();
-    setSaved(templates);
-    setLoadingSaved(false);
+    try {
+      const templates = await getSavedTemplates();
+      setSaved(templates);
+    } catch (err) {
+      console.error('Erro ao carregar templates:', err);
+      toast.error('Não foi possível carregar templates agora');
+    } finally {
+      setLoadingSaved(false);
+    }
   }, []);
 
   useEffect(() => {
