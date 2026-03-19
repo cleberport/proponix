@@ -10,6 +10,9 @@ const HIDDEN_STARTERS_KEY = 'budget-template-builder-hidden-starters';
 
 const db = supabase as any;
 
+let savedTemplatesSyncPromise: Promise<SavedTemplate[]> | null = null;
+let documentHistorySyncPromise: Promise<GeneratedDocument[]> | null = null;
+
 interface CustomTemplateRow {
   id: string;
   user_id: string;
@@ -358,11 +361,7 @@ export function getStarterTemplates(): Template[] {
   return starterTemplates.filter((t) => !hidden.includes(t.id));
 }
 
-export async function getSavedTemplates(): Promise<SavedTemplate[]> {
-  const cached = getCachedSavedTemplates();
-  const userId = await getCurrentUserId();
-  if (!userId) return cached;
-
+const fetchRemoteSavedTemplates = async (userId: string): Promise<SavedTemplate[] | null> => {
   const { data, error } = await db
     .from('custom_templates')
     .select('*')
@@ -371,27 +370,49 @@ export async function getSavedTemplates(): Promise<SavedTemplate[]> {
 
   if (error) {
     console.error('Erro ao buscar templates do backend:', error);
-    return cached;
+    return null;
   }
 
-  const remote = (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
-  const remoteIds = new Set(remote.map((template) => template.id));
-  const missingFromRemote = cached.filter((template) => !remoteIds.has(template.id));
-  const syncableMissing = missingFromRemote.filter((template) => isUuid(template.id));
+  return (data as CustomTemplateRow[] | null)?.map(mapRowToSavedTemplate) || [];
+};
 
-  if (syncableMissing.length > 0) {
-    const { error: syncError } = await db
-      .from('custom_templates')
-      .upsert(syncableMissing.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+export async function getSavedTemplates(): Promise<SavedTemplate[]> {
+  if (savedTemplatesSyncPromise) return savedTemplatesSyncPromise;
 
-    if (syncError) {
-      console.error('Erro ao sincronizar templates locais:', syncError);
+  savedTemplatesSyncPromise = (async () => {
+    const cached = getCachedSavedTemplates();
+    const userId = await getCurrentUserId();
+    if (!userId) return cached;
+
+    const remote = await fetchRemoteSavedTemplates(userId);
+    if (!remote) return cached;
+
+    const remoteIds = new Set(remote.map((template) => template.id));
+    const localOnly = cached.filter((template) => !remoteIds.has(template.id) && isUuid(template.id));
+
+    if (localOnly.length > 0) {
+      const { error: syncError } = await db
+        .from('custom_templates')
+        .upsert(localOnly.map((template) => mapTemplateToDb(template, userId)), { onConflict: 'id' });
+
+      if (syncError) {
+        console.error('Erro ao sincronizar templates locais:', syncError);
+      }
     }
-  }
 
-  const merged = sortByUpdatedAtDesc([...remote, ...missingFromRemote.filter((template) => !remoteIds.has(template.id))]);
-  setCachedSavedTemplates(merged);
-  return merged;
+    const reconciled = localOnly.length > 0
+      ? (await fetchRemoteSavedTemplates(userId)) ?? remote
+      : remote;
+
+    setCachedSavedTemplates(reconciled);
+    return reconciled;
+  })();
+
+  try {
+    return await savedTemplatesSyncPromise;
+  } finally {
+    savedTemplatesSyncPromise = null;
+  }
 }
 
 export async function saveTemplate(template: Template): Promise<SavedTemplate> {
@@ -567,11 +588,7 @@ export function getDocumentHistory(): GeneratedDocument[] {
   return getCachedDocumentHistory();
 }
 
-export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
-  const cached = getCachedDocumentHistory();
-  const userId = await getCurrentUserId();
-  if (!userId) return cached;
-
+const fetchRemoteDocumentHistory = async (userId: string): Promise<GeneratedDocument[] | null> => {
   const { data, error } = await db
     .from('generated_documents')
     .select('*')
@@ -581,27 +598,51 @@ export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument
 
   if (error) {
     console.error('Erro ao buscar histórico no servidor:', error);
-    return cached;
+    return null;
   }
 
-  const remote = (data as GeneratedDocumentRow[] | null)?.map(mapRowToGeneratedDocument) || [];
-  const remoteIds = new Set(remote.map((doc) => doc.id));
-  const missingFromRemote = cached.filter((doc) => !remoteIds.has(doc.id));
+  return (data as GeneratedDocumentRow[] | null)?.map(mapRowToGeneratedDocument) || [];
+};
 
-  if (missingFromRemote.length > 0) {
-    const payload = missingFromRemote.map((doc) => mapDocumentToDb(doc, userId));
-    const { error: syncError } = await db
-      .from('generated_documents')
-      .upsert(payload, { onConflict: 'id' });
+export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
+  if (documentHistorySyncPromise) return documentHistorySyncPromise;
 
-    if (syncError) {
-      console.error('Erro ao sincronizar histórico local:', syncError);
+  documentHistorySyncPromise = (async () => {
+    const cached = getCachedDocumentHistory();
+    const userId = await getCurrentUserId();
+    if (!userId) return cached;
+
+    const remote = await fetchRemoteDocumentHistory(userId);
+    if (!remote) return cached;
+
+    const remoteIds = new Set(remote.map((doc) => doc.id));
+    const localOnly = cached.filter((doc) => !remoteIds.has(doc.id) && isUuid(doc.id));
+
+    if (localOnly.length > 0) {
+      const payload = localOnly.map((doc) => mapDocumentToDb(doc, userId));
+      const { error: syncError } = await db
+        .from('generated_documents')
+        .upsert(payload, { onConflict: 'id' });
+
+      if (syncError) {
+        console.error('Erro ao sincronizar histórico local:', syncError);
+      }
     }
-  }
 
-  const merged = sortDocumentHistory([...remote, ...missingFromRemote]).slice(0, 100);
-  setCachedDocumentHistory(merged);
-  return merged;
+    const reconciled = localOnly.length > 0
+      ? (await fetchRemoteDocumentHistory(userId)) ?? remote
+      : remote;
+
+    const sorted = sortDocumentHistory(reconciled).slice(0, 100);
+    setCachedDocumentHistory(sorted);
+    return sorted;
+  })();
+
+  try {
+    return await documentHistorySyncPromise;
+  } finally {
+    documentHistorySyncPromise = null;
+  }
 }
 
 async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
