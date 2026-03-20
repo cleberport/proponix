@@ -86,6 +86,10 @@ function cropImageCover(
 
   ctx.scale(RES, RES);
 
+  // Fill with white so transparent PNGs don't get a black background in the PDF
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, containerW, containerH);
+
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   const imgElW = containerW * safeScale;
   const imgElH = containerH * safeScale;
