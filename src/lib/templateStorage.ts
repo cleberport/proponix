@@ -921,42 +921,27 @@ const fetchRemoteDocumentHistory = async (userId: string): Promise<GeneratedDocu
 
 export async function loadDocumentHistoryFromServer(): Promise<GeneratedDocument[]> {
   const cached = getCachedDocumentHistory();
-  const userId = await resolveCurrentUserId();
-  if (!userId) {
-    console.warn('[sync] loadDocumentHistory: sem userId, retornando cache local');
-    return cached;
-  }
-
-  const remote = await fetchRemoteDocumentHistory(userId);
-  if (!remote) {
-    console.warn('[sync] loadDocumentHistory: falha ao buscar do servidor, retornando cache local');
-    return cached;
-  }
-
-  // Push local-only documents to server
-  const remoteIds = new Set(remote.map((doc) => doc.id));
-  const localOnly = cached.filter((doc) => !remoteIds.has(doc.id) && isUuid(doc.id));
-
-  if (localOnly.length > 0) {
-    const payload = localOnly.map((doc) => mapDocumentToDb(doc, userId));
-    const { error: syncError } = await db
-      .from('generated_documents')
-      .upsert(payload, { onConflict: 'id' });
-
-    if (syncError) {
-      console.error('Erro ao sincronizar histórico local:', syncError);
+  try {
+    const userId = await resolveCurrentUserId();
+    if (!userId) {
+      console.warn('[sync] loadDocumentHistory: sem userId, retornando cache local');
+      return cached;
     }
 
-    const reconciled = (await fetchRemoteDocumentHistory(userId)) ?? remote;
-    const sorted = sortDocumentHistory(reconciled).slice(0, 100);
+    const remote = await fetchRemoteDocumentHistory(userId);
+    if (!remote) {
+      console.warn('[sync] loadDocumentHistory: falha ao buscar do servidor, retornando cache local');
+      return cached;
+    }
+
+    // Server is the absolute source of truth — overwrite local cache
+    const sorted = sortDocumentHistory(remote).slice(0, 100);
     setCachedDocumentHistory(sorted);
     return sorted;
+  } catch (error) {
+    console.error('[sync] loadDocumentHistory falhou, usando cache local:', error);
+    return cached;
   }
-
-  // Server is source of truth
-  const sorted = sortDocumentHistory(remote).slice(0, 100);
-  setCachedDocumentHistory(sorted);
-  return sorted;
 }
 
 async function syncDocumentToServer(doc: GeneratedDocument): Promise<void> {
