@@ -36,7 +36,7 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
 function loadImage(url: string): Promise<HTMLImageElement | null> {
   if (!url) return Promise.resolve(null);
 
-  const tryLoad = (src: string, useCors: boolean): Promise<HTMLImageElement | null> =>
+  const fromElement = (src: string, useCors: boolean): Promise<HTMLImageElement | null> =>
     new Promise((res) => {
       const img = new Image();
       if (useCors) img.crossOrigin = 'anonymous';
@@ -45,22 +45,37 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
       img.src = src;
     });
 
-  return tryLoad(url, true)
-    .then((img) => {
-      if (img) return img;
-      console.warn('[pdfGen] Retentando sem CORS:', url.substring(0, 80));
-      return tryLoad(url, false);
-    })
-    .then((img) => {
-      if (img) return img;
-      if (url.startsWith('http')) {
-        const sep = url.includes('?') ? '&' : '?';
-        return tryLoad(`${url}${sep}_t=${Date.now()}`, true);
-      }
+  // For remote URLs, try fetch→blob first (avoids CORS taint issues entirely)
+  const fromFetch = async (src: string): Promise<HTMLImageElement | null> => {
+    try {
+      const resp = await fetch(src);
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const img = await fromElement(blobUrl, false);
+      // Don't revoke yet — the img element still references it
+      // It will be garbage collected eventually
+      return img;
+    } catch {
       return null;
-    })
+    }
+  };
+
+  // Strategy: fetch→blob (best for storage URLs), then Image with CORS, then without
+  if (url.startsWith('http')) {
+    return fromFetch(url)
+      .then((img) => img || fromElement(url, true))
+      .then((img) => img || fromElement(url, false))
+      .then((img) => {
+        if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 100));
+        return img;
+      });
+  }
+
+  // For data URLs, just load directly
+  return fromElement(url, false)
     .then((img) => {
-      if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 80));
+      if (!img) console.error('[pdfGen] Data URL falhou:', url.substring(0, 60));
       return img;
     });
 }
