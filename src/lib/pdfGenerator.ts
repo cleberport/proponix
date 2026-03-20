@@ -293,7 +293,8 @@ function renderPageElements(
             offsetY,
             opacity,
             filters,
-            cropRect
+            cropRect,
+            bgColor
           );
 
           // Handle rotation
