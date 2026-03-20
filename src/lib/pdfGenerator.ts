@@ -35,10 +35,22 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
+    if (!url) { resolve(null); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    img.onerror = () => {
+      console.warn('[pdfGen] Falha ao carregar imagem, tentando sem CORS:', url.substring(0, 80));
+      // Retry without crossOrigin for data URLs
+      if (url.startsWith('data:')) {
+        const img2 = new Image();
+        img2.onload = () => resolve(img2);
+        img2.onerror = () => { console.error('[pdfGen] Imagem falhou definitivamente'); resolve(null); };
+        img2.src = url;
+      } else {
+        resolve(null);
+      }
+    };
     img.src = url;
   });
 }
