@@ -98,7 +98,8 @@ function cropImageCover(
   offsetY: number,
   opacity: number,
   filters?: { brightness?: number; contrast?: number; saturation?: number },
-  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number }
+  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number },
+  bgColor?: string
 ): string {
   const RES = 2;
   const canvas = document.createElement('canvas');
