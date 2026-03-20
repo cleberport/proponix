@@ -35,10 +35,22 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
+    if (!url) { resolve(null); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    img.onerror = () => {
+      console.warn('[pdfGen] Falha ao carregar imagem, tentando sem CORS:', url.substring(0, 80));
+      // Retry without crossOrigin for data URLs
+      if (url.startsWith('data:')) {
+        const img2 = new Image();
+        img2.onload = () => resolve(img2);
+        img2.onerror = () => { console.error('[pdfGen] Imagem falhou definitivamente'); resolve(null); };
+        img2.src = url;
+      } else {
+        resolve(null);
+      }
+    };
     img.src = url;
   });
 }
@@ -85,6 +97,10 @@ function cropImageCover(
   const ctx = canvas.getContext('2d')!;
 
   ctx.scale(RES, RES);
+
+  // Fill with white so transparent PNGs don't get a black background in the PDF
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, containerW, containerH);
 
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   const imgElW = containerW * safeScale;
