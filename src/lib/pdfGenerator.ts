@@ -34,25 +34,35 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
 }
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    if (!url) { resolve(null); return; }
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => {
-      console.warn('[pdfGen] Falha ao carregar imagem, tentando sem CORS:', url.substring(0, 80));
-      // Retry without crossOrigin for data URLs
-      if (url.startsWith('data:')) {
-        const img2 = new Image();
-        img2.onload = () => resolve(img2);
-        img2.onerror = () => { console.error('[pdfGen] Imagem falhou definitivamente'); resolve(null); };
-        img2.src = url;
-      } else {
-        resolve(null);
+  if (!url) return Promise.resolve(null);
+
+  const tryLoad = (src: string, useCors: boolean): Promise<HTMLImageElement | null> =>
+    new Promise((res) => {
+      const img = new Image();
+      if (useCors) img.crossOrigin = 'anonymous';
+      img.onload = () => res(img);
+      img.onerror = () => res(null);
+      img.src = src;
+    });
+
+  return tryLoad(url, true)
+    .then((img) => {
+      if (img) return img;
+      console.warn('[pdfGen] Retentando sem CORS:', url.substring(0, 80));
+      return tryLoad(url, false);
+    })
+    .then((img) => {
+      if (img) return img;
+      if (url.startsWith('http')) {
+        const sep = url.includes('?') ? '&' : '?';
+        return tryLoad(`${url}${sep}_t=${Date.now()}`, true);
       }
-    };
-    img.src = url;
-  });
+      return null;
+    })
+    .then((img) => {
+      if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 80));
+      return img;
+    });
 }
 
 /**
@@ -88,7 +98,8 @@ function cropImageCover(
   offsetY: number,
   opacity: number,
   filters?: { brightness?: number; contrast?: number; saturation?: number },
-  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number }
+  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number },
+  bgColor?: string
 ): string {
   const RES = 2;
   const canvas = document.createElement('canvas');
@@ -98,8 +109,8 @@ function cropImageCover(
 
   ctx.scale(RES, RES);
 
-  // Fill with white so transparent PNGs don't get a black background in the PDF
-  ctx.fillStyle = '#ffffff';
+  // Fill with page background color so transparent PNGs blend correctly
+  ctx.fillStyle = bgColor || '#ffffff';
   ctx.fillRect(0, 0, containerW, containerH);
 
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
@@ -282,7 +293,8 @@ function renderPageElements(
             offsetY,
             opacity,
             filters,
-            cropRect
+            cropRect,
+            bgColor
           );
 
           // Handle rotation
