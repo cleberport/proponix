@@ -34,36 +34,35 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
 }
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    if (!url) { resolve(null); return; }
-    const tryLoad = (src: string, useCors: boolean): Promise<HTMLImageElement | null> =>
-      new Promise((res) => {
-        const img = new Image();
-        if (useCors) img.crossOrigin = 'anonymous';
-        img.onload = () => res(img);
-        img.onerror = () => res(null);
-        img.src = src;
-      });
+  if (!url) return Promise.resolve(null);
 
-    // Try with CORS first, then without, then with cache-busting
-    tryLoad(url, true).then((img) => {
-      if (img) return resolve(img);
+  const tryLoad = (src: string, useCors: boolean): Promise<HTMLImageElement | null> =>
+    new Promise((res) => {
+      const img = new Image();
+      if (useCors) img.crossOrigin = 'anonymous';
+      img.onload = () => res(img);
+      img.onerror = () => res(null);
+      img.src = src;
+    });
+
+  return tryLoad(url, true)
+    .then((img) => {
+      if (img) return img;
       console.warn('[pdfGen] Retentando sem CORS:', url.substring(0, 80));
       return tryLoad(url, false);
-    }).then((img) => {
-      if (img) return resolve(img);
-      // For remote URLs, try cache-busting
+    })
+    .then((img) => {
+      if (img) return img;
       if (url.startsWith('http')) {
         const sep = url.includes('?') ? '&' : '?';
         return tryLoad(`${url}${sep}_t=${Date.now()}`, true);
       }
       return null;
-    }).then((img) => {
-      if (img) return resolve(img);
-      console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 80));
-      resolve(null);
+    })
+    .then((img) => {
+      if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 80));
+      return img;
     });
-  });
 }
 
 /**
