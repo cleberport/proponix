@@ -113,8 +113,7 @@ function cropImageCover(
   offsetY: number,
   opacity: number,
   filters?: { brightness?: number; contrast?: number; saturation?: number },
-  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number },
-  bgColor?: string
+  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number }
 ): string {
   const RES = 2;
   const canvas = document.createElement('canvas');
@@ -123,10 +122,6 @@ function cropImageCover(
   const ctx = canvas.getContext('2d')!;
 
   ctx.scale(RES, RES);
-
-  // Fill with page background color so transparent PNGs blend correctly
-  ctx.fillStyle = bgColor || '#ffffff';
-  ctx.fillRect(0, 0, containerW, containerH);
 
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   const imgElW = containerW * safeScale;
