@@ -61,11 +61,15 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     }
   };
 
-  // Strategy: fetch→blob (best for storage URLs), then Image with CORS, then without
+  // Strategy: fetch→blob (best for storage URLs), then Image with CORS.
+  // Avoid loading without CORS on remote URLs because it taints canvas and can break PDF export.
   if (url.startsWith('http')) {
+    const sep = url.includes('?') ? '&' : '?';
+    const bustUrl = `${url}${sep}_t=${Date.now()}`;
     return fromFetch(url)
+      .then((img) => img || fromFetch(bustUrl))
       .then((img) => img || fromElement(url, true))
-      .then((img) => img || fromElement(url, false))
+      .then((img) => img || fromElement(bustUrl, true))
       .then((img) => {
         if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 100));
         return img;
