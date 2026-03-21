@@ -61,11 +61,15 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     }
   };
 
-  // Strategy: fetch→blob (best for storage URLs), then Image with CORS, then without
+  // Strategy: fetch→blob (best for storage URLs), then Image with CORS.
+  // Avoid loading without CORS on remote URLs because it taints canvas and can break PDF export.
   if (url.startsWith('http')) {
+    const sep = url.includes('?') ? '&' : '?';
+    const bustUrl = `${url}${sep}_t=${Date.now()}`;
     return fromFetch(url)
+      .then((img) => img || fromFetch(bustUrl))
       .then((img) => img || fromElement(url, true))
-      .then((img) => img || fromElement(url, false))
+      .then((img) => img || fromElement(bustUrl, true))
       .then((img) => {
         if (!img) console.error('[pdfGen] Imagem falhou definitivamente:', url.substring(0, 100));
         return img;
@@ -113,8 +117,7 @@ function cropImageCover(
   offsetY: number,
   opacity: number,
   filters?: { brightness?: number; contrast?: number; saturation?: number },
-  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number },
-  bgColor?: string
+  cropRect?: { cropX: number; cropY: number; cropW: number; cropH: number }
 ): string {
   const RES = 2;
   const canvas = document.createElement('canvas');
@@ -123,10 +126,6 @@ function cropImageCover(
   const ctx = canvas.getContext('2d')!;
 
   ctx.scale(RES, RES);
-
-  // Fill with page background color so transparent PNGs blend correctly
-  ctx.fillStyle = bgColor || '#ffffff';
-  ctx.fillRect(0, 0, containerW, containerH);
 
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   const imgElW = containerW * safeScale;
@@ -299,20 +298,24 @@ function renderPageElements(
             cropH: el.cropHeight || 100,
           } : undefined;
 
-          const croppedDataUrl = cropImageCover(
-            img,
-            el.width,
-            el.height,
-            scale,
-            offsetX,
-            offsetY,
-            opacity,
-            filters,
-            cropRect,
-            bgColor
-          );
+          let croppedDataUrl: string | null = null;
+          try {
+            croppedDataUrl = cropImageCover(
+              img,
+              el.width,
+              el.height,
+              scale,
+              offsetX,
+              offsetY,
+              opacity,
+              filters,
+              cropRect
+            );
+          } catch (err) {
+            console.error('[pdfGen] Falha ao recortar imagem, aplicando fallback:', err);
+          }
 
-          // Handle rotation
+          // Handle rotation + fallback when pre-crop fails
           if (el.rotation) {
             pdf.saveGraphicsState();
             const cx = x + w / 2;
@@ -325,13 +328,25 @@ function renderPageElements(
               `${cos.toFixed(6)} ${sin.toFixed(6)} ${(-sin).toFixed(6)} ${cos.toFixed(6)} ${cx.toFixed(2)} ${(PDF_H - cy).toFixed(2)} cm`
             );
             try {
-              pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
-            } catch {}
+              if (croppedDataUrl) {
+                pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
+              } else {
+                pdf.addImage(img, 'PNG', -w / 2, -h / 2, w, h);
+              }
+            } catch (e) {
+              console.error('[pdfGen] Falha ao desenhar imagem rotacionada:', e);
+            }
             pdf.restoreGraphicsState();
           } else {
             try {
-              pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
-            } catch {}
+              if (croppedDataUrl) {
+                pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+              } else {
+                pdf.addImage(img, 'PNG', x, y, w, h);
+              }
+            } catch (e) {
+              console.error('[pdfGen] Falha ao desenhar imagem:', e);
+            }
           }
 
           // Border
