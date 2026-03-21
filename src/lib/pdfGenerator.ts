@@ -298,19 +298,24 @@ function renderPageElements(
             cropH: el.cropHeight || 100,
           } : undefined;
 
-          const croppedDataUrl = cropImageCover(
-            img,
-            el.width,
-            el.height,
-            scale,
-            offsetX,
-            offsetY,
-            opacity,
-            filters,
-            cropRect
-          );
+          let croppedDataUrl: string | null = null;
+          try {
+            croppedDataUrl = cropImageCover(
+              img,
+              el.width,
+              el.height,
+              scale,
+              offsetX,
+              offsetY,
+              opacity,
+              filters,
+              cropRect
+            );
+          } catch (err) {
+            console.error('[pdfGen] Falha ao recortar imagem, aplicando fallback:', err);
+          }
 
-          // Handle rotation
+          // Handle rotation + fallback when pre-crop fails
           if (el.rotation) {
             pdf.saveGraphicsState();
             const cx = x + w / 2;
@@ -323,13 +328,25 @@ function renderPageElements(
               `${cos.toFixed(6)} ${sin.toFixed(6)} ${(-sin).toFixed(6)} ${cos.toFixed(6)} ${cx.toFixed(2)} ${(PDF_H - cy).toFixed(2)} cm`
             );
             try {
-              pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
-            } catch {}
+              if (croppedDataUrl) {
+                pdf.addImage(croppedDataUrl, 'PNG', -w / 2, -h / 2, w, h);
+              } else {
+                pdf.addImage(img, 'PNG', -w / 2, -h / 2, w, h);
+              }
+            } catch (e) {
+              console.error('[pdfGen] Falha ao desenhar imagem rotacionada:', e);
+            }
             pdf.restoreGraphicsState();
           } else {
             try {
-              pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
-            } catch {}
+              if (croppedDataUrl) {
+                pdf.addImage(croppedDataUrl, 'PNG', x, y, w, h);
+              } else {
+                pdf.addImage(img, 'PNG', x, y, w, h);
+              }
+            } catch (e) {
+              console.error('[pdfGen] Falha ao desenhar imagem:', e);
+            }
           }
 
           // Border
