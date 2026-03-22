@@ -50,14 +50,14 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
         <h3 className="truncate text-sm font-semibold text-foreground">{template.name}</h3>
         <p className="line-clamp-2 text-[11px] text-muted-foreground">{template.description}</p>
 
-        <div className="mt-auto flex items-center gap-2 pt-1">
-          <Button variant="outline" size="sm" className="h-9 flex-1 text-xs" onClick={onEdit}>
-            <Pencil className="mr-1 h-3 w-3" />
-            Editar
+        <div className="mt-auto flex items-center gap-1.5 pt-1">
+          <Button variant="outline" size="sm" className="h-8 flex-1 min-w-0 text-[11px] px-2" onClick={onEdit}>
+            <Pencil className="mr-1 h-3 w-3 shrink-0" />
+            <span className="truncate">Editar</span>
           </Button>
-          <Button size="sm" className="h-9 flex-1 text-xs" onClick={onGenerate}>
-            <Play className="mr-1 h-3 w-3" />
-            Gerar
+          <Button size="sm" className="h-8 flex-1 min-w-0 text-[11px] px-2" onClick={onGenerate}>
+            <Play className="mr-1 h-3 w-3 shrink-0" />
+            <span className="truncate">Gerar</span>
           </Button>
         </div>
       </div>

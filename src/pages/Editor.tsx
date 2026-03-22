@@ -51,7 +51,13 @@ const Editor = () => {
   const [templateColor, setTemplateColor] = useState(TEMPLATE_COLORS[Math.floor(Math.random() * TEMPLATE_COLORS.length)]);
   const [mobileTab, setMobileTab] = useState<'canvas' | 'properties'>('canvas');
   const [showMobileElements, setShowMobileElements] = useState(false);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      const fitZoom = Math.floor((window.innerWidth - 32) / 595 * 100);
+      return Math.min(fitZoom, 100);
+    }
+    return 100;
+  });
   const [showGrid, setShowGrid] = useState(true);
   const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
 
