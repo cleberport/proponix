@@ -148,11 +148,11 @@ const Landing = () => {
 
           {/* Hero mockup preview */}
           <motion.div
-            className="mt-16 relative mx-auto max-w-3xl"
+            className="mt-12 md:mt-16 relative mx-auto max-w-3xl px-2 sm:px-0"
             initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7 }}
           >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/30 border border-white/10">
-              <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full" loading="lazy" />
+            <div className="relative rounded-lg overflow-hidden shadow-2xl shadow-black/40">
+              <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full block" loading="lazy" />
             </div>
           </motion.div>
         </motion.div>
@@ -203,11 +203,9 @@ const Landing = () => {
                 </div>
                 {/* Image */}
                 <div className="flex-1 relative">
-                  <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-neutral-200/50 border border-neutral-100 bg-neutral-50">
-                    <img src={s.image} alt={s.title} className="w-full object-cover" loading="lazy" />
+                  <div className="relative rounded-xl overflow-hidden shadow-lg shadow-neutral-200/60">
+                    <img src={s.image} alt={s.title} className="w-full block" loading="lazy" />
                   </div>
-                  {/* Decorative gradient behind */}
-                  <div className="absolute -z-10 inset-0 translate-x-4 translate-y-4 rounded-2xl bg-gradient-to-br from-primary/10 to-purple-400/10 blur-sm" />
                 </div>
               </motion.div>
             ))}
