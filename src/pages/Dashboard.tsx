@@ -113,11 +113,26 @@ const Dashboard = () => {
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
           <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
         </div>
-        <Button onClick={() => navigate('/editor/new')} size="sm" className="h-10 md:h-9">
-          <Plus className="mr-1.5 h-4 w-4" />
-          <span className="hidden sm:inline">Novo Template</span>
-          <span className="sm:hidden">Novo</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => {
+              const currentTheme = settings.theme || 'light';
+              const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+              const updated = { ...settings, theme: newTheme };
+              saveSettings(updated);
+              document.documentElement.classList.toggle('dark', newTheme === 'dark');
+            }}
+          >
+            {(settings.theme || 'light') === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
+            <Plus className="h-4 w-4 md:mr-1.5" />
+            <span className="hidden md:inline">Novo Template</span>
+          </Button>
+        </div>
       </div>
 
       {loadingSaved && saved.length === 0 && (
