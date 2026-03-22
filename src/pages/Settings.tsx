@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Upload, X, Moon, Sun, RotateCcw, Star } from 'lucide-react';
+import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle } from 'lucide-react';
+import { resetTour } from '@/components/OnboardingTour';
 import { toast } from 'sonner';
 
 const SettingsPage = () => {
@@ -182,9 +183,15 @@ const SettingsPage = () => {
         </section>
 
         {/* Restore */}
-        <section className="rounded-xl border border-border bg-card p-4">
-          <Button variant="outline" size="sm" className="h-10 md:h-9" onClick={() => { restoreDefaultTemplates(); toast.success('Templates restaurados'); }}>
+        <section className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
+          <Button variant="outline" size="sm" className="h-10 md:h-9 w-fit" onClick={() => { restoreDefaultTemplates(); toast.success('Templates restaurados'); }}>
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restaurar Templates Padrão
+          </Button>
+          <Button variant="outline" size="sm" className="h-10 md:h-9 w-fit" onClick={() => {
+            resetTour();
+            toast.success('Tour reiniciado! Volte ao Dashboard para ver.');
+          }}>
+            <HelpCircle className="mr-1.5 h-3.5 w-3.5" /> Rever Tour de Introdução
           </Button>
         </section>
       </div>
