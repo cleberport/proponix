@@ -247,7 +247,7 @@ const Landing = () => {
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                className={`relative rounded-xl p-6 transition-all ${
+                className={`relative flex flex-col rounded-xl p-6 transition-all ${
                   plan.highlight
                     ? 'border-2 border-primary bg-white shadow-lg shadow-primary/5'
                     : 'border border-neutral-200 bg-white'
