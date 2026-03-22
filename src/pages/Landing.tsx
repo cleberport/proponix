@@ -256,7 +256,7 @@ const Landing = () => {
               >
                 {plan.highlight && (
                   <span className="absolute -top-2.5 left-5 rounded-full bg-primary px-3 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
-                    Popular
+                    Mais escolhido
                   </span>
                 )}
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
@@ -264,7 +264,10 @@ const Landing = () => {
                   <span className="text-3xl font-bold text-neutral-900">{plan.price}</span>
                   <span className="text-sm text-neutral-400">{plan.period}</span>
                 </div>
-                <ul className="mt-6 space-y-2.5">
+                {(plan as any).sub && (
+                  <p className="mt-1 text-xs text-neutral-400">{(plan as any).sub}</p>
+                )}
+                <ul className="mt-6 space-y-2.5 flex-1">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-neutral-600">
                       <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
@@ -272,6 +275,9 @@ const Landing = () => {
                     </li>
                   ))}
                 </ul>
+                {(plan as any).urgency && (
+                  <p className="mt-4 text-center text-sm font-medium text-orange-600">{(plan as any).urgency}</p>
+                )}
                 <Button
                   className={`mt-6 w-full rounded-full h-10 text-sm font-medium ${
                     plan.highlight
