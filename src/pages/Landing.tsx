@@ -239,7 +239,8 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-12 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Preços</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Transparente. Sem surpresas.</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Pare de perder clientes por demora no orçamento.</h2>
+            <p className="mt-3 text-neutral-500 max-w-lg mx-auto text-sm">Crie, envie e tenha propostas aprovadas em minutos — direto do celular.</p>
           </motion.div>
 
           <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
