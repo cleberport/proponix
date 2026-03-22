@@ -318,8 +318,8 @@ const Generate = () => {
         values: { ...userInputs },
       });
 
-      // On mobile, open share sheet directly after generating
-      if (blob && isMobile) {
+      // Always try to open native share sheet first
+      if (blob) {
         const file = new File([blob], fileName, { type: 'application/pdf' });
         if (navigator.share && navigator.canShare?.({ files: [file] })) {
           try {
@@ -331,6 +331,13 @@ const Generate = () => {
           }
           return;
         }
+        // Fallback: download directly
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
       }
 
       toast.success('PDF gerado com sucesso!');
