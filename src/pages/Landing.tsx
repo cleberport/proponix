@@ -105,7 +105,8 @@ const Landing = () => {
           </motion.p>
 
           <motion.h1
-            className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-bold leading-[0.95] tracking-[-0.03em] text-white uppercase"
+            className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-bold leading-[0.95] tracking-[-0.02em] text-white uppercase"
+            style={{ fontFamily: "'Oswald', sans-serif" }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
           >
             Pare de perder<br />
