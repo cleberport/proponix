@@ -368,7 +368,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-criativo', 'Criativo', 'Agência', 'Design ousado com tipografia expressiva e cores vibrantes. Perfeito para agências, freelancers e profissionais criativos.', criativoElements, allVars, {
-    defaultValues: { service_name: 'Identidade Visual', price: '20900', tax_rate: '0' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0, showTax: false },
