@@ -318,20 +318,22 @@ const Generate = () => {
         values: { ...userInputs },
       });
 
-      // Always try to open native share sheet first
+      // Mobile: open share sheet; Desktop: download directly
       if (blob) {
-        const file = new File([blob], fileName, { type: 'application/pdf' });
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: fileName });
-          } catch (e: any) {
-            if (e.name !== 'AbortError') {
-              toast.error('Erro ao compartilhar');
+        if (isMobile) {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.share && navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: fileName });
+            } catch (e: any) {
+              if (e.name !== 'AbortError') {
+                toast.error('Erro ao compartilhar');
+              }
             }
+            return;
           }
-          return;
         }
-        // Fallback: download directly
+        // Desktop or fallback: download
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -428,11 +430,6 @@ const Generate = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {lastPdfBlob && !isMobile && (
-            <Button variant="outline" size="icon" className="h-10 w-10" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
-          )}
           <Button className="h-10 px-4 text-sm font-semibold" onClick={handleGeneratePDF} disabled={generating}>
             <Download className="mr-1.5 h-4 w-4" />
             {generating ? 'Gerando...' : 'Gerar PDF'}
