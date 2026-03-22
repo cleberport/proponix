@@ -154,13 +154,6 @@ const Landing = () => {
             <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/30 border border-white/10">
               <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full" loading="lazy" />
             </div>
-            {/* Floating proposal card */}
-            <motion.div
-              className="absolute -bottom-6 -right-4 md:-right-10 w-32 md:w-44 rounded-lg shadow-xl shadow-black/20 border border-white/20 overflow-hidden"
-              initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 1.1 }}
-            >
-              <img src={mockupProposal} alt="Proposta gerada" className="w-full" loading="lazy" />
-            </motion.div>
           </motion.div>
         </motion.div>
       </section>
