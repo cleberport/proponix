@@ -39,19 +39,21 @@ const Landing = () => {
 
   const plans = [
     {
-      name: 'Free', price: 'R$ 0', period: '',
-      features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Proponix'],
+      name: 'Teste grátis', price: 'Grátis', period: '30 dias',
+      features: ['Todos os recursos liberados', 'Sem limitações durante o teste'],
       cta: 'Começar grátis', highlight: false,
     },
     {
-      name: 'Pro', price: 'R$ 19,90', period: '/mês',
-      features: ['Templates ilimitados', 'PDFs ilimitados', 'Histórico completo', 'Sem marca d\'água', 'Nome personalizado'],
-      cta: 'Assinar Pro', highlight: true,
+      name: 'Pro', price: 'R$ 19', period: '/mês',
+      sub: 'ou R$197/ano (2 meses grátis)',
+      features: ['Templates ilimitados', 'Biblioteca de serviços', 'Geração de PDF profissional', 'Envio por link com aprovação', 'Reenvio de propostas', 'Histórico completo', 'Sem marca d\'água'],
+      cta: 'Começar a fechar mais clientes', highlight: true,
     },
     {
-      name: 'Lifetime', price: 'R$ 197', period: ' único',
-      features: ['Todos recursos Pro', 'Acesso vitalício', 'Sem mensalidade'],
-      cta: 'Comprar acesso', highlight: false,
+      name: 'Vitalício', price: 'R$ 397', period: ' único',
+      features: ['Tudo do plano Pro', 'Acesso para sempre', 'Sem mensalidade'],
+      cta: 'Garantir acesso vitalício', highlight: false,
+      urgency: '🔥 Oferta limitada para primeiros usuários',
     },
   ];
 
