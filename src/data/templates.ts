@@ -344,7 +344,7 @@ const premiumElements: CanvasElement[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const starterTemplates: Template[] = [
   makeTemplate('template-minimal', 'Minimal', 'Geral', 'Layout limpo e sofisticado com tipografia leve e espaçamento generoso. Ideal para qualquer tipo de serviço.', minimalElements, allVars, {
-    defaultValues: { service_name: 'Consultoria', price: '9100', tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
