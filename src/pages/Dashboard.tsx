@@ -20,6 +20,7 @@ const Dashboard = () => {
   const [loadingSaved, setLoadingSaved] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (getSettings().theme as 'light' | 'dark') || 'light');
   const settings = getSettings();
 
   const refreshSaved = useCallback(async () => {
