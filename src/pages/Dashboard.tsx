@@ -150,9 +150,9 @@ const Dashboard = () => {
       {starters.length > 0 && (
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Templates Iniciais</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Modelos Prontos</h2>
             </div>
             <Button
               variant="ghost"
