@@ -46,18 +46,18 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <h3 className="truncate text-sm font-semibold text-foreground">{template.name}</h3>
-        <p className="line-clamp-2 text-[11px] text-muted-foreground">{template.description}</p>
+      <div className="flex flex-1 flex-col gap-1 p-2 md:gap-2 md:p-3">
+        <h3 className="truncate text-xs font-semibold text-foreground md:text-sm">{template.name}</h3>
+        <p className="line-clamp-1 text-[10px] text-muted-foreground md:line-clamp-2 md:text-[11px]">{template.description}</p>
 
-        <div className="mt-auto flex items-center gap-1.5 pt-1">
-          <Button variant="outline" size="sm" className="h-8 flex-1 min-w-0 text-[11px] px-2" onClick={onEdit}>
-            <Pencil className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Editar</span>
+        <div className="mt-auto flex items-center gap-1 pt-0.5 md:gap-1.5 md:pt-1">
+          <Button variant="outline" size="sm" className="h-7 flex-1 text-[11px] px-1.5 md:h-8 md:px-2" onClick={onEdit}>
+            <Pencil className="mr-1 h-3 w-3 shrink-0 hidden md:inline-block" />
+            Editar
           </Button>
-          <Button size="sm" className="h-8 flex-1 min-w-0 text-[11px] px-2" onClick={onGenerate}>
-            <Play className="mr-1 h-3 w-3 shrink-0" />
-            <span className="truncate">Gerar</span>
+          <Button size="sm" className="h-7 flex-1 text-[11px] px-1.5 md:h-8 md:px-2" onClick={onGenerate}>
+            <Play className="mr-1 h-3 w-3 shrink-0 hidden md:inline-block" />
+            Gerar
           </Button>
         </div>
       </div>
