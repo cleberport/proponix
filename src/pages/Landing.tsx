@@ -148,11 +148,11 @@ const Landing = () => {
 
           {/* Hero mockup preview */}
           <motion.div
-            className="mt-16 relative mx-auto max-w-3xl"
+            className="mt-12 md:mt-16 relative mx-auto max-w-3xl px-2 sm:px-0"
             initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7 }}
           >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/30 border border-white/10">
-              <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full" loading="lazy" />
+            <div className="relative rounded-lg overflow-hidden shadow-2xl shadow-black/40">
+              <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full block" loading="lazy" />
             </div>
           </motion.div>
         </motion.div>
