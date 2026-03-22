@@ -1,50 +1,51 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import {
-  FileText, Palette, Clock, Zap, Share2, Smartphone,
-  ArrowRight, Check, Sparkles, ChevronRight
-} from 'lucide-react';
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.5 }
-  }),
-};
+import { ArrowRight, Check, ArrowUpRight, Sparkles } from 'lucide-react';
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/syne/700.css';
+import '@fontsource/syne/800.css';
+import { useRef } from 'react';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const steps = [
-    { num: '01', title: 'Escolha um template', desc: 'Selecione entre templates profissionais prontos para uso.' },
-    { num: '02', title: 'Preencha os dados', desc: 'Adicione cliente, valores e detalhes em poucos campos.' },
-    { num: '03', title: 'Envie e aprove', desc: 'Compartilhe a proposta e receba aprovação online.' },
+    { num: '01', title: 'Escolha um template', desc: 'Templates profissionais prontos para personalizar.' },
+    { num: '02', title: 'Preencha os dados', desc: 'Cliente, valores e detalhes em poucos campos.' },
+    { num: '03', title: 'Gere e envie', desc: 'PDF profissional em segundos, pronto para enviar.' },
   ];
 
   const features = [
-    { icon: Palette, title: 'Templates personalizados', desc: 'Crie e customize templates para cada tipo de serviço.' },
-    { icon: FileText, title: 'Editor visual', desc: 'Arraste e solte elementos no editor intuitivo.' },
-    { icon: Clock, title: 'Histórico completo', desc: 'Acesse todas as propostas geradas anteriormente.' },
-    { icon: Zap, title: 'PDF instantâneo', desc: 'Gere documentos profissionais em menos de 3 segundos.' },
-    { icon: Share2, title: 'Compartilhe fácil', desc: 'Envie por WhatsApp, e-mail ou qualquer app.' },
-    { icon: Smartphone, title: 'Feito para mobile', desc: 'Interface otimizada para criar propostas pelo celular.' },
+    { title: 'Editor Visual', desc: 'Arraste elementos, ajuste cores e tipografia com controle total.' },
+    { title: 'PDF Instantâneo', desc: 'Documentos profissionais gerados em menos de 3 segundos.' },
+    { title: 'Mobile First', desc: 'Crie e envie propostas direto do celular, a qualquer momento.' },
+    { title: 'Histórico Completo', desc: 'Acesse, pesquise e reutilize qualquer proposta anterior.' },
+    { title: 'Templates Ilimitados', desc: 'Crie templates únicos para cada tipo de serviço.' },
+    { title: 'Compartilhe Fácil', desc: 'WhatsApp, e-mail ou qualquer app com um toque.' },
   ];
 
   const audiences = [
-    'Freelancers', 'Fotógrafos', 'Designers', 'Agências', 'Produtores', 'Prestadores de serviço'
+    'Freelancers', 'Fotógrafos', 'Designers', 'Agências', 'Produtores', 'Consultores', 'Arquitetos', 'Prestadores de serviço'
   ];
 
   const plans = [
     {
-      name: 'Gratuito', price: 'R$ 0', period: '',
+      name: 'Free', price: 'R$ 0', period: '',
       features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Proponix'],
       cta: 'Começar grátis', highlight: false,
     },
     {
       name: 'Pro', price: 'R$ 19,90', period: '/mês',
-      features: ['Templates ilimitados', 'PDFs ilimitados', 'Histórico completo', 'Sem marca d\'água', 'Nome personalizado de PDF'],
+      features: ['Templates ilimitados', 'PDFs ilimitados', 'Histórico completo', 'Sem marca d\'água', 'Nome personalizado'],
       cta: 'Assinar Pro', highlight: true,
     },
     {
@@ -55,25 +56,25 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-bg))] text-[hsl(var(--landing-fg))]">
+    <div className="min-h-screen bg-[hsl(var(--landing-bg))] text-[hsl(var(--landing-fg))] overflow-x-hidden" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-bg)/0.8)] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">Proponix</span>
-          </div>
-          <div className="hidden items-center gap-6 text-sm text-[hsl(var(--landing-muted))] md:flex">
-            <a href="#features" className="hover:text-[hsl(var(--landing-fg))] transition-colors">Funcionalidades</a>
-            <a href="#pricing" className="hover:text-[hsl(var(--landing-fg))] transition-colors">Preços</a>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--landing-bg)/0.6)] backdrop-blur-2xl">
+        <div className="mx-auto flex h-16 md:h-20 max-w-[1400px] items-center justify-between px-5 md:px-10">
+          <span className="text-xl md:text-2xl font-bold tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+            Proponix<span className="text-primary">.</span>
+          </span>
+          <div className="hidden md:flex items-center gap-8 text-sm text-[hsl(var(--landing-muted))]">
+            <a href="#como-funciona" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Como funciona</a>
+            <a href="#features" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Recursos</a>
+            <a href="#pricing" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Preços</a>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))]">
+              className="text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))] hidden sm:inline-flex">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
-              className="bg-primary hover:bg-primary/90">
+              className="bg-[hsl(var(--landing-fg))] text-[hsl(var(--landing-bg))] hover:bg-[hsl(var(--landing-fg)/0.85)] rounded-full px-5 font-semibold text-xs uppercase tracking-wider">
               Criar conta
             </Button>
           </div>
@@ -81,189 +82,299 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="landing-gradient absolute inset-0" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-20 md:pt-32 md:pb-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-              <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                <Sparkles className="h-3 w-3" /> Envie propostas. Receba aprovações.
-              </span>
-            </motion.div>
-            <motion.h1
-              className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl"
-              initial="hidden" animate="visible" variants={fadeUp} custom={1}
-            >
-              Propostas{' '}
-              <span className="bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-                profissionais
-              </span>{' '}
-              em segundos
-            </motion.h1>
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 pb-10 md:pb-0">
+        {/* Gradient orbs */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] md:w-[900px] md:h-[900px] rounded-full bg-primary/15 blur-[120px]" />
+          <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-purple-500/10 blur-[120px]" />
+        </div>
+
+        <motion.div
+          style={{ scale: heroScale, opacity: heroOpacity }}
+          className="relative z-10 mx-auto max-w-[1400px] px-5 md:px-10 w-full"
+        >
+          <div className="flex flex-col items-center text-center">
             <motion.p
-              className="mx-auto mt-6 max-w-xl text-lg text-[hsl(var(--landing-muted))] md:text-xl"
-              initial="hidden" animate="visible" variants={fadeUp} custom={2}
+              className="text-xs md:text-sm uppercase tracking-[0.3em] text-primary font-semibold mb-6 md:mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Crie, envie e aprove propostas em PDF direto do celular.
-              Sem complicação, sem planilhas.
+              Propostas profissionais em segundos
             </motion.p>
-            <motion.div
-              className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
-              initial="hidden" animate="visible" variants={fadeUp} custom={3}
+
+            <motion.h1
+              className="text-[clamp(2.8rem,8vw,8rem)] font-extrabold leading-[0.9] tracking-tight uppercase"
+              style={{ fontFamily: "'Syne', sans-serif" }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
             >
-              <Button size="lg" onClick={() => navigate('/auth?tab=signup')}
-                className="h-12 w-full px-8 text-base font-semibold sm:w-auto bg-primary hover:bg-primary/90">
-                Criar conta grátis
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <span className="block">Pare de</span>
+              <span className="block bg-gradient-to-r from-primary via-rose-400 to-purple-400 bg-clip-text text-transparent">
+                improvisar.
+              </span>
+            </motion.h1>
+
+            <motion.p
+              className="mt-6 md:mt-10 max-w-md md:max-w-lg text-base md:text-lg text-[hsl(var(--landing-muted))] leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              Crie propostas em PDF com design profissional direto do celular.
+              Sem planilhas. Sem templates genéricos. Sem perda de tempo.
+            </motion.p>
+
+            <motion.div
+              className="mt-8 md:mt-12 flex flex-col sm:flex-row items-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <Button
+                size="lg"
+                onClick={() => navigate('/auth?tab=signup')}
+                className="h-14 px-10 text-base font-bold bg-primary hover:bg-primary/90 rounded-full group"
+              >
+                Começar grátis
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => {
-                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-                className="h-12 w-full px-8 text-base sm:w-auto border-[hsl(var(--landing-border))] bg-transparent text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))]">
+              <button
+                onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-sm text-[hsl(var(--landing-muted))] hover:text-[hsl(var(--landing-fg))] transition-colors flex items-center gap-1 underline underline-offset-4 decoration-[hsl(var(--landing-border))] hover:decoration-[hsl(var(--landing-fg))]"
+              >
                 Ver como funciona
-              </Button>
+              </button>
             </motion.div>
           </div>
+        </motion.div>
 
-          {/* Phone mockup */}
-          <motion.div
-            className="mx-auto mt-16 max-w-sm"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.7 }}
-          >
-            <div className="relative mx-auto w-[260px] rounded-[2.5rem] border-2 border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card))] p-3 shadow-2xl shadow-primary/10">
-              <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-[hsl(var(--landing-bg))]" />
-              <div className="mt-4 rounded-[2rem] bg-[hsl(var(--landing-bg))] p-4 pt-6">
-                <div className="mb-3 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold">Proponix</span>
-                </div>
-                <div className="mb-2 h-2.5 w-3/4 rounded bg-primary/20" />
-                <div className="mb-4 h-2 w-1/2 rounded bg-[hsl(var(--landing-border))]" />
-                <div className="space-y-2">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-center gap-2 rounded-lg bg-[hsl(var(--landing-card))] p-2.5">
-                      <div className="h-8 w-8 rounded-md bg-primary/20" />
-                      <div className="flex-1 space-y-1">
-                        <div className="h-2 w-3/4 rounded bg-[hsl(var(--landing-border))]" />
-                        <div className="h-1.5 w-1/2 rounded bg-[hsl(var(--landing-border)/0.5)]" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 h-9 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-[10px] font-semibold text-white">Gerar PDF</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="w-5 h-8 rounded-full border-2 border-[hsl(var(--landing-border))] flex items-start justify-center p-1">
+            <div className="w-1 h-2 rounded-full bg-[hsl(var(--landing-muted))]" />
+          </div>
+        </motion.div>
       </section>
 
+      {/* Marquee strip */}
+      <div className="border-y border-[hsl(var(--landing-border))] py-5 overflow-hidden">
+        <motion.div
+          className="flex gap-8 md:gap-16 whitespace-nowrap"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        >
+          {[...audiences, ...audiences].map((a, i) => (
+            <span key={i} className="text-sm md:text-base font-medium text-[hsl(var(--landing-muted))] flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              {a}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+
       {/* How it works */}
-      <section id="how-it-works" className="border-t border-[hsl(var(--landing-border))] py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-14 text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">Como funciona</h2>
-            <p className="mt-3 text-[hsl(var(--landing-muted))]">Três passos simples para criar sua proposta</p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {steps.map((s, i) => (
-              <motion.div
-                key={s.num}
-                className="glass-card rounded-2xl p-6"
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+      <section id="como-funciona" className="py-24 md:py-36">
+        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
+          <div className="grid md:grid-cols-2 gap-16 md:gap-20 items-start">
+            <div className="sticky top-28">
+              <motion.p
+                className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
+                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               >
-                <span className="text-4xl font-black text-primary/30">{s.num}</span>
-                <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm text-[hsl(var(--landing-muted))]">{s.desc}</p>
-              </motion.div>
-            ))}
+                Como funciona
+              </motion.p>
+              <motion.h2
+                className="text-3xl md:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight"
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.6 }}
+              >
+                Simples como
+                <br />
+                deveria ser.
+              </motion.h2>
+              <motion.p
+                className="mt-6 text-[hsl(var(--landing-muted))] max-w-sm leading-relaxed"
+                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+                viewport={{ once: true }} transition={{ delay: 0.2 }}
+              >
+                Três passos. Nenhuma complicação. Sua proposta profissional pronta para enviar.
+              </motion.p>
+            </div>
+
+            <div className="space-y-6 md:space-y-8">
+              {steps.map((s, i) => (
+                <motion.div
+                  key={s.num}
+                  className="group relative rounded-2xl border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.3)] p-6 md:p-8 hover:border-primary/30 transition-all duration-500"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15 }}
+                >
+                  <div className="flex items-start gap-5">
+                    <span
+                      className="text-5xl md:text-6xl font-extrabold text-primary/10 group-hover:text-primary/25 transition-colors duration-500 leading-none"
+                      style={{ fontFamily: "'Syne', sans-serif" }}
+                    >
+                      {s.num}
+                    </span>
+                    <div className="pt-2">
+                      <h3 className="text-lg md:text-xl font-bold">{s.title}</h3>
+                      <p className="mt-2 text-sm md:text-base text-[hsl(var(--landing-muted))]">{s.desc}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="border-t border-[hsl(var(--landing-border))] py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-14 text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">Tudo que você precisa</h2>
-            <p className="mt-3 text-[hsl(var(--landing-muted))]">Ferramentas profissionais, interface simples</p>
+      <section id="features" className="py-24 md:py-36 border-t border-[hsl(var(--landing-border))]">
+        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
+          <div className="text-center mb-16 md:mb-24">
+            <motion.p
+              className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
+              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            >
+              Recursos
+            </motion.p>
+            <motion.h2
+              className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight"
+              style={{ fontFamily: "'Syne', sans-serif" }}
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6 }}
+            >
+              Tudo que você precisa.
+              <br />
+              <span className="text-[hsl(var(--landing-muted))]">Nada que não precisa.</span>
+            </motion.h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                className="glass-card group rounded-2xl p-6 transition-colors hover:border-primary/30"
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+                className="group relative rounded-2xl border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.2)] p-6 md:p-8 hover:bg-[hsl(var(--landing-card)/0.5)] transition-all duration-500"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
               >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <f.icon className="h-5 w-5 text-primary" />
+                <div className="flex items-start justify-between mb-4 md:mb-6">
+                  <h3 className="text-base md:text-lg font-bold">{f.title}</h3>
+                  <ArrowUpRight className="h-4 w-4 text-[hsl(var(--landing-muted))] group-hover:text-primary transition-colors" />
                 </div>
-                <h3 className="text-base font-semibold">{f.title}</h3>
-                <p className="mt-1.5 text-sm text-[hsl(var(--landing-muted))]">{f.desc}</p>
+                <p className="text-sm text-[hsl(var(--landing-muted))] leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Audience */}
-      <section className="border-t border-[hsl(var(--landing-border))] py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 className="text-3xl font-bold md:text-4xl">Para quem é</h2>
-          <p className="mx-auto mt-3 max-w-lg text-[hsl(var(--landing-muted))]">
-            Perfeito para profissionais que precisam enviar propostas rapidamente
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            {audiences.map((a) => (
-              <span key={a} className="rounded-full border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card))] px-5 py-2.5 text-sm font-medium">
-                {a}
-              </span>
-            ))}
-          </div>
+      {/* Big CTA strip */}
+      <section className="relative py-24 md:py-36 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[150px]" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-[1400px] px-5 md:px-10 text-center">
+          <motion.h2
+            className="text-4xl md:text-6xl lg:text-[5.5rem] font-extrabold leading-[0.95] tracking-tight uppercase"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+            initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7 }}
+          >
+            Sua próxima proposta
+            <br />
+            <span className="bg-gradient-to-r from-primary via-rose-400 to-purple-400 bg-clip-text text-transparent">
+              começa aqui.
+            </span>
+          </motion.h2>
+          <motion.div
+            className="mt-10 md:mt-14"
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: 0.3 }}
+          >
+            <Button
+              size="lg"
+              onClick={() => navigate('/auth?tab=signup')}
+              className="h-14 md:h-16 px-10 md:px-14 text-base md:text-lg font-bold bg-primary hover:bg-primary/90 rounded-full group"
+            >
+              Criar conta grátis
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </motion.div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="border-t border-[hsl(var(--landing-border))] py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-14 text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">Planos e preços</h2>
-            <p className="mt-3 text-[hsl(var(--landing-muted))]">Comece grátis, evolua quando precisar</p>
+      <section id="pricing" className="py-24 md:py-36 border-t border-[hsl(var(--landing-border))]">
+        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
+          <div className="text-center mb-16 md:mb-24">
+            <motion.p
+              className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
+              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            >
+              Preços
+            </motion.p>
+            <motion.h2
+              className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight"
+              style={{ fontFamily: "'Syne', sans-serif" }}
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6 }}
+            >
+              Transparente.
+              <br />
+              <span className="text-[hsl(var(--landing-muted))]">Sem surpresas.</span>
+            </motion.h2>
           </div>
-          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                className={`relative rounded-2xl p-6 ${
+                className={`relative rounded-2xl p-6 md:p-8 transition-all duration-500 ${
                   plan.highlight
-                    ? 'border-2 border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                    : 'glass-card'
+                    ? 'border-2 border-primary bg-primary/5 shadow-[0_0_60px_-15px_hsl(346_100%_59%/0.3)]'
+                    : 'border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.2)] hover:border-[hsl(var(--landing-muted)/0.3)]'
                 }`}
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
               >
                 {plan.highlight && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-white">
+                  <span className="absolute -top-3 left-6 rounded-full bg-primary px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">
                     Popular
                   </span>
                 )}
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[hsl(var(--landing-muted))]">{plan.name}</h3>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold">{plan.price}</span>
+                  <span className="text-4xl md:text-5xl font-extrabold" style={{ fontFamily: "'Syne', sans-serif" }}>{plan.price}</span>
                   <span className="text-sm text-[hsl(var(--landing-muted))]">{plan.period}</span>
                 </div>
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-8 space-y-3">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm">
+                    <li key={f} className="flex items-center gap-3 text-sm">
                       <Check className="h-4 w-4 shrink-0 text-primary" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <Button
-                  className={`mt-6 w-full ${plan.highlight ? 'bg-primary hover:bg-primary/90' : 'bg-[hsl(var(--landing-card))] hover:bg-[hsl(var(--landing-border))] text-[hsl(var(--landing-fg))]'}`}
+                  className={`mt-8 w-full rounded-full h-12 font-semibold ${
+                    plan.highlight
+                      ? 'bg-primary hover:bg-primary/90'
+                      : 'bg-[hsl(var(--landing-card))] hover:bg-[hsl(var(--landing-border))] text-[hsl(var(--landing-fg))]'
+                  }`}
                   onClick={() => navigate('/auth?tab=signup')}
                 >
                   {plan.cta}
@@ -274,32 +385,21 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-[hsl(var(--landing-border))] py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 className="text-3xl font-bold md:text-4xl">Comece grátis hoje</h2>
-          <p className="mx-auto mt-4 max-w-md text-[hsl(var(--landing-muted))]">
-            Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
-          </p>
-          <Button
-            size="lg"
-            className="mt-8 h-12 px-8 text-base font-semibold bg-primary hover:bg-primary/90"
-            onClick={() => navigate('/auth?tab=signup')}
-          >
-            Criar conta
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t border-[hsl(var(--landing-border))] py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Proponix</span>
+      <footer className="border-t border-[hsl(var(--landing-border))] py-10 md:py-14">
+        <div className="mx-auto max-w-[1400px] px-5 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+            Proponix<span className="text-primary">.</span>
+          </span>
+          <div className="flex items-center gap-6 text-sm text-[hsl(var(--landing-muted))]">
+            <button onClick={() => navigate('/auth')} className="hover:text-[hsl(var(--landing-fg))] transition-colors">
+              Entrar
+            </button>
+            <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-[hsl(var(--landing-fg))] transition-colors">
+              Criar conta
+            </button>
           </div>
-          <p className="text-xs text-[hsl(var(--landing-muted))]">© {new Date().getFullYear()} Proponix</p>
+          <p className="text-xs text-[hsl(var(--landing-muted))]">© {new Date().getFullYear()} Proponix. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
