@@ -115,8 +115,8 @@ const Landing = () => {
           </motion.div>
 
           <motion.h1
-            className="text-[2.8rem] md:text-[4.5rem] lg:text-[5.5rem] font-extrabold leading-[1] tracking-[-0.03em] text-white"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            className="text-[3.5rem] md:text-[6rem] lg:text-[8rem] font-normal leading-[0.9] tracking-[0.02em] text-white uppercase"
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
           >
             Orçamentos<br />
