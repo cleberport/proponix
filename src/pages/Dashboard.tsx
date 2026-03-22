@@ -120,14 +120,13 @@ const Dashboard = () => {
             size="icon"
             className="h-9 w-9"
             onClick={() => {
-              const currentTheme = settings.theme || 'light';
-              const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-              const updated = { ...settings, theme: newTheme as 'dark' | 'light' };
-              saveSettings(updated);
+              const newTheme = theme === 'dark' ? 'light' : 'dark';
+              setTheme(newTheme);
+              saveSettings({ ...getSettings(), theme: newTheme });
               document.documentElement.classList.toggle('dark', newTheme === 'dark');
             }}
           >
-            {(settings.theme || 'light') === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
             <Plus className="h-4 w-4 md:mr-1.5" />
