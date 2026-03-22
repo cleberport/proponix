@@ -169,7 +169,7 @@ const Dashboard = () => {
       )}
 
       {starters.length > 0 && (
-        <section>
+        <section data-tour="tour-starter-templates">
           <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
