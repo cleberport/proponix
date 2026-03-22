@@ -141,15 +141,15 @@ export default function OnboardingTour() {
   }, [updateRect]);
 
   const dismiss = useCallback(() => {
-    setShow(false);
     localStorage.setItem(TOUR_SEEN_KEY, 'true');
+    setStep(0);
+    setShow(false);
   }, []);
 
   const next = useCallback(() => {
     if (step < steps.length - 1) {
       setStep(s => s + 1);
     } else {
-      // Show completion
       setStep(-1);
     }
   }, [step]);
