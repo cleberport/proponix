@@ -318,20 +318,22 @@ const Generate = () => {
         values: { ...userInputs },
       });
 
-      // Always try to open native share sheet first
+      // Mobile: open share sheet; Desktop: download directly
       if (blob) {
-        const file = new File([blob], fileName, { type: 'application/pdf' });
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: fileName });
-          } catch (e: any) {
-            if (e.name !== 'AbortError') {
-              toast.error('Erro ao compartilhar');
+        if (isMobile) {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.share && navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: fileName });
+            } catch (e: any) {
+              if (e.name !== 'AbortError') {
+                toast.error('Erro ao compartilhar');
+              }
             }
+            return;
           }
-          return;
         }
-        // Fallback: download directly
+        // Desktop or fallback: download
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
