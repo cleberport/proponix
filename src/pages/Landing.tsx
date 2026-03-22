@@ -291,6 +291,20 @@ const Landing = () => {
                     Mais escolhido
                   </span>
                 )}
+                {plan.highlight && (
+                  <div className="mb-4 flex items-center justify-center gap-3">
+                    <span className={`text-xs font-medium transition-colors ${!isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>Mensal</span>
+                    <button
+                      onClick={() => setIsAnnual(!isAnnual)}
+                      className={`relative h-6 w-10 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-neutral-300'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAnnual ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <span className={`text-xs font-medium transition-colors ${isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                      Anual <span className="text-[10px] text-primary font-semibold">-14%</span>
+                    </span>
+                  </div>
+                )}
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="text-3xl font-bold">{plan.price}</span>
