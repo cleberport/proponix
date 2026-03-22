@@ -1,22 +1,22 @@
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Check, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, FileText, Palette, Clock, Zap, Share2, Smartphone } from 'lucide-react';
 import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
-import '@fontsource/syne/700.css';
-import '@fontsource/syne/800.css';
-import { useRef } from 'react';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.08, duration: 0.5 }
+  }),
+};
 
 const Landing = () => {
   const navigate = useNavigate();
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const steps = [
     { num: '01', title: 'Escolha um template', desc: 'Templates profissionais prontos para personalizar.' },
@@ -25,12 +25,12 @@ const Landing = () => {
   ];
 
   const features = [
-    { title: 'Editor Visual', desc: 'Arraste elementos, ajuste cores e tipografia com controle total.' },
-    { title: 'PDF Instantâneo', desc: 'Documentos profissionais gerados em menos de 3 segundos.' },
-    { title: 'Mobile First', desc: 'Crie e envie propostas direto do celular, a qualquer momento.' },
-    { title: 'Histórico Completo', desc: 'Acesse, pesquise e reutilize qualquer proposta anterior.' },
-    { title: 'Templates Ilimitados', desc: 'Crie templates únicos para cada tipo de serviço.' },
-    { title: 'Compartilhe Fácil', desc: 'WhatsApp, e-mail ou qualquer app com um toque.' },
+    { icon: Palette, title: 'Editor Visual', desc: 'Arraste elementos, ajuste cores e tipografia com controle total.' },
+    { icon: Zap, title: 'PDF Instantâneo', desc: 'Documentos profissionais gerados em menos de 3 segundos.' },
+    { icon: Smartphone, title: 'Mobile First', desc: 'Crie e envie propostas direto do celular.' },
+    { icon: Clock, title: 'Histórico Completo', desc: 'Acesse, pesquise e reutilize qualquer proposta.' },
+    { icon: FileText, title: 'Templates Ilimitados', desc: 'Crie templates únicos para cada serviço.' },
+    { icon: Share2, title: 'Compartilhe Fácil', desc: 'WhatsApp, e-mail ou qualquer app com um toque.' },
   ];
 
   const audiences = [
@@ -56,25 +56,25 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-bg))] text-[hsl(var(--landing-fg))] overflow-x-hidden" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="min-h-screen bg-white text-neutral-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--landing-bg)/0.6)] backdrop-blur-2xl">
-        <div className="mx-auto flex h-16 md:h-20 max-w-[1400px] items-center justify-between px-5 md:px-10">
-          <span className="text-xl md:text-2xl font-bold tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+          <span className="text-lg font-bold tracking-tight">
             Proponix<span className="text-primary">.</span>
           </span>
-          <div className="hidden md:flex items-center gap-8 text-sm text-[hsl(var(--landing-muted))]">
-            <a href="#como-funciona" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Como funciona</a>
-            <a href="#features" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Recursos</a>
-            <a href="#pricing" className="hover:text-[hsl(var(--landing-fg))] transition-colors duration-300">Preços</a>
+          <div className="hidden md:flex items-center gap-8 text-[13px] text-neutral-500 font-medium">
+            <a href="#como-funciona" className="hover:text-neutral-900 transition-colors">Como funciona</a>
+            <a href="#features" className="hover:text-neutral-900 transition-colors">Recursos</a>
+            <a href="#pricing" className="hover:text-neutral-900 transition-colors">Preços</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-[hsl(var(--landing-fg))] hover:bg-[hsl(var(--landing-card))] hidden sm:inline-flex">
+              className="text-neutral-600 hover:text-neutral-900 hidden sm:inline-flex text-[13px]">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
-              className="bg-[hsl(var(--landing-fg))] text-[hsl(var(--landing-bg))] hover:bg-[hsl(var(--landing-fg)/0.85)] rounded-full px-5 font-semibold text-xs uppercase tracking-wider">
+              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-5 text-[13px] font-medium">
               Criar conta
             </Button>
           </div>
@@ -82,298 +82,198 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 pb-10 md:pb-0">
-        {/* Gradient orbs */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] md:w-[900px] md:h-[900px] rounded-full bg-primary/15 blur-[120px]" />
-          <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-purple-500/10 blur-[120px]" />
-        </div>
-
-        <motion.div
-          style={{ scale: heroScale, opacity: heroOpacity }}
-          className="relative z-10 mx-auto max-w-[1400px] px-5 md:px-10 w-full"
-        >
-          <div className="flex flex-col items-center text-center">
-            <motion.p
-              className="text-xs md:text-sm uppercase tracking-[0.3em] text-primary font-semibold mb-6 md:mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+      <section className="pt-20 pb-20 md:pt-32 md:pb-28">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="max-w-2xl">
+            <motion.div
+              className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-3 py-1"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
             >
-              Propostas profissionais em segundos
-            </motion.p>
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="text-xs font-medium text-primary">Propostas profissionais em segundos</span>
+            </motion.div>
 
             <motion.h1
-              className="text-[clamp(2.8rem,8vw,8rem)] font-extrabold leading-[0.9] tracking-tight uppercase"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] font-bold leading-[1.08] tracking-tight text-neutral-900"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <span className="block">Pare de</span>
-              <span className="block bg-gradient-to-r from-primary via-rose-400 to-purple-400 bg-clip-text text-transparent">
-                improvisar.
-              </span>
+              Crie propostas que{' '}
+              <span className="text-primary">fecham negócios.</span>
             </motion.h1>
 
             <motion.p
-              className="mt-6 md:mt-10 max-w-md md:max-w-lg text-base md:text-lg text-[hsl(var(--landing-muted))] leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-5 text-base md:text-lg text-neutral-500 leading-relaxed max-w-lg"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Crie propostas em PDF com design profissional direto do celular.
-              Sem planilhas. Sem templates genéricos. Sem perda de tempo.
+              Gere PDFs com design profissional direto do celular.
+              Sem planilhas, sem complicação.
             </motion.p>
 
             <motion.div
-              className="mt-8 md:mt-12 flex flex-col sm:flex-row items-center gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mt-8 flex flex-col sm:flex-row items-start gap-3"
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
             >
               <Button
                 size="lg"
                 onClick={() => navigate('/auth?tab=signup')}
-                className="h-14 px-10 text-base font-bold bg-primary hover:bg-primary/90 rounded-full group"
+                className="h-12 px-8 text-sm font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded-full group"
               >
                 Começar grátis
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
-              <button
+              <Button
+                size="lg"
+                variant="ghost"
                 onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-sm text-[hsl(var(--landing-muted))] hover:text-[hsl(var(--landing-fg))] transition-colors flex items-center gap-1 underline underline-offset-4 decoration-[hsl(var(--landing-border))] hover:decoration-[hsl(var(--landing-fg))]"
+                className="h-12 px-6 text-sm text-neutral-500 hover:text-neutral-900"
               >
                 Ver como funciona
-              </button>
+              </Button>
             </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="w-5 h-8 rounded-full border-2 border-[hsl(var(--landing-border))] flex items-start justify-center p-1">
-            <div className="w-1 h-2 rounded-full bg-[hsl(var(--landing-muted))]" />
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Marquee strip */}
-      <div className="border-y border-[hsl(var(--landing-border))] py-5 overflow-hidden">
-        <motion.div
-          className="flex gap-8 md:gap-16 whitespace-nowrap"
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        >
-          {[...audiences, ...audiences].map((a, i) => (
-            <span key={i} className="text-sm md:text-base font-medium text-[hsl(var(--landing-muted))] flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              {a}
-            </span>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* How it works */}
-      <section id="como-funciona" className="py-24 md:py-36">
-        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
-          <div className="grid md:grid-cols-2 gap-16 md:gap-20 items-start">
-            <div className="sticky top-28">
-              <motion.p
-                className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
-                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-              >
-                Como funciona
-              </motion.p>
-              <motion.h2
-                className="text-3xl md:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight"
-                style={{ fontFamily: "'Syne', sans-serif" }}
-                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.6 }}
-              >
-                Simples como
-                <br />
-                deveria ser.
-              </motion.h2>
-              <motion.p
-                className="mt-6 text-[hsl(var(--landing-muted))] max-w-sm leading-relaxed"
-                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-                viewport={{ once: true }} transition={{ delay: 0.2 }}
-              >
-                Três passos. Nenhuma complicação. Sua proposta profissional pronta para enviar.
-              </motion.p>
-            </div>
-
-            <div className="space-y-6 md:space-y-8">
-              {steps.map((s, i) => (
-                <motion.div
-                  key={s.num}
-                  className="group relative rounded-2xl border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.3)] p-6 md:p-8 hover:border-primary/30 transition-all duration-500"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                >
-                  <div className="flex items-start gap-5">
-                    <span
-                      className="text-5xl md:text-6xl font-extrabold text-primary/10 group-hover:text-primary/25 transition-colors duration-500 leading-none"
-                      style={{ fontFamily: "'Syne', sans-serif" }}
-                    >
-                      {s.num}
-                    </span>
-                    <div className="pt-2">
-                      <h3 className="text-lg md:text-xl font-bold">{s.title}</h3>
-                      <p className="mt-2 text-sm md:text-base text-[hsl(var(--landing-muted))]">{s.desc}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-24 md:py-36 border-t border-[hsl(var(--landing-border))]">
-        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
-          <div className="text-center mb-16 md:mb-24">
-            <motion.p
-              className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            >
-              Recursos
-            </motion.p>
-            <motion.h2
-              className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ duration: 0.6 }}
-            >
-              Tudo que você precisa.
-              <br />
-              <span className="text-[hsl(var(--landing-muted))]">Nada que não precisa.</span>
-            </motion.h2>
+      {/* Audience strip */}
+      <div className="border-y border-neutral-100 py-5">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            <span className="text-xs font-medium text-neutral-400 mr-2">Para:</span>
+            {audiences.map((a) => (
+              <span key={a} className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
+                {a}
+              </span>
+            ))}
           </div>
+        </div>
+      </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {features.map((f, i) => (
+      {/* How it works */}
+      <section id="como-funciona" className="py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-5">
+          <motion.div className="mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Como funciona</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Três passos simples.</h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {steps.map((s, i) => (
               <motion.div
-                key={f.title}
-                className="group relative rounded-2xl border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.2)] p-6 md:p-8 hover:bg-[hsl(var(--landing-card)/0.5)] transition-all duration-500"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                key={s.num}
+                className="rounded-xl border border-neutral-150 bg-neutral-50/50 p-6 hover:border-neutral-300 transition-colors"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
-                <div className="flex items-start justify-between mb-4 md:mb-6">
-                  <h3 className="text-base md:text-lg font-bold">{f.title}</h3>
-                  <ArrowUpRight className="h-4 w-4 text-[hsl(var(--landing-muted))] group-hover:text-primary transition-colors" />
-                </div>
-                <p className="text-sm text-[hsl(var(--landing-muted))] leading-relaxed">{f.desc}</p>
+                <span className="text-3xl font-bold text-primary/20">{s.num}</span>
+                <h3 className="mt-3 text-base font-semibold text-neutral-900">{s.title}</h3>
+                <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">{s.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Big CTA strip */}
-      <section className="relative py-24 md:py-36 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[150px]" />
+      {/* Features */}
+      <section id="features" className="py-20 md:py-28 border-t border-neutral-100">
+        <div className="mx-auto max-w-6xl px-5">
+          <motion.div className="mb-12" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Recursos</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Tudo que você precisa.</h2>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                className="rounded-xl border border-neutral-150 bg-white p-6 hover:shadow-sm transition-all"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+              >
+                <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/8">
+                  <f.icon className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900">{f.title}</h3>
+                <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
-        <div className="relative z-10 mx-auto max-w-[1400px] px-5 md:px-10 text-center">
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 md:py-28 border-t border-neutral-100">
+        <div className="mx-auto max-w-6xl px-5 text-center">
           <motion.h2
-            className="text-4xl md:text-6xl lg:text-[5.5rem] font-extrabold leading-[0.95] tracking-tight uppercase"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-            initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.7 }}
-          >
-            Sua próxima proposta
-            <br />
-            <span className="bg-gradient-to-r from-primary via-rose-400 to-purple-400 bg-clip-text text-transparent">
-              começa aqui.
-            </span>
-          </motion.h2>
-          <motion.div
-            className="mt-10 md:mt-14"
+            className="text-2xl md:text-4xl font-bold text-neutral-900 tracking-tight"
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ delay: 0.3 }}
+            viewport={{ once: true }} transition={{ duration: 0.5 }}
+          >
+            Sua próxima proposta começa aqui.
+          </motion.h2>
+          <motion.p
+            className="mt-4 text-neutral-500 max-w-md mx-auto"
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ delay: 0.15 }}
+          >
+            Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
+          </motion.p>
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: 0.25 }}
           >
             <Button
               size="lg"
               onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 md:h-16 px-10 md:px-14 text-base md:text-lg font-bold bg-primary hover:bg-primary/90 rounded-full group"
+              className="h-12 px-8 text-sm font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded-full group"
             >
               Criar conta grátis
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </motion.div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 md:py-36 border-t border-[hsl(var(--landing-border))]">
-        <div className="mx-auto max-w-[1400px] px-5 md:px-10">
-          <div className="text-center mb-16 md:mb-24">
-            <motion.p
-              className="text-xs uppercase tracking-[0.3em] text-primary font-semibold mb-4"
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            >
-              Preços
-            </motion.p>
-            <motion.h2
-              className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ duration: 0.6 }}
-            >
-              Transparente.
-              <br />
-              <span className="text-[hsl(var(--landing-muted))]">Sem surpresas.</span>
-            </motion.h2>
-          </div>
+      <section id="pricing" className="py-20 md:py-28 border-t border-neutral-100 bg-neutral-50/50">
+        <div className="mx-auto max-w-6xl px-5">
+          <motion.div className="mb-12 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Preços</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Transparente. Sem surpresas.</h2>
+          </motion.div>
 
-          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                className={`relative rounded-2xl p-6 md:p-8 transition-all duration-500 ${
+                className={`relative rounded-xl p-6 transition-all ${
                   plan.highlight
-                    ? 'border-2 border-primary bg-primary/5 shadow-[0_0_60px_-15px_hsl(346_100%_59%/0.3)]'
-                    : 'border border-[hsl(var(--landing-border))] bg-[hsl(var(--landing-card)/0.2)] hover:border-[hsl(var(--landing-muted)/0.3)]'
+                    ? 'border-2 border-primary bg-white shadow-lg shadow-primary/5'
+                    : 'border border-neutral-200 bg-white'
                 }`}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12 }}
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
                 {plan.highlight && (
-                  <span className="absolute -top-3 left-6 rounded-full bg-primary px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">
+                  <span className="absolute -top-2.5 left-5 rounded-full bg-primary px-3 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
                     Popular
                   </span>
                 )}
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-[hsl(var(--landing-muted))]">{plan.name}</h3>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl md:text-5xl font-extrabold" style={{ fontFamily: "'Syne', sans-serif" }}>{plan.price}</span>
-                  <span className="text-sm text-[hsl(var(--landing-muted))]">{plan.period}</span>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-neutral-900">{plan.price}</span>
+                  <span className="text-sm text-neutral-400">{plan.period}</span>
                 </div>
-                <ul className="mt-8 space-y-3">
+                <ul className="mt-6 space-y-2.5">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm">
-                      <Check className="h-4 w-4 shrink-0 text-primary" />
+                    <li key={f} className="flex items-center gap-2 text-sm text-neutral-600">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <Button
-                  className={`mt-8 w-full rounded-full h-12 font-semibold ${
+                  className={`mt-6 w-full rounded-full h-10 text-sm font-medium ${
                     plan.highlight
-                      ? 'bg-primary hover:bg-primary/90'
-                      : 'bg-[hsl(var(--landing-card))] hover:bg-[hsl(var(--landing-border))] text-[hsl(var(--landing-fg))]'
+                      ? 'bg-primary text-white hover:bg-primary/90'
+                      : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900'
                   }`}
                   onClick={() => navigate('/auth?tab=signup')}
                 >
@@ -386,20 +286,16 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[hsl(var(--landing-border))] py-10 md:py-14">
-        <div className="mx-auto max-w-[1400px] px-5 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+      <footer className="border-t border-neutral-100 py-8">
+        <div className="mx-auto max-w-6xl px-5 flex flex-col md:flex-row items-center justify-between gap-3">
+          <span className="text-sm font-bold tracking-tight">
             Proponix<span className="text-primary">.</span>
           </span>
-          <div className="flex items-center gap-6 text-sm text-[hsl(var(--landing-muted))]">
-            <button onClick={() => navigate('/auth')} className="hover:text-[hsl(var(--landing-fg))] transition-colors">
-              Entrar
-            </button>
-            <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-[hsl(var(--landing-fg))] transition-colors">
-              Criar conta
-            </button>
+          <div className="flex items-center gap-5 text-xs text-neutral-400">
+            <button onClick={() => navigate('/auth')} className="hover:text-neutral-600 transition-colors">Entrar</button>
+            <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-neutral-600 transition-colors">Criar conta</button>
           </div>
-          <p className="text-xs text-[hsl(var(--landing-muted))]">© {new Date().getFullYear()} Proponix. Todos os direitos reservados.</p>
+          <p className="text-xs text-neutral-400">© {new Date().getFullYear()} Proponix</p>
         </div>
       </footer>
     </div>
