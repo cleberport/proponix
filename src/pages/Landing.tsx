@@ -70,7 +70,7 @@ const Landing = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-2xl border-b border-white/10">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <span className="text-lg font-bold tracking-tight text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <span className="text-xl font-normal tracking-[0.08em] text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
             Proponix<span className="text-primary">.</span>
           </span>
           <div className="hidden md:flex items-center gap-8 text-[13px] text-white/70 font-medium">
