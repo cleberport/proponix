@@ -67,7 +67,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-white text-neutral-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       {/* Nav — transparent over hero */}
-      <nav className="fixed top-0 left-0 right-0 z-50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <span className="text-lg font-bold tracking-tight text-white">
             Proponix<span className="opacity-80">.</span>
