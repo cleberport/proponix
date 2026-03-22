@@ -360,7 +360,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-classico', 'Clássico', 'Corporativo', 'Template corporativo com estrutura tradicional, cores sóbrias e diagramação formal para empresas de engenharia e consultoria.', classicoElements, allVars, {
-    defaultValues: { service_name: 'Projeto Executivo', price: '25500', tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0.05' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true },
