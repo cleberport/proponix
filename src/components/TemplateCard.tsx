@@ -14,27 +14,31 @@ interface Props {
 
 const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: Props) => {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-      {/* Preview */}
-      <div className="relative overflow-hidden bg-muted/30">
-        <div className="transition-transform duration-300 group-hover:scale-[1.03]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative overflow-hidden border-b border-border/70 bg-muted/20">
+        <div className="transition-transform duration-300 group-hover:scale-[1.02]">
           <TemplatePreview template={template} className="w-full" />
         </div>
 
-        {/* Floating actions (delete / duplicate) */}
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-2 top-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {onDuplicate && (
             <button
-              className="rounded-md bg-background/80 backdrop-blur-sm p-1.5 text-muted-foreground hover:text-foreground shadow-sm"
-              onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+              className="rounded-md bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur-sm hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
           )}
           {onDelete && (
             <button
-              className="rounded-md bg-background/80 backdrop-blur-sm p-1.5 text-destructive hover:text-destructive/80 shadow-sm"
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -42,22 +46,22 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-col gap-2 p-3">
-        <h3 className="text-sm font-semibold text-foreground truncate">{template.name}</h3>
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        <h3 className="truncate text-sm font-semibold text-foreground">{template.name}</h3>
+        <p className="line-clamp-2 text-[11px] text-muted-foreground">{template.description}</p>
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1 text-xs h-8" onClick={onEdit}>
+        <div className="mt-auto flex items-center gap-2 pt-1">
+          <Button variant="outline" size="sm" className="h-9 flex-1 text-xs" onClick={onEdit}>
             <Pencil className="mr-1 h-3 w-3" />
             Editar
           </Button>
-          <Button size="sm" className="flex-1 text-xs h-8" onClick={onGenerate}>
+          <Button size="sm" className="h-9 flex-1 text-xs" onClick={onGenerate}>
             <Play className="mr-1 h-3 w-3" />
             Gerar
           </Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
