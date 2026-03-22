@@ -273,19 +273,6 @@ const Landing = () => {
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Simples e transparente.</h2>
             <p className="mt-4 text-neutral-500 max-w-lg mx-auto">Comece grátis. Evolua quando fizer sentido.</p>
 
-            {/* Toggle mensal/anual */}
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>Mensal</span>
-              <button
-                onClick={() => setIsAnnual(!isAnnual)}
-                className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-neutral-300'}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? 'translate-x-5' : 'translate-x-0'}`} />
-              </button>
-              <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>
-                Anual <span className="text-xs text-primary font-semibold">-14%</span>
-              </span>
-            </div>
           </motion.div>
 
           <div className="mx-auto grid max-w-4xl gap-8 md:gap-5 md:grid-cols-3">
@@ -303,6 +290,20 @@ const Landing = () => {
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-purple-500 px-4 py-1 text-[10px] font-bold text-white uppercase tracking-wider">
                     Mais escolhido
                   </span>
+                )}
+                {plan.highlight && (
+                  <div className="mb-4 flex items-center justify-center gap-3">
+                    <span className={`text-xs font-medium transition-colors ${!isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>Mensal</span>
+                    <button
+                      onClick={() => setIsAnnual(!isAnnual)}
+                      className={`relative h-6 w-10 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-neutral-300'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAnnual ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <span className={`text-xs font-medium transition-colors ${isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                      Anual <span className="text-[10px] text-primary font-semibold">-14%</span>
+                    </span>
+                  </div>
                 )}
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
