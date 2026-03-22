@@ -95,9 +95,14 @@ const Pricing = () => {
               <Feature>Histórico completo</Feature>
               <Feature>Sem marca d'água</Feature>
             </ul>
-            <Button className="mt-8 h-12 w-full rounded-xl text-sm font-semibold" onClick={go}>
-              Começar a fechar mais clientes <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
+            <div className="mt-8 flex flex-col gap-2">
+              <Button className="h-12 w-full rounded-xl text-sm font-semibold" onClick={go}>
+                Assinar mensal — R$19/mês <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="h-12 w-full rounded-xl text-sm font-semibold" onClick={go}>
+                Assinar anual — R$197/ano
+              </Button>
+            </div>
           </motion.div>
 
           {/* Lifetime */}
