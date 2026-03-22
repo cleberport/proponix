@@ -92,6 +92,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-8">
+      <OnboardingTour />
       {/* Mobile quick action */}
       {settings.defaultTemplateId && (
         <motion.div
