@@ -34,7 +34,7 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
           )}
           {onDelete && (
             <button
-              className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80"
+              className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80 border border-border/50"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
