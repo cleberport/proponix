@@ -303,16 +303,26 @@ const Landing = () => {
                 {(plan as any).urgency && (
                   <p className="mt-5 text-center text-sm font-medium text-orange-600">{(plan as any).urgency}</p>
                 )}
-                <Button
-                  className={`mt-7 w-full rounded-full h-11 text-sm font-semibold ${
-                    plan.highlight
-                      ? 'bg-gradient-to-r from-primary to-purple-500 text-white hover:opacity-90'
-                      : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900'
-                  }`}
-                  onClick={() => navigate('/auth?tab=signup')}
-                >
-                  {plan.cta}
-                </Button>
+                <div className={`mt-7 flex flex-col gap-2`}>
+                  <Button
+                    className={`w-full rounded-full h-11 text-sm font-semibold ${
+                      plan.highlight
+                        ? 'bg-gradient-to-r from-primary to-purple-500 text-white hover:opacity-90'
+                        : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900'
+                    }`}
+                    onClick={() => navigate('/auth?tab=signup')}
+                  >
+                    {plan.highlight ? 'Assinar mensal — R$19/mês' : plan.cta}
+                  </Button>
+                  {plan.highlight && (
+                    <Button
+                      className="w-full rounded-full h-11 text-sm font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-900"
+                      onClick={() => navigate('/auth?tab=signup')}
+                    >
+                      Assinar anual — R$197/ano
+                    </Button>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
