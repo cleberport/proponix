@@ -270,14 +270,32 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Alinhamento</Label>
-            <Select value={element.alignment || 'left'} onValueChange={(v) => onUpdate({ alignment: v as 'left' | 'center' | 'right' })}>
-              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="left">Esquerda</SelectItem>
-                <SelectItem value="center">Centro</SelectItem>
-                <SelectItem value="right">Direita</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1">
+              {([
+                { value: 'left', icon: AlignLeft },
+                { value: 'center', icon: AlignCenter },
+                { value: 'right', icon: AlignRight },
+              ] as const).map(({ value, icon: Icon }) => (
+                <Button
+                  key={value}
+                  variant={(element.alignment || 'left') === value ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onUpdate({ alignment: value })}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                </Button>
+              ))}
+              <Separator orientation="vertical" className="mx-1 h-5" />
+              <Button
+                variant={element.textDecoration === 'underline' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ textDecoration: element.textDecoration === 'underline' ? 'none' : 'underline' })}
+              >
+                <Underline className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Cor</Label>
