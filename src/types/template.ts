@@ -25,6 +25,7 @@ export interface CanvasElement {
   fontFamily?: string;
   color?: string;
   alignment?: 'left' | 'center' | 'right';
+  textDecoration?: string;
   rows?: TableRow[];
   columnWidths?: number[]; // percentage widths per column
   imageUrl?: string;

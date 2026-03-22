@@ -383,6 +383,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         fontSize: el.fontSize,
         fontWeight: el.fontWeight,
         fontFamily: el.fontFamily,
+        textDecoration: el.textDecoration || 'none',
         color: el.color,
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : 'grab',
