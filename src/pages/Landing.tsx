@@ -109,8 +109,9 @@ const Landing = () => {
             style={{ fontFamily: "'Bebas Neue', sans-serif", fontWeight: 400 }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Pare de perder<br />
-            clientes.
+            Orçamentos<br />
+            profissionais<br />
+            em segundos.
           </motion.h1>
 
           <motion.p
