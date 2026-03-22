@@ -11,6 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SavedTemplate } from '@/types/template';
+import OnboardingTour from '@/components/OnboardingTour';
 
 
 const Dashboard = () => {
