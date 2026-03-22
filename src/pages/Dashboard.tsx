@@ -111,29 +111,33 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between" data-tour="tour-dashboard-header">
         <div>
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
           <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={() => {
-              const newTheme = theme === 'dark' ? 'light' : 'dark';
-              setTheme(newTheme);
-              saveSettings({ ...getSettings(), theme: newTheme });
-              document.documentElement.classList.toggle('dark', newTheme === 'dark');
-            }}
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
-          <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
-            <Plus className="h-4 w-4 md:mr-1.5" />
-            <span className="hidden md:inline">Novo Template</span>
-          </Button>
+          <div data-tour="tour-theme-toggle">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => {
+                const newTheme = theme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+                saveSettings({ ...getSettings(), theme: newTheme });
+                document.documentElement.classList.toggle('dark', newTheme === 'dark');
+              }}
+            >
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
+          <div data-tour="tour-new-template">
+            <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
+              <Plus className="h-4 w-4 md:mr-1.5" />
+              <span className="hidden md:inline">Novo Template</span>
+            </Button>
+          </div>
         </div>
       </div>
 
