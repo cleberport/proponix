@@ -39,19 +39,21 @@ const Landing = () => {
 
   const plans = [
     {
-      name: 'Free', price: 'R$ 0', period: '',
-      features: ['1 template', '10 PDFs no histórico', 'Marca d\'água Proponix'],
+      name: 'Teste grátis', price: 'Grátis', period: '30 dias',
+      features: ['Todos os recursos liberados', 'Sem limitações durante o teste'],
       cta: 'Começar grátis', highlight: false,
     },
     {
-      name: 'Pro', price: 'R$ 19,90', period: '/mês',
-      features: ['Templates ilimitados', 'PDFs ilimitados', 'Histórico completo', 'Sem marca d\'água', 'Nome personalizado'],
-      cta: 'Assinar Pro', highlight: true,
+      name: 'Pro', price: 'R$ 19', period: '/mês',
+      sub: 'ou R$197/ano (2 meses grátis)',
+      features: ['Templates ilimitados', 'Biblioteca de serviços', 'Geração de PDF profissional', 'Envio por link com aprovação', 'Reenvio de propostas', 'Histórico completo', 'Sem marca d\'água'],
+      cta: 'Começar a fechar mais clientes', highlight: true,
     },
     {
-      name: 'Lifetime', price: 'R$ 197', period: ' único',
-      features: ['Todos recursos Pro', 'Acesso vitalício', 'Sem mensalidade'],
-      cta: 'Comprar acesso', highlight: false,
+      name: 'Vitalício', price: 'R$ 397', period: ' único',
+      features: ['Tudo do plano Pro', 'Acesso para sempre', 'Sem mensalidade'],
+      cta: 'Garantir acesso vitalício', highlight: false,
+      urgency: '🔥 Oferta limitada para primeiros usuários',
     },
   ];
 
@@ -237,14 +239,15 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-12 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Preços</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Transparente. Sem surpresas.</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Pare de perder clientes por demora no orçamento.</h2>
+            <p className="mt-3 text-neutral-500 max-w-lg mx-auto text-sm">Crie, envie e tenha propostas aprovadas em minutos — direto do celular.</p>
           </motion.div>
 
           <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                className={`relative rounded-xl p-6 transition-all ${
+                className={`relative flex flex-col rounded-xl p-6 transition-all ${
                   plan.highlight
                     ? 'border-2 border-primary bg-white shadow-lg shadow-primary/5'
                     : 'border border-neutral-200 bg-white'
@@ -253,7 +256,7 @@ const Landing = () => {
               >
                 {plan.highlight && (
                   <span className="absolute -top-2.5 left-5 rounded-full bg-primary px-3 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
-                    Popular
+                    Mais escolhido
                   </span>
                 )}
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
@@ -261,7 +264,10 @@ const Landing = () => {
                   <span className="text-3xl font-bold text-neutral-900">{plan.price}</span>
                   <span className="text-sm text-neutral-400">{plan.period}</span>
                 </div>
-                <ul className="mt-6 space-y-2.5">
+                {(plan as any).sub && (
+                  <p className="mt-1 text-xs text-neutral-400">{(plan as any).sub}</p>
+                )}
+                <ul className="mt-6 space-y-2.5 flex-1">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-neutral-600">
                       <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
@@ -269,6 +275,9 @@ const Landing = () => {
                     </li>
                   ))}
                 </ul>
+                {(plan as any).urgency && (
+                  <p className="mt-4 text-center text-sm font-medium text-orange-600">{(plan as any).urgency}</p>
+                )}
                 <Button
                   className={`mt-6 w-full rounded-full h-10 text-sm font-medium ${
                     plan.highlight
