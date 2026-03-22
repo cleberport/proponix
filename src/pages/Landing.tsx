@@ -39,6 +39,8 @@ const Landing = () => {
     'Freelancers', 'Fotógrafos', 'Designers', 'Agências', 'Produtores', 'Consultores', 'Arquitetos', 'Prestadores de serviço'
   ];
 
+  const [isAnnual, setIsAnnual] = useState(false);
+
   const plans = [
     {
       name: 'Teste grátis', price: 'Grátis', period: '30 dias',
@@ -46,10 +48,13 @@ const Landing = () => {
       cta: 'Começar grátis', highlight: false,
     },
     {
-      name: 'Pro', price: 'R$ 19', period: '/mês',
-      sub: 'ou R$197/ano (2 meses grátis)',
+      name: 'Pro',
+      price: isAnnual ? 'R$ 197' : 'R$ 19',
+      period: isAnnual ? '/ano' : '/mês',
+      sub: isAnnual ? 'equivale a ~R$16/mês (2 meses grátis)' : 'ou R$197/ano (2 meses grátis)',
       features: ['Templates ilimitados', 'Biblioteca de serviços', 'Geração de PDF profissional', 'Envio por link com aprovação', 'Reenvio de propostas', 'Histórico completo', 'Sem marca d\'água'],
-      cta: 'Começar a fechar mais clientes', highlight: true,
+      cta: isAnnual ? 'Assinar anual — R$197/ano' : 'Assinar mensal — R$19/mês',
+      highlight: true,
     },
     {
       name: 'Vitalício', price: 'R$ 397', period: ' único',
