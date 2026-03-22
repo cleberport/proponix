@@ -80,7 +80,7 @@ const Landing = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-white/70 hover:text-white hover:bg-white/10 hidden sm:inline-flex text-[13px]">
+              className="text-white/70 hover:text-white hover:bg-white/10 text-[13px]">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
