@@ -23,7 +23,7 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
         <div className="absolute right-2 top-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {onDuplicate && (
             <button
-              className="rounded-md bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur-sm hover:text-foreground"
+              className="rounded-md bg-background/90 p-1.5 text-foreground shadow-sm backdrop-blur-sm hover:text-primary border border-border/50"
               onClick={(e) => {
                 e.stopPropagation();
                 onDuplicate();
@@ -34,7 +34,7 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
           )}
           {onDelete && (
             <button
-              className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80"
+              className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80 border border-border/50"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
