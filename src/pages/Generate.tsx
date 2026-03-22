@@ -430,11 +430,6 @@ const Generate = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {lastPdfBlob && !isMobile && (
-            <Button variant="outline" size="icon" className="h-10 w-10" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
-          )}
           <Button className="h-10 px-4 text-sm font-semibold" onClick={handleGeneratePDF} disabled={generating}>
             <Download className="mr-1.5 h-4 w-4" />
             {generating ? 'Gerando...' : 'Gerar PDF'}
