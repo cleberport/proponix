@@ -125,7 +125,7 @@ const Landing = () => {
           </motion.h1>
 
           <motion.p
-            className="mt-6 text-base md:text-lg text-white/70 max-w-md mx-auto leading-relaxed"
+            className="mt-6 text-base md:text-xl text-white/80 max-w-lg mx-auto leading-relaxed font-medium"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
           >
             Crie, envie e tenha propostas aprovadas em minutos — direto do celular.
