@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates } from '@/lib/templateStorage';
+import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates, saveSettings } from '@/lib/templateStorage';
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Sparkles, Zap, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, Zap, Trash2, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
