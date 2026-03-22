@@ -272,6 +272,20 @@ const Landing = () => {
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-3">Preços</p>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Simples e transparente.</h2>
             <p className="mt-4 text-neutral-500 max-w-lg mx-auto">Comece grátis. Evolua quando fizer sentido.</p>
+
+            {/* Toggle mensal/anual */}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>Mensal</span>
+              <button
+                onClick={() => setIsAnnual(!isAnnual)}
+                className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-neutral-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+              <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                Anual <span className="text-xs text-primary font-semibold">-14%</span>
+              </span>
+            </div>
           </motion.div>
 
           <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
