@@ -239,6 +239,16 @@ function renderPageElements(
             if (align === 'center') tx = x + w / 2;
             else if (align === 'right') tx = x + w;
             pdf.text(line, tx, y + ascent + i * lineH, { align });
+            if (el.textDecoration === 'underline') {
+              const textW = pdf.getTextWidth(line);
+              let ux = tx;
+              if (align === 'center') ux = tx - textW / 2;
+              else if (align === 'right') ux = tx - textW;
+              const uy = y + ascent + i * lineH + fontSize * 0.15;
+              pdf.setDrawColor(...color);
+              pdf.setLineWidth(fontSize * 0.05);
+              pdf.line(ux, uy, ux + textW, uy);
+            }
           });
         }
         break;
