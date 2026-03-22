@@ -489,21 +489,6 @@ const Generate = () => {
             )}
           </div>
 
-          {Object.keys(calculatedFields).length > 0 && (
-            <div className="mt-5 rounded-lg border border-border bg-background p-3">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo</h3>
-              {['subtotal', 'tax', 'total']
-                .filter((field) => field in calculatedFields)
-                .map((field) => (
-                <div key={field} className={`flex items-center justify-between py-2 ${field === 'total' ? 'border-t border-border pt-2 mt-1' : ''}`}>
-                    <span className="text-sm text-foreground">{formatLabel(field)}</span>
-                    <span className={`text-sm font-semibold ${field === 'total' ? 'text-primary text-base' : 'text-foreground'}`}>
-                      {displayValues[field] || 'R$ 0,00'}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          )}
 
         </div>
 

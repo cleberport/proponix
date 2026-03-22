@@ -376,7 +376,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-premium', 'Premium', 'Arquitetura', 'Layout elegante com fundo escuro, detalhes dourados e tipografia refinada. Para escritórios premium de arquitetura e design.', premiumElements, allVars, {
-    defaultValues: { service_name: 'Projeto de Interiores', price: '57500', tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0.05' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true, backgroundColor: '#111827' },
