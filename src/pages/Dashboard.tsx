@@ -121,7 +121,7 @@ const Dashboard = () => {
             onClick={() => {
               const currentTheme = settings.theme || 'light';
               const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-              const updated = { ...settings, theme: newTheme };
+              const updated = { ...settings, theme: newTheme as 'dark' | 'light' };
               saveSettings(updated);
               document.documentElement.classList.toggle('dark', newTheme === 'dark');
             }}
