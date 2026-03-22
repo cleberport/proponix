@@ -203,11 +203,9 @@ const Landing = () => {
                 </div>
                 {/* Image */}
                 <div className="flex-1 relative">
-                  <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-neutral-200/50 border border-neutral-100 bg-neutral-50">
-                    <img src={s.image} alt={s.title} className="w-full object-cover" loading="lazy" />
+                  <div className="relative rounded-xl overflow-hidden shadow-lg shadow-neutral-200/60">
+                    <img src={s.image} alt={s.title} className="w-full block" loading="lazy" />
                   </div>
-                  {/* Decorative gradient behind */}
-                  <div className="absolute -z-10 inset-0 translate-x-4 translate-y-4 rounded-2xl bg-gradient-to-br from-primary/10 to-purple-400/10 blur-sm" />
                 </div>
               </motion.div>
             ))}
