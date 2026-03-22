@@ -352,7 +352,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-moderno', 'Moderno', 'Tecnologia', 'Visual moderno com header em destaque, cores vibrantes e estrutura profissional para empresas de tecnologia.', modernoElements, allVars, {
-    defaultValues: { service_name: 'Desenvolvimento Web', price: '31800', tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
