@@ -252,10 +252,19 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             <Label className="text-xs text-muted-foreground">Família da Fonte</Label>
             <Select value={element.fontFamily || 'Inter'} onValueChange={(v) => onUpdate({ fontFamily: v })}>
               <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Inter">Inter</SelectItem>
-                <SelectItem value="Roboto">Roboto</SelectItem>
-                <SelectItem value="Merriweather">Merriweather</SelectItem>
+              <SelectContent className="max-h-64">
+                {[
+                  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins',
+                  'Raleway', 'Nunito', 'PT Sans', 'Source Sans 3', 'Work Sans',
+                  'DM Sans', 'Space Grotesk', 'Archivo', 'Syne',
+                  'Oswald', 'Bebas Neue',
+                  'Merriweather', 'Playfair Display', 'Libre Baskerville',
+                  'Crimson Text', 'Bitter', 'Cormorant Garamond',
+                ].map((font) => (
+                  <SelectItem key={font} value={font} style={{ fontFamily: font }}>
+                    {font}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
