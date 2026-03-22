@@ -6,7 +6,7 @@ import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
 import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
-import '@fontsource/oswald/700.css';
+import '@fontsource/bebas-neue/400.css';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -106,7 +106,7 @@ const Landing = () => {
 
           <motion.h1
             className="text-[3rem] md:text-[5rem] lg:text-[6.5rem] font-bold leading-[0.95] tracking-[-0.02em] text-white uppercase"
-            style={{ fontFamily: "'Oswald', sans-serif" }}
+            style={{ fontFamily: "'Bebas Neue', sans-serif", fontWeight: 400 }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
           >
             Pare de perder<br />
