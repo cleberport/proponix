@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,8 @@ const Landing = () => {
     'Freelancers', 'Fotógrafos', 'Designers', 'Agências', 'Produtores', 'Consultores', 'Arquitetos', 'Prestadores de serviço'
   ];
 
+  const [isAnnual, setIsAnnual] = useState(false);
+
   const plans = [
     {
       name: 'Teste grátis', price: 'Grátis', period: '30 dias',
@@ -45,10 +48,13 @@ const Landing = () => {
       cta: 'Começar grátis', highlight: false,
     },
     {
-      name: 'Pro', price: 'R$ 19', period: '/mês',
-      sub: 'ou R$197/ano (2 meses grátis)',
+      name: 'Pro',
+      price: isAnnual ? 'R$ 197' : 'R$ 19',
+      period: isAnnual ? '/ano' : '/mês',
+      sub: isAnnual ? 'equivale a ~R$16/mês (2 meses grátis)' : 'ou R$197/ano (2 meses grátis)',
       features: ['Templates ilimitados', 'Biblioteca de serviços', 'Geração de PDF profissional', 'Envio por link com aprovação', 'Reenvio de propostas', 'Histórico completo', 'Sem marca d\'água'],
-      cta: 'Começar a fechar mais clientes', highlight: true,
+      cta: isAnnual ? 'Assinar anual — R$197/ano' : 'Assinar mensal — R$19/mês',
+      highlight: true,
     },
     {
       name: 'Vitalício', price: 'R$ 397', period: ' único',
@@ -266,6 +272,20 @@ const Landing = () => {
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-3">Preços</p>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Simples e transparente.</h2>
             <p className="mt-4 text-neutral-500 max-w-lg mx-auto">Comece grátis. Evolua quando fizer sentido.</p>
+
+            {/* Toggle mensal/anual */}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>Mensal</span>
+              <button
+                onClick={() => setIsAnnual(!isAnnual)}
+                className={`relative h-7 w-12 rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-neutral-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+              <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                Anual <span className="text-xs text-primary font-semibold">-14%</span>
+              </span>
+            </div>
           </motion.div>
 
           <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
@@ -303,26 +323,16 @@ const Landing = () => {
                 {(plan as any).urgency && (
                   <p className="mt-5 text-center text-sm font-medium text-orange-600">{(plan as any).urgency}</p>
                 )}
-                <div className={`mt-7 flex flex-col gap-2`}>
-                  <Button
-                    className={`w-full rounded-full h-11 text-sm font-semibold ${
-                      plan.highlight
-                        ? 'bg-gradient-to-r from-primary to-purple-500 text-white hover:opacity-90'
-                        : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900'
-                    }`}
-                    onClick={() => navigate('/auth?tab=signup')}
-                  >
-                    {plan.highlight ? 'Assinar mensal — R$19/mês' : plan.cta}
-                  </Button>
-                  {plan.highlight && (
-                    <Button
-                      className="w-full rounded-full h-11 text-sm font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-900"
-                      onClick={() => navigate('/auth?tab=signup')}
-                    >
-                      Assinar anual — R$197/ano
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  className={`mt-7 w-full rounded-full h-11 text-sm font-semibold ${
+                    plan.highlight
+                      ? 'bg-gradient-to-r from-primary to-purple-500 text-white hover:opacity-90'
+                      : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900'
+                  }`}
+                  onClick={() => navigate('/auth?tab=signup')}
+                >
+                  {plan.cta}
+                </Button>
               </motion.div>
             ))}
           </div>
