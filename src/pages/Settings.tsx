@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Upload, X, Moon, Sun, RotateCcw, Star } from 'lucide-react';
+import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle } from 'lucide-react';
+import { resetTour } from '@/components/OnboardingTour';
 import { toast } from 'sonner';
 
 const SettingsPage = () => {
