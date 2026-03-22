@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates } from '@/lib/templateStorage';
+import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates, saveSettings } from '@/lib/templateStorage';
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Sparkles, Zap, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, Zap, Trash2, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -113,11 +113,26 @@ const Dashboard = () => {
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
           <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
         </div>
-        <Button onClick={() => navigate('/editor/new')} size="sm" className="h-10 md:h-9">
-          <Plus className="mr-1.5 h-4 w-4" />
-          <span className="hidden sm:inline">Novo Template</span>
-          <span className="sm:hidden">Novo</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => {
+              const currentTheme = settings.theme || 'light';
+              const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+              const updated = { ...settings, theme: newTheme as 'dark' | 'light' };
+              saveSettings(updated);
+              document.documentElement.classList.toggle('dark', newTheme === 'dark');
+            }}
+          >
+            {(settings.theme || 'light') === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
+            <Plus className="h-4 w-4 md:mr-1.5" />
+            <span className="hidden md:inline">Novo Template</span>
+          </Button>
+        </div>
       </div>
 
       {loadingSaved && saved.length === 0 && (
@@ -130,7 +145,7 @@ const Dashboard = () => {
       {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
             {saved.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
@@ -164,7 +179,7 @@ const Dashboard = () => {
               Remover todos
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
             {starters.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
