@@ -70,7 +70,7 @@ const Landing = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-2xl border-b border-white/10">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <span className="text-xl font-normal tracking-[0.08em] text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+          <span className="text-xl font-normal tracking-[0.08em] text-white uppercase">
             Proponix<span className="text-primary">.</span>
           </span>
           <div className="hidden md:flex items-center gap-8 text-[13px] text-white/70 font-medium">
@@ -116,7 +116,7 @@ const Landing = () => {
 
           <motion.h1
             className="text-[3.5rem] md:text-[6rem] lg:text-[8rem] font-normal leading-[0.9] tracking-[0.02em] text-white uppercase"
-            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+           
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
           >
             Orçamentos<br />
@@ -184,7 +184,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-16 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-3">Como funciona</p>
-            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
               Três passos simples.
             </h2>
           </motion.div>
@@ -198,10 +198,10 @@ const Landing = () => {
               >
                 {/* Text */}
                 <div className="flex-1 text-center md:text-left">
-                  <span className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+                  <span className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                     {s.num}
                   </span>
-                  <h3 className="mt-4 text-xl md:text-2xl font-bold" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+                  <h3 className="mt-4 text-xl md:text-2xl font-bold">
                     {s.title}
                   </h3>
                   <p className="mt-3 text-neutral-500 leading-relaxed max-w-sm mx-auto md:mx-0">
@@ -227,7 +227,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-3">Recursos</p>
-            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
               Tudo que você precisa.
             </h2>
           </motion.div>
@@ -242,7 +242,7 @@ const Landing = () => {
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-purple-400/10 group-hover:from-primary/20 group-hover:to-purple-400/20 transition-colors">
                   <f.icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-base font-bold" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{f.title}</h3>
+                <h3 className="text-base font-bold">{f.title}</h3>
                 <p className="mt-2 text-sm text-neutral-500 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
@@ -261,7 +261,7 @@ const Landing = () => {
           <div className="flex-1 text-center md:text-left">
             <motion.h2
               className="text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.05] text-white"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+             
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ duration: 0.6 }}
             >
@@ -307,7 +307,7 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-3">Preços</p>
-            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
               Simples e transparente.
             </h2>
             <p className="mt-4 text-neutral-500 max-w-lg mx-auto">Comece grátis. Evolua quando fizer sentido.</p>
@@ -345,7 +345,7 @@ const Landing = () => {
                 )}
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{plan.price}</span>
+                  <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-sm text-neutral-400">{plan.period}</span>
                 </div>
                 {(plan as any).sub && (
@@ -381,7 +381,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-neutral-100 py-10 bg-white">
         <div className="mx-auto max-w-6xl px-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-bold tracking-tight" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+          <span className="text-sm font-bold tracking-tight">
             Proponix<span className="text-primary">.</span>
           </span>
           <div className="flex items-center gap-6 text-xs text-neutral-400">
