@@ -344,7 +344,7 @@ const premiumElements: CanvasElement[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const starterTemplates: Template[] = [
   makeTemplate('template-minimal', 'Minimal', 'Geral', 'Layout limpo e sofisticado com tipografia leve e espaçamento generoso. Ideal para qualquer tipo de serviço.', minimalElements, allVars, {
-    defaultValues: { service_name: 'Consultoria', price: '9100', tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
@@ -352,7 +352,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-moderno', 'Moderno', 'Tecnologia', 'Visual moderno com header em destaque, cores vibrantes e estrutura profissional para empresas de tecnologia.', modernoElements, allVars, {
-    defaultValues: { service_name: 'Desenvolvimento Web', price: '31800', tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0.10' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
@@ -360,7 +360,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-classico', 'Clássico', 'Corporativo', 'Template corporativo com estrutura tradicional, cores sóbrias e diagramação formal para empresas de engenharia e consultoria.', classicoElements, allVars, {
-    defaultValues: { service_name: 'Projeto Executivo', price: '25500', tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0.05' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true },
@@ -368,7 +368,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-criativo', 'Criativo', 'Agência', 'Design ousado com tipografia expressiva e cores vibrantes. Perfeito para agências, freelancers e profissionais criativos.', criativoElements, allVars, {
-    defaultValues: { service_name: 'Identidade Visual', price: '20900', tax_rate: '0' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0, showTax: false },
@@ -376,7 +376,7 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-premium', 'Premium', 'Arquitetura', 'Layout elegante com fundo escuro, detalhes dourados e tipografia refinada. Para escritórios premium de arquitetura e design.', premiumElements, allVars, {
-    defaultValues: { service_name: 'Projeto de Interiores', price: '57500', tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0.05' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true, backgroundColor: '#111827' },

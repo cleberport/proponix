@@ -627,10 +627,6 @@ const Editor = () => {
               <span className="text-xs text-muted-foreground">%</span>
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
-            <span className="text-xs font-medium text-foreground">Mostrar imposto no documento</span>
-            <Switch checked={settings.showTax} onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showTax: checked }))} />
-          </div>
         </div>
       </TabsContent>
     </Tabs>
