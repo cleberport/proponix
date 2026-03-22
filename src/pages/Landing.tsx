@@ -288,7 +288,7 @@ const Landing = () => {
             </div>
           </motion.div>
 
-          <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-8 md:gap-5 md:grid-cols-3">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
