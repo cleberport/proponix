@@ -28,6 +28,7 @@ const SettingsPage = lazy(() => import("./pages/Settings"));
 const Editor = lazy(() => import("./pages/Editor"));
 const Generate = lazy(() => import("./pages/Generate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Import = lazy(() => import("./pages/Import"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
