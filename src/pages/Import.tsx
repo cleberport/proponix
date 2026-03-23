@@ -26,9 +26,7 @@ async function fileToBase64(file: File): Promise<string> {
 
 /** For PDFs we render the first page to a canvas and return as JPEG base64. */
 async function pdfPageToBase64(file: File): Promise<{ base64: string; mime: string }> {
-  // Use canvas approach via an object URL + an offscreen rendering trick
-  // We'll load pdf.js from CDN for this
-  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/+esm' as any) as any;
+  const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
 
