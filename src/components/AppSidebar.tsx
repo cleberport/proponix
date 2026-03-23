@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 
 const items = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Importar', url: '/import', icon: FileUp },
   { title: 'Histórico', url: '/documents', icon: Clock },
   { title: 'Perfil', url: '/profile', icon: User },
   { title: 'Configurações', url: '/settings', icon: Settings },

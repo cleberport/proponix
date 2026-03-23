@@ -28,6 +28,7 @@ const SettingsPage = lazy(() => import("./pages/Settings"));
 const Editor = lazy(() => import("./pages/Editor"));
 const Generate = lazy(() => import("./pages/Generate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Import = lazy(() => import("./pages/Import"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -128,6 +129,7 @@ const App = () => {
                 <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
                 <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
                 <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
 
