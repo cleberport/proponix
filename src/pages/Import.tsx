@@ -103,14 +103,14 @@ const Import = () => {
 
       setStepIndex(2);
 
-      // Step 3: build elements
+      // Step 3: build elements with overlap prevention
       const aiElements: any[] = data.elements || [];
-      const elements: CanvasElement[] = aiElements.map((el: any) => ({
+      const rawElements: CanvasElement[] = aiElements.map((el: any) => ({
         id: uuid(),
         type: el.type || 'text',
-        x: Math.max(0, Math.min(el.x || 0, 595)),
-        y: Math.max(0, Math.min(el.y || 0, 842)),
-        width: Math.max(20, el.width || 200),
+        x: Math.max(0, Math.min(el.x || 0, 555)),
+        y: Math.max(0, Math.min(el.y || 0, 800)),
+        width: Math.max(20, Math.min(el.width || 200, 555)),
         height: Math.max(10, el.height || 24),
         content: el.content || '',
         variable: el.variable || undefined,
@@ -120,11 +120,36 @@ const Import = () => {
         color: el.color || '#333333',
         alignment: el.alignment || 'left',
         fieldCategory: el.fieldCategory || 'default',
-        defaultValue: el.defaultValue || '',
+        defaultValue: '',
         rows: el.rows || undefined,
         columnWidths: el.columnWidths || undefined,
         isVisible: true,
       }));
+
+      // Fix overlaps: sort by Y and push elements down if they collide
+      rawElements.sort((a, b) => a.y - b.y);
+      const elements: CanvasElement[] = [];
+      let nextY = 0;
+      for (const el of rawElements) {
+        // Allow side-by-side if x positions differ significantly (header zone)
+        const sameRow = elements.find(
+          (prev) =>
+            Math.abs(prev.y - el.y) < 10 &&
+            (el.x > prev.x + prev.width - 10 || prev.x > el.x + el.width - 10)
+        );
+        if (sameRow) {
+          // Place on same row — keep original Y
+          el.y = sameRow.y;
+          elements.push(el);
+          continue;
+        }
+
+        if (el.y < nextY) {
+          el.y = nextY;
+        }
+        nextY = el.y + el.height + 8;
+        elements.push(el);
+      }
 
       setStepIndex(3);
 

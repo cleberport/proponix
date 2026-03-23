@@ -6,58 +6,82 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a document layout analyzer. You receive an image of a business proposal/invoice/quote document.
+const SYSTEM_PROMPT = `You are a document structure analyzer. You receive an image of a business proposal/invoice/quote.
 
-Your job is to reconstruct it as a list of canvas elements for a template editor (595x842 canvas, like A4).
+Your job is to REBUILD it as a clean, structured template with SEQUENTIAL vertical layout on a 595×842 canvas (A4).
+
+CRITICAL RULES:
+1. SEQUENTIAL LAYOUT — Elements are placed TOP to BOTTOM. Each element's Y = previous element's Y + previous element's height + spacing.
+2. NO OVERLAPPING — Every element must have its own vertical space. Never place two elements at the same Y.
+3. NO HARDCODED VALUES — Any variable content (names, dates, prices, locations, event names) MUST become dynamic fields with variables like {{client_name}}.
+4. CLEAN SPACING — Use consistent margins: left margin = 40px, right boundary = 555px (max width = 515px).
+5. REALISTIC HEIGHTS — Single line text = 22-28px, multi-line = 40-80px, tables = rows × 28 + header, notes = 60-120px.
+
+LAYOUT STRUCTURE (top to bottom):
+1. HEADER ZONE (y: 30-120): Logo left + company info right, side by side
+2. CLIENT ZONE (y: ~130): "À" + client name as dynamic-field
+3. TITLE ZONE (y: ~170): Document title (e.g. "Instrumento de Serviços Artísticos")
+4. SERVICE TYPE (y: ~200): Service category as dynamic-field
+5. DATE LINE (y: ~230): City + date as dynamic-fields, on same line
+6. EVENT INFO (y: ~270-340): Event name, location, dates — each as dynamic-field on its own line
+7. DESCRIPTION (y: ~360): Requirements/description as text block
+8. PRICING TABLE (y: ~400): Table with service items and prices
+9. TOTAL LINE (y: after table): Total with price-field or total-calculation
+10. OBSERVATIONS (y: after total + 20): Notes/terms block
+
+FOR SIDE-BY-SIDE ELEMENTS:
+- Logo: x=40, width=180
+- Company info: x=280, width=275
+- For city+date: city at x=40, date at x=300
 
 Return a JSON object with this exact structure:
 {
   "elements": [
     {
       "type": "text" | "dynamic-field" | "image" | "logo" | "divider" | "table" | "price-field" | "total-calculation" | "notes",
-      "x": number (0-595),
-      "y": number (0-842),
+      "x": number,
+      "y": number,
       "width": number,
       "height": number,
       "content": string,
-      "fontSize": number (8-48),
-      "fontWeight": string ("normal" | "bold"),
-      "color": string (hex like "#333333"),
+      "fontSize": number,
+      "fontWeight": "normal" | "bold",
+      "color": string (hex),
       "alignment": "left" | "center" | "right",
-      "variable": string (only for dynamic-field, price-field, total-calculation),
+      "variable": string (only for dynamic-field/price-field/total-calculation),
       "fieldCategory": "default" | "input" | "calculated",
       "defaultValue": string,
-      "rows": [{"cells": ["col1","col2",...]}] (only for table type),
+      "rows": [{"cells": ["col1","col2",...]}] (only for table),
       "columnWidths": [number] (percentage widths, only for table)
     }
   ],
-  "backgroundColor": string (hex),
-  "variables": string[],
-  "inputFields": string[],
+  "backgroundColor": "#ffffff",
+  "variables": ["client_name", "event_name", ...],
+  "inputFields": ["client_name", "event_name", ...],
   "calculatedFields": {},
   "defaultValues": {}
 }
 
-RULES:
-- Reconstruct the FULL layout, don't just describe it
-- Position elements accurately based on where they appear in the image
-- Use "dynamic-field" for: client names, dates, event names, locations — set variable like "client_name", "event_date", "location", "event_name"
-- Use "price-field" for monetary values — set variable like "price", "valor_servico"
-- Use "total-calculation" for totals/subtotals — set variable like "subtotal", "total"
-- Use "text" for static text blocks (company info, descriptions, terms)
-- Use "divider" for horizontal lines/separators
-- Use "table" for tabular data (services list, item descriptions)
-- Use "notes" for terms, conditions, observations sections
-- Use "logo" for the company logo area (set content to "Logo" and leave imageUrl empty)
-- Approximate font sizes: titles ~20-28, subtitles ~14-18, body ~10-12, small ~8-9
-- Approximate colors from the document
-- Set fieldCategory: "input" for user-fillable fields, "calculated" for computed fields, "default" for static
-- Include ALL detected variables in the "variables" array
-- Include user-fillable variables in "inputFields"
-- Set reasonable defaultValues for variables
-- Keep elements within canvas bounds (595x842)
-- Use realistic heights: single line text ~20-30, multi-line ~40-80, tables ~100-200
-- DO NOT include any markdown formatting or code blocks. Return ONLY raw JSON.`;
+ELEMENT TYPE RULES:
+- "logo" for company logo placeholder (content="Logo", x=40, y=30, width=180, height=80)
+- "text" for static content: company info, descriptions, section titles
+- "dynamic-field" for: client names, event names, dates, locations, service types — set fieldCategory="input"
+- "price-field" for individual monetary values — set fieldCategory="input"
+- "total-calculation" for totals — set fieldCategory="calculated"
+- "table" for itemized lists — use rows array with cells
+- "divider" for horizontal separators (height=2)
+- "notes" for terms/observations (multi-line content)
+
+VARIABLE NAMING: Use snake_case: client_name, event_name, event_location, event_dates, city, service_type, price_total
+
+VALIDATION CHECKLIST before responding:
+- No two elements share the same Y range
+- Every element Y > previous element (Y + height)
+- All variable content replaced with {{variable_name}}
+- defaultValues is empty object (no hardcoded values)
+- Total vertical space < 842
+
+DO NOT include markdown formatting or code blocks. Return ONLY raw JSON.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -103,7 +127,7 @@ serve(async (req) => {
               },
               {
                 type: "text",
-                text: "Analyze this proposal/document image and reconstruct it as editable template elements. Return ONLY raw JSON, no markdown.",
+                text: "Analyze this document and rebuild it as a clean sequential template. Replace ALL variable content with dynamic fields. Return ONLY raw JSON, no markdown.",
               },
             ],
           },
