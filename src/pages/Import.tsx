@@ -9,31 +9,28 @@ import { v4 as uuid } from 'uuid';
 import { motion } from 'framer-motion';
 import type { CanvasElement, Template } from '@/types/template';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const CANVAS_W = 595;
+const MARGIN_LEFT = 40;
+const CONTENT_W = 515;
+const SPACING = 10;
 
 async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
+    reader.onload = () => resolve((reader.result as string).split(',')[1]);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-/** For PDFs we render the first page to a canvas and return as JPEG base64. */
 async function pdfPageToBase64(file: File): Promise<{ base64: string; mime: string }> {
   const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
-
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const page = await pdf.getPage(1);
-
   const scale = 2;
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement('canvas');
@@ -41,16 +38,118 @@ async function pdfPageToBase64(file: File): Promise<{ base64: string; mime: stri
   canvas.height = viewport.height;
   const ctx = canvas.getContext('2d')!;
   await page.render({ canvasContext: ctx, viewport }).promise;
-
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   return { base64: dataUrl.split(',')[1], mime: 'image/jpeg' };
 }
 
+// ── Layout builder: converts structured sections into positioned CanvasElements ──
+
+interface AIElement {
+  type?: string;
+  content?: string;
+  fontSize?: number;
+  fontWeight?: string;
+  color?: string;
+  alignment?: string;
+  variable?: string;
+  fieldCategory?: string;
+  rows?: { cells: any[] }[];
+  columnWidths?: number[];
+}
+
+interface AISection {
+  type: string;
+  elements: AIElement[];
+}
+
+function estimateHeight(el: AIElement): number {
+  if (el.type === 'logo') return 60;
+  if (el.type === 'divider') return 4;
+  if (el.type === 'table' && el.rows) return el.rows.length * 26 + 8;
+  if (el.type === 'notes') {
+    const lines = Math.max(1, Math.ceil((el.content || '').length / 70));
+    return lines * 18 + 12;
+  }
+  const fs = el.fontSize || 12;
+  const lines = Math.max(1, Math.ceil((el.content || '').length / (CONTENT_W / (fs * 0.55))));
+  return lines * (fs + 6) + 4;
+}
+
+function buildLayoutFromSections(sections: AISection[]): CanvasElement[] {
+  const elements: CanvasElement[] = [];
+  let cursorY = 30;
+
+  for (const section of sections) {
+    // Add section spacing
+    if (section.type !== 'header') cursorY += 6;
+
+    // Header: logo left, company info right on same row
+    if (section.type === 'header') {
+      const logoEl = section.elements.find(e => e.type === 'logo');
+      const infoEls = section.elements.filter(e => e.type !== 'logo');
+
+      if (logoEl) {
+        elements.push(makeElement(logoEl, MARGIN_LEFT, cursorY, 160, 60));
+      }
+
+      let infoY = cursorY;
+      for (const el of infoEls) {
+        const h = estimateHeight(el);
+        elements.push(makeElement(el, 220, infoY, CONTENT_W - 180, h));
+        infoY += h + 2;
+      }
+
+      cursorY = Math.max(cursorY + 70, infoY) + SPACING;
+      continue;
+    }
+
+    for (const el of section.elements) {
+      const h = estimateHeight(el);
+      elements.push(makeElement(el, MARGIN_LEFT, cursorY, CONTENT_W, h));
+      cursorY += h + SPACING;
+    }
+  }
+
+  return elements;
+}
+
+function normalizeCell(c: any): string {
+  if (typeof c === 'object' && c !== null) return c.content ?? '';
+  return String(c ?? '');
+}
+
+function makeElement(el: AIElement, x: number, y: number, w: number, h: number): CanvasElement {
+  return {
+    id: uuid(),
+    type: (el.type as CanvasElement['type']) || 'text',
+    x,
+    y,
+    width: w,
+    height: h,
+    content: el.content || '',
+    variable: el.variable || undefined,
+    fontSize: el.fontSize || 12,
+    fontWeight: (el.fontWeight as 'normal' | 'bold') || 'normal',
+    fontFamily: 'Inter',
+    color: el.color || '#333333',
+    alignment: (el.alignment as 'left' | 'center' | 'right') || 'left',
+    fieldCategory: (el.fieldCategory as 'default' | 'input' | 'calculated') || 'default',
+    defaultValue: '',
+    rows: el.rows
+      ? el.rows.map(r => ({ cells: (r.cells || []).map(normalizeCell) }))
+      : undefined,
+    columnWidths: el.columnWidths || undefined,
+    isVisible: true,
+  };
+}
+
+// ── UI ──
+
 const STEPS = [
   'Enviando documento...',
-  'Analisando layout...',
-  'Detectando campos...',
-  'Reconstruindo template...',
+  'Analisando conteúdo...',
+  'Montando layout...',
+  'Salvando template...',
 ];
 
 const Import = () => {
@@ -68,7 +167,6 @@ const Import = () => {
 
     const isPdf = file.type === 'application/pdf';
     const isImage = file.type.startsWith('image/');
-
     if (!isPdf && !isImage) {
       toast.error('Formato não suportado. Use PDF, JPG ou PNG.');
       return;
@@ -81,7 +179,6 @@ const Import = () => {
       let base64: string;
       let mime: string;
 
-      // Step 1: convert
       if (isPdf) {
         const result = await pdfPageToBase64(file);
         base64 = result.base64;
@@ -93,7 +190,7 @@ const Import = () => {
 
       setStepIndex(1);
 
-      // Step 2: send to AI
+      // Call AI — now returns structured sections, not positioned elements
       const { data, error } = await supabase.functions.invoke('analyze-proposal', {
         body: { imageBase64: base64, mimeType: mime },
       });
@@ -103,61 +200,32 @@ const Import = () => {
 
       setStepIndex(2);
 
-      // Step 3: build elements with overlap prevention
-      const aiElements: any[] = data.elements || [];
-      const rawElements: CanvasElement[] = aiElements.map((el: any) => ({
-        id: uuid(),
-        type: el.type || 'text',
-        x: Math.max(0, Math.min(el.x || 0, 555)),
-        y: Math.max(0, Math.min(el.y || 0, 800)),
-        width: Math.max(20, Math.min(el.width || 200, 555)),
-        height: Math.max(10, el.height || 24),
-        content: el.content || '',
-        variable: el.variable || undefined,
-        fontSize: el.fontSize || 12,
-        fontWeight: el.fontWeight || 'normal',
-        fontFamily: el.fontFamily || 'Inter',
-        color: el.color || '#333333',
-        alignment: el.alignment || 'left',
-        fieldCategory: el.fieldCategory || 'default',
-        defaultValue: '',
-        rows: el.rows ? el.rows.map((r: any) => ({ cells: (r.cells || []).map((c: any) => typeof c === 'object' && c !== null ? c.content ?? '' : String(c ?? '')) })) : undefined,
-        columnWidths: el.columnWidths || undefined,
-        isVisible: true,
-      }));
+      // Build layout from structured sections
+      let elements: CanvasElement[];
 
-      // Fix overlaps: sort by Y and push elements down if they collide
-      rawElements.sort((a, b) => a.y - b.y);
-      const elements: CanvasElement[] = [];
-      let nextY = 0;
-      for (const el of rawElements) {
-        // Allow side-by-side if x positions differ significantly (header zone)
-        const sameRow = elements.find(
-          (prev) =>
-            Math.abs(prev.y - el.y) < 10 &&
-            (el.x > prev.x + prev.width - 10 || prev.x > el.x + el.width - 10)
-        );
-        if (sameRow) {
-          // Place on same row — keep original Y
-          el.y = sameRow.y;
-          elements.push(el);
-          continue;
+      if (data.sections && Array.isArray(data.sections)) {
+        // New structured format
+        elements = buildLayoutFromSections(data.sections);
+      } else if (data.elements && Array.isArray(data.elements)) {
+        // Legacy format fallback — position sequentially
+        const raw: CanvasElement[] = data.elements.map((el: any) => makeElement(
+          el, MARGIN_LEFT, 0, el.width || CONTENT_W, estimateHeight(el)
+        ));
+        let y = 30;
+        for (const el of raw) {
+          el.y = y;
+          y += el.height + SPACING;
         }
-
-        if (el.y < nextY) {
-          el.y = nextY;
-        }
-        nextY = el.y + el.height + 8;
-        elements.push(el);
+        elements = raw;
+      } else {
+        throw new Error('Resposta da IA não contém dados válidos');
       }
 
       setStepIndex(3);
 
-      // Step 4: save as template
       const variables = data.variables || [];
       const inputFields = data.inputFields || [];
       const calculatedFields = data.calculatedFields || {};
-      const defaultValues = data.defaultValues || {};
 
       const templateBase: Template = {
         id: uuid(),
@@ -168,11 +236,11 @@ const Import = () => {
         elements,
         pages: [elements],
         variables,
-        canvasWidth: 595,
+        canvasWidth: CANVAS_W,
         canvasHeight: 842,
         inputFields,
         calculatedFields,
-        defaultValues,
+        defaultValues: {},
         settings: {
           taxRate: 0,
           showTax: false,
@@ -181,7 +249,6 @@ const Import = () => {
       };
 
       const saved = await saveTemplate(templateBase);
-
       toast.success('Seu modelo foi criado automaticamente. Revise e ajuste se necessário.');
       navigate(`/editor/${saved.id}`);
     } catch (err: any) {
@@ -253,10 +320,7 @@ const Import = () => {
             </div>
           ) : (
             <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
