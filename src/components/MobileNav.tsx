@@ -1,4 +1,4 @@
-import { LayoutDashboard, Clock, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Clock, Settings, LogOut, FileUp } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
