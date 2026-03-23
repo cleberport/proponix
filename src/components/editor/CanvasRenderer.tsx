@@ -589,7 +589,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <tbody>
                   {(el.rows || []).map((row, ri) => (
                     <tr key={ri} style={ri === 0 ? { backgroundColor: 'hsl(240 5% 88%)', fontWeight: 600 } : undefined}>
-                      {row.cells.map((cell, ci) => (
+                      {row.cells.map((rawCell, ci) => {
+                        const cell = typeof rawCell === 'object' && rawCell !== null ? (rawCell as any).content ?? '' : String(rawCell ?? '');
+                        return (
                         <td
                           key={ci}
                           className="px-2 py-1.5"
@@ -601,7 +603,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                         >
                           {variableValues ? resolveContent({ ...el, content: cell }) : (cell || (ri > 0 ? '\u00A0' : ''))}
                         </td>
-                      ))}
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>

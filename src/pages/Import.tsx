@@ -121,7 +121,7 @@ const Import = () => {
         alignment: el.alignment || 'left',
         fieldCategory: el.fieldCategory || 'default',
         defaultValue: '',
-        rows: el.rows || undefined,
+        rows: el.rows ? el.rows.map((r: any) => ({ cells: (r.cells || []).map((c: any) => typeof c === 'object' && c !== null ? c.content ?? '' : String(c ?? '')) })) : undefined,
         columnWidths: el.columnWidths || undefined,
         isVisible: true,
       }));
