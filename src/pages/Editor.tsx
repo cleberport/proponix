@@ -342,6 +342,26 @@ const Editor = () => {
     setSelectedIds([]);
   }, [pages]);
 
+  const movePageUp = useCallback((index: number) => {
+    if (index <= 0) return;
+    setPages(prev => {
+      const newPages = [...prev];
+      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
+      return newPages;
+    });
+    setCurrentPage(index - 1);
+  }, []);
+
+  const movePageDown = useCallback((index: number) => {
+    if (index >= pages.length - 1) return;
+    setPages(prev => {
+      const newPages = [...prev];
+      [newPages[index], newPages[index + 1]] = [newPages[index + 1], newPages[index]];
+      return newPages;
+    });
+    setCurrentPage(index + 1);
+  }, [pages.length]);
+
   const goToPage = useCallback((index: number) => {
     setCurrentPage(index);
     setSelectedIds([]);
