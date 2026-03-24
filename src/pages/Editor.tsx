@@ -534,6 +534,22 @@ const Editor = () => {
                 </div>
                 <div className="flex shrink-0 opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
                   <button
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); movePageUp(i); }}
+                    title="Mover para cima"
+                    disabled={i === 0}
+                  >
+                    <ChevronUp className="h-3 w-3" />
+                  </button>
+                  <button
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); movePageDown(i); }}
+                    title="Mover para baixo"
+                    disabled={i === pages.length - 1}
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                  <button
                     className="p-1 text-muted-foreground hover:text-foreground"
                     onClick={(e) => { e.stopPropagation(); duplicatePage(i); }}
                     title="Duplicar página"
