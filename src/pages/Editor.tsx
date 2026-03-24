@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -342,6 +342,26 @@ const Editor = () => {
     setSelectedIds([]);
   }, [pages]);
 
+  const movePageUp = useCallback((index: number) => {
+    if (index <= 0) return;
+    setPages(prev => {
+      const newPages = [...prev];
+      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
+      return newPages;
+    });
+    setCurrentPage(index - 1);
+  }, []);
+
+  const movePageDown = useCallback((index: number) => {
+    if (index >= pages.length - 1) return;
+    setPages(prev => {
+      const newPages = [...prev];
+      [newPages[index], newPages[index + 1]] = [newPages[index + 1], newPages[index]];
+      return newPages;
+    });
+    setCurrentPage(index + 1);
+  }, [pages.length]);
+
   const goToPage = useCallback((index: number) => {
     setCurrentPage(index);
     setSelectedIds([]);
@@ -513,6 +533,22 @@ const Editor = () => {
                   <p className="text-[10px] text-muted-foreground">{pageEls.length} elemento{pageEls.length !== 1 ? 's' : ''}</p>
                 </div>
                 <div className="flex shrink-0 opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
+                  <button
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); movePageUp(i); }}
+                    title="Mover para cima"
+                    disabled={i === 0}
+                  >
+                    <ChevronUp className="h-3 w-3" />
+                  </button>
+                  <button
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={(e) => { e.stopPropagation(); movePageDown(i); }}
+                    title="Mover para baixo"
+                    disabled={i === pages.length - 1}
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
                   <button
                     className="p-1 text-muted-foreground hover:text-foreground"
                     onClick={(e) => { e.stopPropagation(); duplicatePage(i); }}
