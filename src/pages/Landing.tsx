@@ -117,21 +117,21 @@ const Landing = () => {
             className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.05] tracking-[-0.03em] text-neutral-900"
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
           >
-            Crie seu Template,{' '}
-            <br className="hidden sm:block" />
-            Envie pelo{' '}
-            <span className="inline-flex items-baseline gap-2">
-              <WhatsAppIcon className="h-[0.75em] w-[0.75em] text-[#25D366] translate-y-[0.05em]" />
-              <span>WhatsApp</span>
-            </span>
+            Seu orçamento já está pronto.
+            <br />
+            Só preencher e enviar.
           </motion.h1>
 
           <motion.p
-            className="mt-6 text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-500"
+            className="mt-6 text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-500 inline-flex items-center justify-center gap-2 flex-wrap"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
           >
-            Crie seu template dinâmico, preencha pelo celular e envie seu PDF
-            pelo WhatsApp em minutos. Economize horas de trabalho e impressione seus clientes.
+            Preencha pelo celular e envie seu PDF pelo{' '}
+            <span className="inline-flex items-center gap-1">
+              <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
+              <span>WhatsApp</span>
+            </span>{' '}
+            em minutos.
           </motion.p>
 
           <motion.div
