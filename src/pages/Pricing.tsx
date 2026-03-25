@@ -25,7 +25,7 @@ const Pricing = () => {
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-neutral-100 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
-          <button onClick={() => navigate('/')} className="text-lg font-bold tracking-tight">Proponix</button>
+          <button onClick={() => navigate('/')} className="text-lg font-bold tracking-tight">Freelox</button>
           <Button size="sm" onClick={go}>Criar conta</Button>
         </div>
       </nav>
@@ -62,7 +62,7 @@ const Pricing = () => {
           >
             <p className="text-sm font-medium text-neutral-400 uppercase tracking-wide">Teste grátis</p>
             <h3 className="mt-3 text-xl font-bold">Teste grátis por 30 dias</h3>
-            <p className="mt-2 text-sm text-neutral-500">Acesso completo ao Proponix durante o período de teste.</p>
+            <p className="mt-2 text-sm text-neutral-500"><p className="mt-2 text-sm text-neutral-500">Acesso completo ao Freelox durante o período de teste.</p></p>
             <ul className="mt-6 flex-1 space-y-3">
               <Feature>Todos os recursos liberados</Feature>
               <Feature>Sem limitações durante o teste</Feature>
@@ -135,7 +135,7 @@ const Pricing = () => {
           className="mx-auto max-w-xl text-center text-lg font-semibold leading-snug md:text-2xl"
           initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade} custom={0}
         >
-          Se o Proponix te ajudar a fechar apenas <span className="text-primary">1 cliente a mais</span>, ele já se paga no primeiro uso.
+          Se o Freelox te ajudar a fechar apenas <span className="text-primary">1 cliente a mais</span>, ele já se paga no primeiro uso. a fechar apenas <span className="text-primary">1 cliente a mais</span>, ele já se paga no primeiro uso.
         </motion.p>
       </SectionBlock>
 
@@ -189,8 +189,8 @@ const Pricing = () => {
         <Accordion type="single" collapsible className="space-y-2">
           <FaqItem value="1" q="Preciso cadastrar cartão?" a="Não. Você pode testar gratuitamente por 30 dias." />
           <FaqItem value="2" q="Posso cancelar quando quiser?" a="Sim. Sem burocracia." />
-          <FaqItem value="3" q="O plano vitalício é realmente para sempre?" a="Sim. Você paga uma vez e usa o Proponix sem mensalidade." />
-          <FaqItem value="4" q="Funciona no celular?" a="Sim. O Proponix foi pensado para uso rápido no celular." />
+          <FaqItem value="3" q="O plano vitalício é realmente para sempre?" a="Sim. Você paga uma vez e usa o Freelox sem mensalidade." />
+          <FaqItem value="4" q="Funciona no celular?" a="Sim. O Freelox foi pensado para uso rápido no celular." />
         </Accordion>
       </section>
 

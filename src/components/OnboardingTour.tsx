@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, ArrowLeft, Sparkles, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const TOUR_SEEN_KEY = 'proponix_tour_seen';
+const TOUR_SEEN_KEY = 'freelox_tour_seen';
 
 export function resetTour() {
   localStorage.removeItem(TOUR_SEEN_KEY);
@@ -113,8 +113,8 @@ export default function OnboardingTour() {
       setStep(0);
       setShow(true);
     };
-    window.addEventListener('proponix-restart-tour', handler);
-    return () => window.removeEventListener('proponix-restart-tour', handler);
+    window.addEventListener('freelox-restart-tour', handler);
+    return () => window.removeEventListener('freelox-restart-tour', handler);
   }, []);
 
   const updateRect = useCallback(() => {
@@ -202,7 +202,7 @@ export default function OnboardingTour() {
             </div>
             <div className="px-6 pb-2">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Você já pode começar a criar propostas com o Proponix.
+                Você já pode começar a criar propostas com o Freelox.
               </p>
             </div>
             <div className="px-6 pb-6 pt-4">
