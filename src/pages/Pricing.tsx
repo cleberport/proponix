@@ -21,7 +21,7 @@ const Pricing = () => {
   const go = () => navigate('/auth?tab=signup');
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="min-h-screen bg-white text-neutral-900">
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-neutral-100 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
