@@ -33,6 +33,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const { isAdmin } = useAdminCheck();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -41,6 +42,10 @@ export function AppSidebar() {
     toast.success('Você saiu da conta');
     navigate('/');
   };
+
+  const allItems = isAdmin
+    ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
+    : items;
 
   return (
     <Sidebar collapsible="icon">
@@ -58,7 +63,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {allItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink
