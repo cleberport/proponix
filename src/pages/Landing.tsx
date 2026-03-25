@@ -213,7 +213,7 @@ const Landing = () => {
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
               <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
             </div>
-            <img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" /> className="w-full block" loading="lazy" />" className="w-full block" loading="lazy" />
+            <img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" />
           </div>
         </motion.div>
       </section>
@@ -340,7 +340,7 @@ const Landing = () => {
           >
             <div className="w-48 md:w-56 rounded-3xl overflow-hidden border-2 border-white/10"
               style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" /> className="w-full" loading="lazy" />" className="w-full" loading="lazy" />
+              <img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" />
             </div>
           </motion.div>
         </div>
