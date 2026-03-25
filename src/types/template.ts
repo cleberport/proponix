@@ -70,7 +70,7 @@ export interface TemplateSettings {
 }
 
 export const TEMPLATE_COLORS = [
-  '#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6',
+  '#ff2e5f', '#EC4899', '#F59E0B', '#10B981', '#3B82F6',
   '#8B5CF6', '#EF4444', '#14B8A6', '#F97316', '#06B6D4',
 ];
 
