@@ -30,6 +30,7 @@ const Generate = lazy(() => import("./pages/Generate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Import = lazy(() => import("./pages/Import"));
 const Emails = lazy(() => import("./pages/Emails"));
+const Admin = lazy(() => import("./pages/Admin"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
