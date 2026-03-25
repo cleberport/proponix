@@ -45,7 +45,7 @@ export function AppSidebar() {
   };
 
   const allItems = isAdmin
-    ? [...items, { title: 'Emails', url: '/emails', icon: Mail }, { title: 'Admin', url: '/admin', icon: Shield }]
+    ? [...items, { title: 'E-mails', url: '/emails', icon: Mail }, { title: 'Admin', url: '/admin', icon: Shield }]
     : items;
 
   return (
