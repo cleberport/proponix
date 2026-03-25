@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -10,17 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Check, CreditCard, AlertTriangle, Sparkles, Crown, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
+import { Check, CreditCard, AlertTriangle, Sparkles, Crown, ExternalLink, RefreshCw, Loader2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 
@@ -28,10 +17,12 @@ import { useSearchParams } from 'react-router-dom';
 const PRICES = {
   monthly: 'price_1TEw2WDKwRkyWIIaFkZujCF6',
   yearly: 'price_1TEw3UDKwRkyWIIaNc6lhAjW',
+  lifetime: 'price_1TExQ6DKwRkyWIIa87r8TU6X',
 };
 
 interface SubscriptionState {
   subscribed: boolean;
+  lifetime: boolean;
   price_id: string | null;
   product_id: string | null;
   subscription_end: string | null;
@@ -49,6 +40,8 @@ const PLAN_FEATURES = [
   'Sem marca d\'água',
 ];
 
+type SelectedPlan = 'monthly' | 'yearly' | 'lifetime';
+
 const BillingPage = () => {
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -56,9 +49,8 @@ const BillingPage = () => {
   const [loading, setLoading] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [annual, setAnnual] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [cancelOpen, setCancelOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan>('monthly');
 
   const checkSubscription = useCallback(async () => {
     try {
@@ -86,7 +78,6 @@ const BillingPage = () => {
     load();
   }, [checkSubscription]);
 
-  // Handle success redirect
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
       toast.success('Assinatura realizada com sucesso!');
@@ -96,7 +87,6 @@ const BillingPage = () => {
     }
   }, [searchParams, checkSubscription]);
 
-  // Auto-refresh subscription every 60s
   useEffect(() => {
     const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);
@@ -112,8 +102,11 @@ const BillingPage = () => {
   const handleCheckout = async () => {
     setCheckingOut(true);
     try {
-      const priceId = annual ? PRICES.yearly : PRICES.monthly;
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const priceId = PRICES[selectedPlan];
+      const isLifetime = selectedPlan === 'lifetime';
+      const fnName = isLifetime ? 'create-payment' : 'create-checkout';
+
+      const { data, error } = await supabase.functions.invoke(fnName, {
         body: { priceId },
       });
       if (error) throw error;
@@ -149,6 +142,7 @@ const BillingPage = () => {
   }
 
   const isSubscribed = sub?.subscribed === true;
+  const isLifetime = sub?.lifetime === true;
   const profileStatus = profile?.status || 'trial';
   const effectiveStatus = isSubscribed ? 'active' : profileStatus;
   const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null;
@@ -156,9 +150,13 @@ const BillingPage = () => {
   const subEnd = sub?.subscription_end ? new Date(sub.subscription_end) : null;
   const isYearly = sub?.price_id === PRICES.yearly;
 
-  const price = annual ? 'R$197' : 'R$19';
-  const period = annual ? '/ano' : '/mês';
-  const savings = annual ? '2 meses grátis' : null;
+  const planLabel = isLifetime ? 'Vitalício' : isYearly ? 'Anual' : 'Mensal';
+
+  const planOptions: { key: SelectedPlan; label: string; price: string; period: string; badge?: string }[] = [
+    { key: 'monthly', label: 'Mensal', price: 'R$19', period: '/mês' },
+    { key: 'yearly', label: 'Anual', price: 'R$197', period: '/ano', badge: '2 meses grátis' },
+    { key: 'lifetime', label: 'Vitalício', price: 'R$397', period: 'único', badge: 'Oferta limitada' },
+  ];
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
@@ -172,7 +170,6 @@ const BillingPage = () => {
         </Button>
       </div>
 
-      {/* Expired banner */}
       {effectiveStatus === 'expired' && (
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
@@ -184,7 +181,7 @@ const BillingPage = () => {
       )}
 
       <div className="flex flex-col gap-5">
-        {/* Section 1 — Plan Status */}
+        {/* Plan Status */}
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -199,7 +196,7 @@ const BillingPage = () => {
                 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
             }`}>
-              {effectiveStatus === 'active' && <><Crown className="h-3 w-3" /> Plano Pro {isYearly ? '(Anual)' : '(Mensal)'}</>}
+              {effectiveStatus === 'active' && <><Crown className="h-3 w-3" /> Plano Pro ({planLabel})</>}
               {effectiveStatus === 'trial' && <><Sparkles className="h-3 w-3" /> Teste Gratuito</>}
               {effectiveStatus === 'expired' && <><AlertTriangle className="h-3 w-3" /> Expirado</>}
             </span>
@@ -208,41 +205,56 @@ const BillingPage = () => {
           <p className="text-sm text-muted-foreground">
             {effectiveStatus === 'trial' && daysLeft > 0 && `Seu teste termina em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}.`}
             {effectiveStatus === 'trial' && daysLeft === 0 && 'Seu teste termina hoje.'}
-            {effectiveStatus === 'active' && subEnd && `Seu plano está ativo. Próxima renovação em ${subEnd.toLocaleDateString('pt-BR')}.`}
-            {effectiveStatus === 'active' && !subEnd && 'Seu plano está ativo.'}
+            {effectiveStatus === 'active' && isLifetime && 'Seu plano vitalício está ativo. Acesso para sempre.'}
+            {effectiveStatus === 'active' && !isLifetime && subEnd && `Seu plano está ativo. Próxima renovação em ${subEnd.toLocaleDateString('pt-BR')}.`}
+            {effectiveStatus === 'active' && !isLifetime && !subEnd && 'Seu plano está ativo.'}
             {effectiveStatus === 'expired' && 'Seu acesso expirou.'}
           </p>
         </section>
 
-        {/* Section 2 — Available Plans (show when not subscribed) */}
+        {/* Available Plans */}
         {!isSubscribed && (
           <section className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-foreground">Plano Pro</h2>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium ${!annual ? 'text-foreground' : 'text-muted-foreground'}`}>Mensal</span>
-                <Switch checked={annual} onCheckedChange={setAnnual} />
-                <span className={`text-xs font-medium ${annual ? 'text-foreground' : 'text-muted-foreground'}`}>Anual</span>
-              </div>
+            <h2 className="text-sm font-semibold text-foreground mb-4">Escolha seu plano</h2>
+
+            <div className="grid gap-3 sm:grid-cols-3 mb-5">
+              {planOptions.map((plan) => (
+                <button
+                  key={plan.key}
+                  onClick={() => setSelectedPlan(plan.key)}
+                  className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+                    selectedPlan === plan.key
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  {plan.badge && (
+                    <span className="absolute -top-2.5 right-3 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary">
+                      {plan.badge}
+                    </span>
+                  )}
+                  <p className="text-xs font-medium text-muted-foreground mb-1">{plan.label}</p>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-xs text-muted-foreground">{plan.period}</span>
+                  </div>
+                </button>
+              ))}
             </div>
 
-            <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-3xl font-bold text-foreground">{price}</span>
-              <span className="text-sm text-muted-foreground">{period}</span>
-            </div>
-            {savings && (
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary mb-4">
-                {savings}
-              </span>
-            )}
-
-            <ul className="flex flex-col gap-2.5 mt-4 mb-5">
+            <ul className="flex flex-col gap-2.5 mb-5">
               {PLAN_FEATURES.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm text-foreground">
                   <Check className="h-4 w-4 text-primary shrink-0" />
                   {f}
                 </li>
               ))}
+              {selectedPlan === 'lifetime' && (
+                <li className="flex items-center gap-2 text-sm text-foreground">
+                  <Star className="h-4 w-4 text-primary shrink-0" />
+                  Acesso para sempre — sem mensalidade
+                </li>
+              )}
             </ul>
 
             <Button className="w-full h-11" onClick={() => setUpgradeOpen(true)}>
@@ -251,47 +263,45 @@ const BillingPage = () => {
           </section>
         )}
 
-        {/* Section 3 — Account Actions (subscribed) */}
-        {isSubscribed && (
+        {/* Manage Subscription (subscribed, non-lifetime) */}
+        {isSubscribed && !isLifetime && (
           <section className="rounded-xl border border-border bg-card p-5">
             <h2 className="text-sm font-semibold text-foreground mb-3">Gerenciar Assinatura</h2>
             <p className="text-sm text-muted-foreground mb-4">
               Altere seu plano, atualize o método de pagamento ou cancele sua assinatura pelo portal do Stripe.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" className="h-10" onClick={handleManageSubscription}>
-                <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                Gerenciar no Stripe
-              </Button>
-            </div>
+            <Button variant="outline" className="h-10" onClick={handleManageSubscription}>
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+              Gerenciar no Stripe
+            </Button>
           </section>
         )}
       </div>
 
-      {/* Upgrade Modal */}
+      {/* Checkout Modal */}
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assinar Plano Pro</DialogTitle>
-            <DialogDescription>Escolha o período da sua assinatura</DialogDescription>
+            <DialogTitle>Confirmar Plano</DialogTitle>
+            <DialogDescription>Revise o plano selecionado antes de continuar</DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <div className="flex items-center justify-center gap-3 mb-5">
-              <span className={`text-sm font-medium ${!annual ? 'text-foreground' : 'text-muted-foreground'}`}>Mensal</span>
-              <Switch checked={annual} onCheckedChange={setAnnual} />
-              <span className={`text-sm font-medium ${annual ? 'text-foreground' : 'text-muted-foreground'}`}>Anual</span>
-            </div>
-
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
-              <p className="text-sm text-muted-foreground mb-1">Plano Pro</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Plano Pro — {planOptions.find(p => p.key === selectedPlan)?.label}
+              </p>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-3xl font-bold text-foreground">{price}</span>
-                <span className="text-sm text-muted-foreground">{period}</span>
+                <span className="text-3xl font-bold text-foreground">
+                  {planOptions.find(p => p.key === selectedPlan)?.price}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {planOptions.find(p => p.key === selectedPlan)?.period}
+                </span>
               </div>
-              {savings && (
+              {planOptions.find(p => p.key === selectedPlan)?.badge && (
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary mt-2">
-                  {savings}
+                  {planOptions.find(p => p.key === selectedPlan)?.badge}
                 </span>
               )}
             </div>

@@ -7,6 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const LIFETIME_PRODUCT_ID = "prod_UDOCDQ5eI7Wlj6";
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
@@ -44,7 +46,7 @@ serve(async (req) => {
 
     if (customers.data.length === 0) {
       logStep("No customer found");
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ subscribed: false, lifetime: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -53,6 +55,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -74,8 +77,34 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
+    // Check for lifetime one-time payment
+    let hasLifetime = false;
+    try {
+      const sessions = await stripe.checkout.sessions.list({
+        customer: customerId,
+        status: "complete",
+        limit: 20,
+      });
+      for (const session of sessions.data) {
+        if (session.mode === "payment") {
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+          for (const item of lineItems.data) {
+            if (item.price?.product === LIFETIME_PRODUCT_ID) {
+              hasLifetime = true;
+              logStep("Lifetime purchase found", { sessionId: session.id });
+              break;
+            }
+          }
+        }
+        if (hasLifetime) break;
+      }
+    } catch (e) {
+      logStep("Error checking lifetime", { error: String(e) });
+    }
+
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
+      subscribed: hasActiveSub || hasLifetime,
+      lifetime: hasLifetime,
       price_id: priceId,
       product_id: productId,
       subscription_end: subscriptionEnd,
