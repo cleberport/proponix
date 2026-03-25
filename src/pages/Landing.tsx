@@ -114,7 +114,7 @@ const Landing = () => {
           </motion.div>
 
           <motion.h1
-            className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.05] tracking-[-0.03em] text-neutral-900"
+            className="text-[2rem] sm:text-[2.75rem] md:text-[3.5rem] font-bold leading-[1.1] tracking-[-0.03em] text-neutral-900"
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
           >
             Seu orçamento já está pronto.
