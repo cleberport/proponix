@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowRight, Check, FileText, Palette, Clock, Zap, Share2,
   Smartphone, Star, Shield, Award, Users, ChevronRight,
+  CheckCircle2,
 } from 'lucide-react';
 import '@fontsource/space-grotesk/300.css';
 import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
 import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
-import mockupEditor from '@/assets/mockup-editor.png';
-import mockupProposal from '@/assets/mockup-proposal.png';
-import mockupMobile from '@/assets/mockup-mobile.png';
+
+const font = "'Space Grotesk', sans-serif";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -23,17 +23,15 @@ const fadeUp = {
   }),
 };
 
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
+
 const Landing = () => {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
-
-  const trustBadges = [
-    { icon: Shield, stat: '100%', label: 'Seguro', sub: 'Dados criptografados e protegidos', color: 'from-emerald-500 to-teal-600' },
-    { icon: Zap, stat: '< 3s', label: 'PDF Gerado', sub: 'Propostas prontas em segundos', color: 'from-amber-500 to-orange-600' },
-    { icon: Star, stat: '4.9', label: 'Avaliação', sub: 'Nota dos usuários ativos', color: 'from-pink-500 to-rose-600', stars: true },
-    { icon: Users, stat: '1.000+', label: 'Profissionais', sub: 'Já usam o Freelox', color: 'from-blue-500 to-indigo-600' },
-    { icon: Award, stat: 'Top 1', label: 'em propostas', sub: 'Ferramenta nº1 para freelancers', color: 'from-purple-500 to-violet-600' },
-  ];
 
   const features = [
     { icon: Palette, title: 'Editor Visual Drag & Drop', desc: 'Arraste elementos, ajuste cores, fontes e layout com total liberdade criativa.' },
@@ -45,9 +43,9 @@ const Landing = () => {
   ];
 
   const steps = [
-    { num: '01', title: 'Escolha um modelo', desc: 'Comece com templates profissionais prontos ou crie o seu do zero.', image: mockupEditor },
-    { num: '02', title: 'Preencha os dados', desc: 'Adicione cliente, valores e detalhes em poucos campos simples.', image: mockupMobile },
-    { num: '03', title: 'Gere e envie', desc: 'PDF profissional pronto em segundos. Compartilhe por qualquer app.', image: mockupProposal },
+    { num: '01', title: 'Crie seu template', desc: 'Monte seu modelo com o editor visual ou importe um PDF existente.' },
+    { num: '02', title: 'Preencha pelo celular', desc: 'Adicione cliente, valores e detalhes em poucos campos simples.' },
+    { num: '03', title: 'Envie pelo WhatsApp', desc: 'PDF profissional pronto em segundos. Compartilhe por qualquer app.' },
   ];
 
   const plans = [
@@ -74,64 +72,66 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: "'Space Grotesk', sans-serif", background: '#1e1535' }}>
+    <div className="min-h-screen bg-white" style={{ fontFamily: font }}>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50" style={{ background: 'rgba(30, 21, 53, 0.8)', backdropFilter: 'blur(20px)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <span className="text-xl font-semibold tracking-[0.06em] text-white uppercase" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Freelox<span style={{ color: '#f43f5e' }}>.</span>
-          </span>
-          <div className="hidden md:flex items-center gap-8 text-[13px] text-white/60 font-medium">
-            <a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a>
-            <a href="#features" className="hover:text-white transition-colors">Recursos</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Preços</a>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-neutral-900">Freelox</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm text-neutral-500 font-medium">
+            <a href="#features" className="hover:text-neutral-900 transition-colors">Funcionalidades</a>
+            <a href="#como-funciona" className="hover:text-neutral-900 transition-colors">Como Funciona</a>
+            <a href="#pricing" className="hover:text-neutral-900 transition-colors">Preços</a>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-white/60 hover:text-white hover:bg-white/10 text-[13px]">
+              className="text-neutral-600 hover:text-neutral-900 text-sm font-medium">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
-              className="bg-white text-neutral-900 hover:bg-white/90 rounded-full px-5 text-[13px] font-semibold">
-              Criar conta
+              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-5 text-sm font-semibold">
+              Começar Grátis
             </Button>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="relative pt-32 pb-8 md:pt-40 md:pb-12 overflow-hidden">
-        {/* Gradient glow behind */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(168,85,247,0.15) 0%, transparent 70%)' }} />
-
+      <section className="relative pt-32 pb-16 md:pt-44 md:pb-24">
         <div className="relative mx-auto max-w-4xl px-5 text-center">
-          <motion.p
-            className="text-sm md:text-base font-medium mb-6"
-            style={{ color: 'rgba(255,255,255,0.5)' }}
+          {/* Badge */}
+          <motion.div
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-600 shadow-sm mb-8"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           >
-            Comece a sua avaliação de 30 dias do Freelox e veja como criar propostas profissionais. e veja como criar propostas profissionais.
-          </motion.p>
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            Novo: Importação Inteligente de PDF com IA
+          </motion.div>
 
           <motion.h1
-            className="text-[2.2rem] sm:text-[3rem] md:text-[4.2rem] lg:text-[5rem] font-semibold leading-[1.05] tracking-[-0.02em] text-white"
+            className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.05] tracking-[-0.03em] text-neutral-900"
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
           >
-            Organize tudo com o<br />
-            <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
-              novo Freelox
+            Crie seu Template,{' '}
+            <br className="hidden sm:block" />
+            Envie pelo{' '}
+            <span className="inline-flex items-baseline gap-2">
+              <WhatsAppIcon className="h-[0.75em] w-[0.75em] text-[#25D366] translate-y-[0.05em]" />
+              <span>WhatsApp</span>
             </span>
           </motion.h1>
 
           <motion.p
-            className="mt-6 text-base md:text-lg leading-relaxed max-w-2xl mx-auto"
-            style={{ color: 'rgba(255,255,255,0.55)' }}
+            className="mt-6 text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-500"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
           >
-            O Freelox cria propostas profissionais, gera PDFs instantâneos e organiza todo o seu fluxo de orçamentos. profissionais, gera PDFs instantâneos e organiza todo o seu fluxo de orçamentos. 
-            Obtenha propostas poderosas e encante seus clientes.
+            Crie seu template dinâmico, preencha pelo celular e envie seu PDF
+            pelo WhatsApp em minutos. Economize horas de trabalho e impressione seus clientes.
           </motion.p>
 
           <motion.div
@@ -141,220 +141,137 @@ const Landing = () => {
             <Button
               size="lg"
               onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 px-10 text-base font-semibold rounded-full group shadow-2xl"
-              style={{ background: '#f43f5e', color: '#fff' }}
+              className="h-14 px-10 text-base font-semibold rounded-full group bg-neutral-900 text-white hover:bg-neutral-800 shadow-xl"
             >
-              Começar Grátis
+              Criar Minha Primeira Proposta
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
               size="lg"
               variant="outline"
-              onClick={() => navigate('/auth')}
-              className="h-14 px-10 text-base font-semibold rounded-full border-white/20 text-white hover:bg-white/10"
+              onClick={() => navigate('#pricing')}
+              className="h-14 px-10 text-base font-semibold rounded-full border-neutral-300 text-neutral-700 hover:bg-neutral-50"
             >
-              Já tenho conta
+              Ver Planos
             </Button>
           </motion.div>
 
-          <motion.p
-            className="mt-4 text-xs"
-            style={{ color: 'rgba(255,255,255,0.35)' }}
+          <motion.div
+            className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-neutral-400"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
           >
-            30 dias de teste grátis • Sem cartão de crédito
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Trust badges — colorful cards row */}
-      <section className="py-12 md:py-16">
-        <div className="mx-auto max-w-6xl px-5">
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4"
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-          >
-            {trustBadges.map((badge, i) => (
-              <motion.div
-                key={badge.label}
-                className={`relative rounded-2xl p-5 md:p-6 text-center overflow-hidden bg-gradient-to-br ${badge.color}`}
-                variants={fadeUp} custom={i}
-                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
-              >
-                <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-                <div className="relative">
-                  <badge.icon className="h-6 w-6 text-white/70 mx-auto mb-2" />
-                  <p className="text-2xl md:text-3xl font-bold text-white">{badge.stat}</p>
-                  <p className="text-xs font-semibold text-white/90 uppercase tracking-wider mt-0.5">{badge.label}</p>
-                  {badge.stars && (
-                    <div className="flex items-center justify-center gap-0.5 mt-1">
-                      {[1,2,3,4,5].map(s => <Star key={s} className="h-3 w-3 text-yellow-300 fill-yellow-300" />)}
-                    </div>
-                  )}
-                  <p className="text-[10px] text-white/60 mt-2 leading-tight">{badge.sub}</p>
-                </div>
-              </motion.div>
-            ))}
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Sem cartão de crédito</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Teste grátis por 30 dias</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Templates profissionais</span>
           </motion.div>
         </div>
       </section>
 
-      {/* Hero mockup screenshot */}
-      <section className="pb-16 md:pb-24">
-        <motion.div
-          className="mx-auto max-w-4xl px-5"
-          initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.9 }}
-        >
-          <div className="relative rounded-2xl overflow-hidden" style={{ boxShadow: '0 20px 80px rgba(168,85,247,0.15), 0 8px 32px rgba(0,0,0,0.4)' }}>
-            {/* macOS-style dots */}
-            <div className="flex items-center gap-1.5 px-4 py-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-              <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-            </div>
-            <img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" />
-          </div>
-        </motion.div>
-      </section>
-
-      {/* How it works */}
-      <section id="como-funciona" className="py-20 md:py-28" style={{ background: 'rgba(255,255,255,0.02)' }}>
-        <div className="mx-auto max-w-6xl px-5">
-          <motion.div className="mb-16 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-3" style={{ color: '#f43f5e' }}>Como funciona</p>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white">
-              Três passos simples.
-            </h2>
-          </motion.div>
-
-          <div className="space-y-20 md:space-y-28">
-            {steps.map((s, i) => (
-              <motion.div
-                key={s.num}
-                className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-10 md:gap-16`}
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
-              >
-                <div className="flex-1 text-center md:text-left">
-                  <span className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                    {s.num}
-                  </span>
-                  <h3 className="mt-4 text-xl md:text-2xl font-bold text-white">{s.title}</h3>
-                  <p className="mt-3 leading-relaxed max-w-sm mx-auto md:mx-0" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                    {s.desc}
-                  </p>
-                </div>
-                <div className="flex-1 relative">
-                  <div className="relative rounded-xl overflow-hidden" style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
-                    <img src={s.image} alt={s.title} className="w-full block" loading="lazy" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features grid */}
-      <section id="features" className="py-20 md:py-28">
+      {/* Features */}
+      <section id="features" className="py-20 md:py-28 bg-neutral-50">
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-3" style={{ color: '#f43f5e' }}>Recursos</p>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white">
-              Tudo que você precisa.
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-neutral-900">
+              Tudo o que você precisa
             </h2>
+            <p className="mt-4 text-neutral-500 max-w-lg mx-auto">
+              Ferramentas poderosas desenhadas para freelancers e agências que buscam profissionalismo e agilidade.
+            </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                className="group rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                }}
+                className="group rounded-2xl p-7 bg-white border border-neutral-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl"
-                  style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.15), rgba(168,85,247,0.15))' }}>
-                  <f.icon className="h-5 w-5" style={{ color: '#f43f5e' }} />
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100">
+                  <f.icon className="h-5 w-5 text-neutral-700" />
                 </div>
-                <h3 className="text-base font-bold text-white">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{f.desc}</p>
+                <h3 className="text-base font-bold text-neutral-900">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-500">{f.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Big CTA */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(244,63,94,0.08), transparent)' }} />
-        <div className="relative mx-auto max-w-6xl px-5 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 text-center md:text-left">
-            <motion.h2
-              className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.08] text-white"
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ duration: 0.6 }}
-            >
-              Sua próxima proposta<br />começa aqui.
-            </motion.h2>
-            <motion.p
-              className="mt-5 text-lg max-w-md"
-              style={{ color: 'rgba(255,255,255,0.5)' }}
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-              viewport={{ once: true }} transition={{ delay: 0.2 }}
-            >
-              Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
-            </motion.p>
-            <motion.div className="mt-10 flex flex-col sm:flex-row gap-3 items-center md:items-start"
-              initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: 0.3 }}
-            >
-              <Button
-                size="lg"
-                onClick={() => navigate('/auth?tab=signup')}
-                className="h-14 px-10 text-base font-semibold rounded-full group shadow-2xl"
-                style={{ background: '#f43f5e', color: '#fff' }}
+      {/* How it works */}
+      <section id="como-funciona" className="py-20 md:py-28">
+        <div className="mx-auto max-w-5xl px-5">
+          <motion.div className="mb-16 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-neutral-900">
+              Como funciona
+            </h2>
+            <p className="mt-4 text-neutral-500">Três passos simples para criar propostas profissionais.</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {steps.map((s, i) => (
+              <motion.div
+                key={s.num}
+                className="text-center"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
-                Criar conta grátis
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate('/auth')}
-                className="h-14 px-10 text-base font-semibold rounded-full border-white/20 text-white hover:bg-white/10"
-              >
-                Já tenho conta
-              </Button>
-            </motion.div>
+                <span className="text-5xl font-bold text-neutral-200">{s.num}</span>
+                <h3 className="mt-4 text-lg font-bold text-neutral-900">{s.title}</h3>
+                <p className="mt-2 text-sm text-neutral-500 leading-relaxed">{s.desc}</p>
+              </motion.div>
+            ))}
           </div>
-          <motion.div
-            className="flex-1 flex justify-center"
-            initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 md:py-28 bg-neutral-50">
+        <div className="relative mx-auto max-w-3xl px-5 text-center">
+          <motion.h2
+            className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.08] text-neutral-900"
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
           >
-            <div className="w-48 md:w-56 rounded-3xl overflow-hidden border-2 border-white/10"
-              style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" />
-            </div>
+            Sua próxima proposta<br />começa aqui.
+          </motion.h2>
+          <motion.p
+            className="mt-5 text-lg text-neutral-500 max-w-md mx-auto"
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ delay: 0.2 }}
+          >
+            Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
+          </motion.p>
+          <motion.div className="mt-10 flex flex-col sm:flex-row gap-3 items-center justify-center"
+            initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: 0.3 }}
+          >
+            <Button
+              size="lg"
+              onClick={() => navigate('/auth?tab=signup')}
+              className="h-14 px-10 text-base font-semibold rounded-full group bg-neutral-900 text-white hover:bg-neutral-800 shadow-xl"
+            >
+              Criar conta grátis
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate('/auth')}
+              className="h-14 px-10 text-base font-semibold rounded-full border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+            >
+              Já tenho conta
+            </Button>
           </motion.div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 md:py-28" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      <section id="pricing" className="py-20 md:py-28">
         <div className="mx-auto max-w-6xl px-5">
           <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] mb-3" style={{ color: '#f43f5e' }}>Preços</p>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white">
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-neutral-900">
               Simples e transparente.
             </h2>
-            <p className="mt-4 max-w-lg mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="mt-4 max-w-lg mx-auto text-neutral-500">
               Comece grátis. Evolua quando fizer sentido.
             </p>
           </motion.div>
@@ -363,17 +280,16 @@ const Landing = () => {
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                className="relative flex flex-col rounded-2xl p-7 transition-all"
-                style={{
-                  background: plan.highlight ? 'rgba(244,63,94,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: plan.highlight ? '2px solid rgba(244,63,94,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: plan.highlight ? '0 8px 40px rgba(244,63,94,0.1)' : 'none',
-                }}
+                className={`relative flex flex-col rounded-2xl p-7 transition-all ${
+                  plan.highlight
+                    ? 'bg-neutral-900 text-white border-2 border-neutral-900 shadow-2xl'
+                    : 'bg-white border border-neutral-200 shadow-sm'
+                }`}
                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
               >
                 {plan.highlight && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-bold text-white uppercase tracking-wider"
-                    style={{ background: 'linear-gradient(135deg, #f43f5e, #a855f7)' }}>
+                    style={{ background: '#f43f5e' }}>
                     Mais escolhido
                   </span>
                 )}
@@ -392,17 +308,17 @@ const Landing = () => {
                     </span>
                   </div>
                 )}
-                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>{plan.name}</h3>
+                <h3 className={`text-xs font-semibold uppercase tracking-wider ${plan.highlight ? 'text-white/50' : 'text-neutral-400'}`}>{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>{plan.period}</span>
+                  <span className={`text-3xl font-bold ${plan.highlight ? 'text-white' : 'text-neutral-900'}`}>{plan.price}</span>
+                  <span className={`text-sm ${plan.highlight ? 'text-white/50' : 'text-neutral-400'}`}>{plan.period}</span>
                 </div>
                 {(plan as any).sub && (
-                  <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{(plan as any).sub}</p>
+                  <p className={`mt-1 text-xs ${plan.highlight ? 'text-white/40' : 'text-neutral-400'}`}>{(plan as any).sub}</p>
                 )}
                 <ul className="mt-7 space-y-3 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <li key={f} className={`flex items-center gap-2.5 text-sm ${plan.highlight ? 'text-white/70' : 'text-neutral-600'}`}>
                       <Check className="h-4 w-4 shrink-0" style={{ color: '#f43f5e' }} />
                       {f}
                     </li>
@@ -414,14 +330,9 @@ const Landing = () => {
                 <Button
                   className={`mt-7 w-full rounded-full h-11 text-sm font-semibold ${
                     plan.highlight
-                      ? 'text-white hover:opacity-90'
-                      : 'text-white hover:bg-white/10'
+                      ? 'bg-white text-neutral-900 hover:bg-neutral-100'
+                      : 'bg-neutral-900 text-white hover:bg-neutral-800'
                   }`}
-                  style={{
-                    background: plan.highlight
-                      ? 'linear-gradient(135deg, #f43f5e, #a855f7)'
-                      : 'rgba(255,255,255,0.08)',
-                  }}
                   onClick={() => navigate('/auth?tab=signup')}
                 >
                   {plan.cta}
@@ -432,44 +343,21 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 md:py-20 text-center">
-        <div className="mx-auto max-w-2xl px-5">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Pronto para criar propostas incríveis?
-            </h2>
-            <p className="mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Junte-se a milhares de profissionais que já usam o Freelox.
-            </p>
-            <Button
-              size="lg"
-              onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 px-10 text-base font-semibold rounded-full group"
-              style={{ background: '#f43f5e', color: '#fff' }}
-            >
-              Começar agora
-              <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="py-10" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <footer className="py-10 border-t border-neutral-100">
         <div className="mx-auto max-w-6xl px-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold tracking-tight text-white">
-            Freelox<span style={{ color: '#f43f5e' }}>.</span>
-          </span>
-          <div className="flex items-center gap-6 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            <button onClick={() => navigate('/auth')} className="hover:text-white transition-colors">Entrar</button>
-            <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-white transition-colors">Criar conta</button>
-            <button onClick={() => navigate('/pricing')} className="hover:text-white transition-colors">Preços</button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-neutral-900 flex items-center justify-center">
+              <Zap className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-sm font-bold tracking-tight text-neutral-900">Freelox</span>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}><p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>© {new Date().getFullYear()} Freelox</p></p>
+          <div className="flex items-center gap-6 text-xs text-neutral-400">
+            <button onClick={() => navigate('/auth')} className="hover:text-neutral-900 transition-colors">Entrar</button>
+            <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-neutral-900 transition-colors">Criar conta</button>
+            <button onClick={() => navigate('/pricing')} className="hover:text-neutral-900 transition-colors">Preços</button>
+          </div>
+          <p className="text-xs text-neutral-400">© {new Date().getFullYear()} Freelox</p>
         </div>
       </footer>
     </div>
