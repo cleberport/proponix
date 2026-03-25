@@ -130,7 +130,7 @@ function makeElement(el: AIElement, x: number, y: number, w: number, h: number):
     variable: el.variable || undefined,
     fontSize: el.fontSize || 12,
     fontWeight: (el.fontWeight as 'normal' | 'bold') || 'normal',
-    fontFamily: 'Inter',
+    fontFamily: 'Space Grotesk',
     color: el.color || '#333333',
     alignment: (el.alignment as 'left' | 'center' | 'right') || 'left',
     fieldCategory: (el.fieldCategory as 'default' | 'input' | 'calculated') || 'default',

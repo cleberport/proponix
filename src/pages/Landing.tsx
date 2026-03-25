@@ -13,8 +13,6 @@ import '@fontsource/space-grotesk/500.css';
 import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
 
-const font = "'Space Grotesk', sans-serif";
-
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
@@ -72,7 +70,7 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: font }}>
+    <div className="min-h-screen bg-white">
 
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
