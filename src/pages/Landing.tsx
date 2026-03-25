@@ -31,7 +31,7 @@ const Landing = () => {
     { icon: Shield, stat: '100%', label: 'Seguro', sub: 'Dados criptografados e protegidos', color: 'from-emerald-500 to-teal-600' },
     { icon: Zap, stat: '< 3s', label: 'PDF Gerado', sub: 'Propostas prontas em segundos', color: 'from-amber-500 to-orange-600' },
     { icon: Star, stat: '4.9', label: 'Avaliação', sub: 'Nota dos usuários ativos', color: 'from-pink-500 to-rose-600', stars: true },
-    { icon: Users, stat: '1.000+', label: 'Profissionais', sub: 'Já usam o Proponix', color: 'from-blue-500 to-indigo-600' },
+    { icon: Users, stat: '1.000+', label: 'Profissionais', sub: '{ icon: Users, stat: '1.000+', label: 'Profissionais', sub: 'Já usam o Freelox', color: 'from-blue-500 to-indigo-600' },', color: 'from-blue-500 to-indigo-600' },
     { icon: Award, stat: 'Top 1', label: 'em propostas', sub: 'Ferramenta nº1 para freelancers', color: 'from-purple-500 to-violet-600' },
   ];
 
@@ -80,7 +80,7 @@ const Landing = () => {
       <nav className="fixed top-0 left-0 right-0 z-50" style={{ background: 'rgba(30, 21, 53, 0.8)', backdropFilter: 'blur(20px)' }}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <span className="text-xl font-semibold tracking-[0.06em] text-white uppercase" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Proponix<span style={{ color: '#f43f5e' }}>.</span>
+            Freelox<span style={{ color: '#f43f5e' }}>.</span>
           </span>
           <div className="hidden md:flex items-center gap-8 text-[13px] text-white/60 font-medium">
             <a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a>
@@ -112,7 +112,7 @@ const Landing = () => {
             style={{ color: 'rgba(255,255,255,0.5)' }}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           >
-            Comece a sua avaliação de 30 dias do Proponix e veja como criar propostas profissionais.
+            Comece a sua avaliação de 30 dias do Freelox e veja como criar propostas profissionais. e veja como criar propostas profissionais.
           </motion.p>
 
           <motion.h1
@@ -121,7 +121,7 @@ const Landing = () => {
           >
             Organize tudo com o<br />
             <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
-              novo Proponix
+              novo Freelox
             </span>
           </motion.h1>
 
@@ -130,7 +130,7 @@ const Landing = () => {
             style={{ color: 'rgba(255,255,255,0.55)' }}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
           >
-            O Proponix cria propostas profissionais, gera PDFs instantâneos e organiza todo o seu fluxo de orçamentos. 
+            O Freelox cria propostas profissionais, gera PDFs instantâneos e organiza todo o seu fluxo de orçamentos. profissionais, gera PDFs instantâneos e organiza todo o seu fluxo de orçamentos. 
             Obtenha propostas poderosas e encante seus clientes.
           </motion.p>
 
@@ -213,7 +213,7 @@ const Landing = () => {
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
               <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
             </div>
-            <img src={mockupEditor} alt="Editor visual do Proponix" className="w-full block" loading="lazy" />
+            <img src={mockupEditor} alt="<img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" />" className="w-full block" loading="lazy" />
           </div>
         </motion.div>
       </section>
@@ -340,7 +340,7 @@ const Landing = () => {
           >
             <div className="w-48 md:w-56 rounded-3xl overflow-hidden border-2 border-white/10"
               style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <img src={mockupMobile} alt="Proponix no celular" className="w-full" loading="lazy" />
+              <img src={mockupMobile} alt="<img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" />" className="w-full" loading="lazy" />
             </div>
           </motion.div>
         </div>
@@ -443,7 +443,7 @@ const Landing = () => {
               Pronto para criar propostas incríveis?
             </h2>
             <p className="mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Junte-se a milhares de profissionais que já usam o Proponix.
+              Junte-se a milhares de profissionais que já usam o Freelox.
             </p>
             <Button
               size="lg"
@@ -462,14 +462,14 @@ const Landing = () => {
       <footer className="py-10" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="mx-auto max-w-6xl px-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-sm font-semibold tracking-tight text-white">
-            Proponix<span style={{ color: '#f43f5e' }}>.</span>
+            Freelox<span style={{ color: '#f43f5e' }}>.</span>
           </span>
           <div className="flex items-center gap-6 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             <button onClick={() => navigate('/auth')} className="hover:text-white transition-colors">Entrar</button>
             <button onClick={() => navigate('/auth?tab=signup')} className="hover:text-white transition-colors">Criar conta</button>
             <button onClick={() => navigate('/pricing')} className="hover:text-white transition-colors">Preços</button>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>© {new Date().getFullYear()} Proponix</p>
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}><p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>© {new Date().getFullYear()} Freelox</p></p>
         </div>
       </footer>
     </div>

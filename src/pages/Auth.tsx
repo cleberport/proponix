@@ -78,7 +78,7 @@ const Auth = () => {
             </div>
             <h1 className="text-2xl font-bold">{isLogin ? 'Entrar' : 'Criar conta'}</h1>
             <p className="mt-1 text-sm text-[hsl(var(--landing-muted))]">
-              {isLogin ? '{isLogin ? 'Acesse sua conta Freelox' : 'Comece a criar propostas profissionais'}' : 'Comece a criar propostas profissionais'}
+              {isLogin ? 'Acesse sua conta Freelox' : 'Comece a criar propostas profissionais'} ? 'Acesse sua conta Freelox' : 'Comece a criar propostas profissionais'}' : 'Comece a criar propostas profissionais'}
             </p>
           </div>
 
