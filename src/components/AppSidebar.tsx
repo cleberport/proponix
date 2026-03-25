@@ -22,7 +22,7 @@ const items = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Importar', url: '/import', icon: FileUp },
   { title: 'Histórico', url: '/documents', icon: Clock },
-  { title: 'Emails', url: '/emails', icon: Mail },
+  
   { title: 'Faturamento', url: '/billing', icon: CreditCard },
   { title: 'Perfil', url: '/profile', icon: User },
   { title: 'Configurações', url: '/settings', icon: Settings },
@@ -45,7 +45,7 @@ export function AppSidebar() {
   };
 
   const allItems = isAdmin
-    ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
+    ? [...items, { title: 'Emails', url: '/emails', icon: Mail }, { title: 'Admin', url: '/admin', icon: Shield }]
     : items;
 
   return (
