@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { CanvasElement } from '@/types/template';
+import { resolveTextColor, parseColor } from '@/lib/colorContrast';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
@@ -207,7 +208,8 @@ function renderPageElements(
     const x = scaleX(el.x);
     const y = scaleY(el.y);
     const w = scaleW(el.width);
-    const color = el.color ? hexToRgb(el.color) : [15, 23, 42] as [number, number, number];
+    const effectiveColor = resolveTextColor(el.color, bgColor);
+    const color = hexToRgb(effectiveColor);
     const fontSize = (el.fontSize || 14) * (PDF_W / CANVAS_W);
     const fontStyle = getFontStyle(el.fontWeight || '400');
 
