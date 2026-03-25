@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useState, useRef, useEffect } from 'react';
 import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
+import { resolveTextColor } from '@/lib/colorContrast';
 
 interface Props {
   elements: CanvasElement[];
@@ -384,7 +385,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         fontWeight: el.fontWeight,
         fontFamily: el.fontFamily,
         textDecoration: el.textDecoration || 'none',
-        color: el.color,
+        color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : 'grab',
         userSelect: 'none',
@@ -437,7 +438,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {showContent && <span>{resolveContent(el)}</span>}
-              <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono'}`} style={readOnly ? {} : { color: el.color || 'hsl(var(--primary))' }}>
+              <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono'}`} style={readOnly ? {} : { color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))' }}>
                 {varValue}
               </span>
               {resizeHandle}
@@ -598,7 +599,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                           style={{
                             borderBottom: '1px solid hsl(240 5% 82%)',
                             borderRight: ci < row.cells.length - 1 ? '1px solid hsl(240 5% 82%)' : 'none',
-                            color: el.color || '#0F172A',
+                            color: resolveTextColor(el.color, backgroundColor),
                           }}
                         >
                           {variableValues ? resolveContent({ ...el, content: cell }) : (cell || (ri > 0 ? '\u00A0' : ''))}
