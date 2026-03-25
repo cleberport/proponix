@@ -348,6 +348,37 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
+      {/* Número de Colunas */}
+      {element.type === 'table' && element.rows && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Número de Colunas</Label>
+          <Select
+            value={String(element.rows[0]?.cells.length || 3)}
+            onValueChange={(v) => {
+              const newCols = +v;
+              const oldCols = element.rows![0]?.cells.length || 3;
+              if (newCols === oldCols) return;
+              const newRows = element.rows!.map((row) => {
+                if (newCols > oldCols) {
+                  return { cells: [...row.cells, ...Array(newCols - oldCols).fill('')] };
+                } else {
+                  return { cells: row.cells.slice(0, newCols) };
+                }
+              });
+              const newWidths = Array.from({ length: newCols }, () => Math.round(100 / newCols));
+              onUpdate({ rows: newRows, columnWidths: newWidths });
+            }}
+          >
+            <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[2, 3, 4, 5].map((n) => (
+                <SelectItem key={n} value={String(n)}>{n} colunas</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Editor de Tabela */}
       {element.type === 'table' && element.rows && (
         <div>

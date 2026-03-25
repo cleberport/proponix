@@ -6,11 +6,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Monitor, Smartphone, Send, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAdminCheck } from '@/hooks/useAdminCheck';
+import { Navigate } from 'react-router-dom';
 
 const EmailsPage = () => {
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [selectedId, setSelectedId] = useState(emailTemplates[0].id);
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [sending, setSending] = useState(false);
+
+  if (adminLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const current = emailTemplates.find((t) => t.id === selectedId)!;
 
