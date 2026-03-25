@@ -31,7 +31,7 @@ const Landing = () => {
     { icon: Shield, stat: '100%', label: 'Seguro', sub: 'Dados criptografados e protegidos', color: 'from-emerald-500 to-teal-600' },
     { icon: Zap, stat: '< 3s', label: 'PDF Gerado', sub: 'Propostas prontas em segundos', color: 'from-amber-500 to-orange-600' },
     { icon: Star, stat: '4.9', label: 'Avaliação', sub: 'Nota dos usuários ativos', color: 'from-pink-500 to-rose-600', stars: true },
-    { icon: Users, stat: '1.000+', label: 'Profissionais', sub: '{ icon: Users, stat: '1.000+', label: 'Profissionais', sub: 'Já usam o Freelox', color: 'from-blue-500 to-indigo-600' },', color: 'from-blue-500 to-indigo-600' },
+    { icon: Users, stat: '1.000+', label: 'Profissionais', sub: 'Já usam o Freelox', color: 'from-blue-500 to-indigo-600' },
     { icon: Award, stat: 'Top 1', label: 'em propostas', sub: 'Ferramenta nº1 para freelancers', color: 'from-purple-500 to-violet-600' },
   ];
 
@@ -213,7 +213,7 @@ const Landing = () => {
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
               <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
             </div>
-            <img src={mockupEditor} alt="<img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" />" className="w-full block" loading="lazy" />
+            <img src={mockupEditor} alt="Editor visual do Freelox" className="w-full block" loading="lazy" /> className="w-full block" loading="lazy" />" className="w-full block" loading="lazy" />
           </div>
         </motion.div>
       </section>
@@ -340,7 +340,7 @@ const Landing = () => {
           >
             <div className="w-48 md:w-56 rounded-3xl overflow-hidden border-2 border-white/10"
               style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <img src={mockupMobile} alt="<img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" />" className="w-full" loading="lazy" />
+              <img src={mockupMobile} alt="Freelox no celular" className="w-full" loading="lazy" /> className="w-full" loading="lazy" />" className="w-full" loading="lazy" />
             </div>
           </motion.div>
         </div>
