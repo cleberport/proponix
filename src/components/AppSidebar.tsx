@@ -1,8 +1,9 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAdminCheck } from '@/hooks/useAdminCheck';
 import {
   Sidebar,
   SidebarContent,
