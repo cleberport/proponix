@@ -96,7 +96,7 @@ const AdminPage = () => {
       ]);
 
       if (profilesRes.data) setProfiles(profilesRes.data as Profile[]);
-      if (statsRes.data) setStats(statsRes.data as Stats);
+      if (statsRes.data) setStats(statsRes.data as unknown as Stats);
     } catch {
       toast.error('Erro ao carregar dados');
     } finally {
