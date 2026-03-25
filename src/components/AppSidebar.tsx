@@ -1,8 +1,9 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAdminCheck } from '@/hooks/useAdminCheck';
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +33,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const { isAdmin } = useAdminCheck();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -40,6 +42,10 @@ export function AppSidebar() {
     toast.success('Você saiu da conta');
     navigate('/');
   };
+
+  const allItems = isAdmin
+    ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
+    : items;
 
   return (
     <Sidebar collapsible="icon">
@@ -57,7 +63,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {allItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink
