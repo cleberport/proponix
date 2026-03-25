@@ -31,6 +31,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Import = lazy(() => import("./pages/Import"));
 const Emails = lazy(() => import("./pages/Emails"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Billing = lazy(() => import("./pages/Billing"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -134,6 +135,7 @@ const App = () => {
                 <Route path="/emails" element={<ProtectedRoute session={session}><AppLayout><Emails /></AppLayout></ProtectedRoute>} />
                 <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
+                <Route path="/billing" element={<ProtectedRoute session={session}><AppLayout><Billing /></AppLayout></ProtectedRoute>} />
                 <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
                 <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
 
