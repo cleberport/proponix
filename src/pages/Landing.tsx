@@ -232,7 +232,9 @@ const Landing = () => {
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.6 }}
           >
-            Sua próxima proposta<br />começa aqui.
+            Sua próxima proposta
+            <br className="hidden sm:block" />
+            começa aqui.
           </motion.h2>
           <motion.p
             className="mt-5 text-lg text-neutral-500 max-w-md mx-auto"
@@ -241,14 +243,14 @@ const Landing = () => {
           >
             Crie sua conta e envie sua primeira proposta em menos de 2 minutos.
           </motion.p>
-          <motion.div className="mt-10 flex flex-col sm:flex-row gap-3 items-center justify-center"
+          <motion.div className="mt-10 flex w-full max-w-xl mx-auto flex-col md:flex-row gap-3 items-center justify-center"
             initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: 0.3 }}
           >
             <Button
               size="lg"
               onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 px-10 text-base font-semibold rounded-full group bg-neutral-900 text-white hover:bg-neutral-800 shadow-xl"
+              className="h-14 w-full md:w-auto px-10 text-base font-semibold rounded-full group bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
             >
               Criar conta grátis
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -257,7 +259,7 @@ const Landing = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate('/auth')}
-              className="h-14 px-10 text-base font-semibold rounded-full border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              className="h-14 w-full md:w-auto px-10 text-base font-semibold rounded-full border-2 border-foreground/20 text-foreground hover:bg-accent"
             >
               Já tenho conta
             </Button>
