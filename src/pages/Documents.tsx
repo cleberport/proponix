@@ -59,6 +59,40 @@ const Documents = () => {
   useEffect(() => {
     loadDocumentHistoryFromServer().then(setHistory);
     loadProposalLinks();
+
+    // Subscribe to realtime status changes on proposal_links
+    const channel = supabase
+      .channel('proposal-status-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'proposal_links' },
+        (payload) => {
+          const updated = payload.new as any;
+          setProposalLinks((prev) => ({
+            ...prev,
+            [updated.document_id]: {
+              id: updated.id,
+              document_id: updated.document_id,
+              token: updated.token,
+              status: updated.status,
+              viewed_at: updated.viewed_at,
+              approved_at: updated.approved_at,
+              approver_name: updated.approver_name,
+            },
+          }));
+          // Also sync local history status
+          setHistory((prev) =>
+            prev.map((d) =>
+              d.id === updated.document_id ? { ...d, status: updated.status } as any : d
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadProposalLinks = async () => {
@@ -67,8 +101,23 @@ const Documents = () => {
       .select('*') as { data: ProposalLink[] | null };
     if (data) {
       const map: Record<string, ProposalLink> = {};
+      // Keep only the latest link per document
+      data.sort((a, b) => (a as any).created_at > (b as any).created_at ? 1 : -1);
       data.forEach((link) => { map[link.document_id] = link; });
       setProposalLinks(map);
+
+      // Sync generated_documents status from proposal_links
+      for (const link of Object.values(map)) {
+        if (['visualizado', 'aprovado'].includes(link.status)) {
+          setHistory((prev) =>
+            prev.map((d) =>
+              d.id === link.document_id && (d as any).status !== link.status
+                ? { ...d, status: link.status } as any
+                : d
+            )
+          );
+        }
+      }
     }
   };
 
