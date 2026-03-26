@@ -3,8 +3,11 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, FileText, Loader2, User, Calendar, DollarSign, Building2, AlertCircle } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, User, Calendar, DollarSign, Building2, AlertCircle, CalendarPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ProposalData {
   id: string;
