@@ -9,9 +9,8 @@ import {
   CheckCircle, FileText, Loader2, AlertCircle, Eye, Clock,
   MessageSquare, Download, ShieldCheck,
 } from 'lucide-react';
-import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { CanvasElement } from '@/types/template';
-import { generateVectorPdf } from '@/lib/pdfGenerator';
+import { motion, AnimatePresence } from 'framer-motion';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProposalData {
