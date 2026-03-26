@@ -290,8 +290,19 @@ const Documents = () => {
 
   const getTotal = (doc: typeof history[0]) => {
     const vals = doc.values as Record<string, any>;
-    const total = vals?.total || vals?.subtotal || '';
-    return total ? `R$ ${total}` : '—';
+    if (!vals) return '—';
+    // Try common total field names
+    const totalKeys = ['total', 'valor_total', 'preco_total', 'subtotal', 'valor', 'price', 'preco'];
+    for (const key of totalKeys) {
+      const v = vals[key];
+      if (v !== undefined && v !== null && v !== '') {
+        const num = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d,.-]/g, '').replace(',', '.'));
+        if (!isNaN(num) && num > 0) {
+          return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+      }
+    }
+    return '—';
   };
 
   const docStatus = (doc: any): DocStatus => doc.status || proposalLinks[doc.id]?.status || 'enviado';
