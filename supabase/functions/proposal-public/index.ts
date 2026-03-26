@@ -27,8 +27,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Extract viewer info from request
+    const viewerIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") || "unknown";
+    const viewerDevice = req.headers.get("user-agent") || "unknown";
+
     if (req.method === "GET") {
-      // Fetch proposal by token
       const { data: link, error: linkErr } = await supabase
         .from("proposal_links")
         .select("*")
@@ -40,6 +44,26 @@ Deno.serve(async (req) => {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
+
+      // Check if link has been used up (view_count >= max_views) AND is not the first view
+      const maxViews = link.max_views ?? 1;
+      if (link.view_count >= maxViews && link.status !== "enviado") {
+        return new Response(
+          JSON.stringify({
+            error: "blocked",
+            message: "Este orçamento já foi visualizado e não está mais disponível.",
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Also block if already approved
+      if (link.status === "aprovado") {
+        // Allow viewing approved proposals (read-only)
       }
 
       // Fetch the document
@@ -56,14 +80,19 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Increment view count and store viewer info
+      const newViewCount = (link.view_count ?? 0) + 1;
+      const updateData: Record<string, unknown> = {
+        view_count: newViewCount,
+        viewer_ip: viewerIp,
+        viewer_device: viewerDevice,
+      };
+
       // Mark as viewed if first time
       if (link.status === "enviado") {
-        await supabase
-          .from("proposal_links")
-          .update({ status: "visualizado", viewed_at: new Date().toISOString() })
-          .eq("id", link.id);
+        updateData.status = "visualizado";
+        updateData.viewed_at = new Date().toISOString();
 
-        // Also update the generated_documents status
         await supabase
           .from("generated_documents")
           .update({ status: "visualizado" })
@@ -72,6 +101,11 @@ Deno.serve(async (req) => {
         link.status = "visualizado";
         link.viewed_at = new Date().toISOString();
       }
+
+      await supabase
+        .from("proposal_links")
+        .update(updateData)
+        .eq("id", link.id);
 
       // Fetch user settings for company info
       const { data: settings } = await supabase
@@ -89,6 +123,8 @@ Deno.serve(async (req) => {
             viewedAt: link.viewed_at,
             approvedAt: link.approved_at,
             approverName: link.approver_name,
+            viewCount: newViewCount,
+            maxViews: maxViews,
             document: {
               clientName: doc.client_name,
               templateName: doc.template_name,
@@ -116,7 +152,6 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === "POST") {
-      // Approve proposal
       const body = await req.json();
       const approverName = (body.approverName || "").trim();
 
@@ -136,7 +171,7 @@ Deno.serve(async (req) => {
 
       const { data: link, error: linkErr } = await supabase
         .from("proposal_links")
-        .select("id, document_id, status")
+        .select("id, document_id, status, view_count, max_views")
         .eq("token", token)
         .maybeSingle();
 
@@ -155,6 +190,7 @@ Deno.serve(async (req) => {
       }
 
       const now = new Date().toISOString();
+      // On approval, set view_count to max_views to invalidate the link
       await supabase
         .from("proposal_links")
         .update({
@@ -162,6 +198,7 @@ Deno.serve(async (req) => {
           approved_at: now,
           approver_name: approverName,
           viewed_at: link.status === "enviado" ? now : undefined,
+          view_count: link.max_views ?? 1,
         })
         .eq("id", link.id);
 

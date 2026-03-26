@@ -1,0 +1,6 @@
+
+ALTER TABLE public.proposal_links
+ADD COLUMN IF NOT EXISTS max_views integer NOT NULL DEFAULT 1,
+ADD COLUMN IF NOT EXISTS view_count integer NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS viewer_ip text DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS viewer_device text DEFAULT NULL;

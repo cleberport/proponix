@@ -159,11 +159,15 @@ export type Database = {
           created_at: string
           document_id: string
           id: string
+          max_views: number
           status: string
           token: string
           updated_at: string
           user_id: string
+          view_count: number
           viewed_at: string | null
+          viewer_device: string | null
+          viewer_ip: string | null
         }
         Insert: {
           approved_at?: string | null
@@ -171,11 +175,15 @@ export type Database = {
           created_at?: string
           document_id: string
           id?: string
+          max_views?: number
           status?: string
           token?: string
           updated_at?: string
           user_id: string
+          view_count?: number
           viewed_at?: string | null
+          viewer_device?: string | null
+          viewer_ip?: string | null
         }
         Update: {
           approved_at?: string | null
@@ -183,11 +191,15 @@ export type Database = {
           created_at?: string
           document_id?: string
           id?: string
+          max_views?: number
           status?: string
           token?: string
           updated_at?: string
           user_id?: string
+          view_count?: number
           viewed_at?: string | null
+          viewer_device?: string | null
+          viewer_ip?: string | null
         }
         Relationships: []
       }

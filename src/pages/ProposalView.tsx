@@ -35,6 +35,8 @@ const ProposalView = () => {
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [blocked, setBlocked] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState('');
   const [approverName, setApproverName] = useState('');
   const [approving, setApproving] = useState(false);
   const [showApproveForm, setShowApproveForm] = useState(false);
@@ -53,7 +55,14 @@ const ProposalView = () => {
         { headers: { 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro');
+      if (!res.ok) {
+        if (res.status === 403 && data.error === 'blocked') {
+          setBlocked(true);
+          setBlockedMessage(data.message || 'Este orçamento já foi visualizado e não está mais disponível.');
+          return;
+        }
+        throw new Error(data.error || 'Erro');
+      }
       setProposal(data.proposal);
       if (data.proposal.status === 'aprovado') setApproved(true);
     } catch (err: any) {
@@ -106,6 +115,20 @@ const ProposalView = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (blocked) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h1 className="text-xl font-semibold text-foreground">Link indisponível</h1>
+        <p className="max-w-sm text-center text-sm text-muted-foreground">
+          {blockedMessage}
+        </p>
       </div>
     );
   }
