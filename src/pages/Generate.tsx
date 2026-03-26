@@ -528,9 +528,6 @@ const Generate = () => {
                         list={suggestions.length > 0 ? listId : undefined}
                         autoComplete="off"
                       />
-                        list={suggestions.length > 0 ? listId : undefined}
-                        autoComplete="off"
-                      />
                       {suggestions.length > 0 && (
                         <datalist id={listId}>
                           {suggestions.map((s, i) => (
