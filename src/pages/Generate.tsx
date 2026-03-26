@@ -552,6 +552,8 @@ const Generate = () => {
                 headers={tableInfo.headers}
                 rows={tableRows}
                 onChange={setTableRows}
+                onFocus={() => handleFieldFocus('__table__')}
+                onBlur={() => handleFieldBlur('__table__')}
               />
             )}
           </div>
