@@ -152,6 +152,45 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_links: {
+        Row: {
+          approved_at: string | null
+          approver_name: string | null
+          created_at: string
+          document_id: string
+          id: string
+          status: string
+          token: string
+          updated_at: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approver_name?: string | null
+          created_at?: string
+          document_id: string
+          id?: string
+          status?: string
+          token?: string
+          updated_at?: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approver_name?: string | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          status?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
