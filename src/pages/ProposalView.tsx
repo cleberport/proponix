@@ -6,9 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, FileText, Loader2, AlertCircle } from 'lucide-react';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { CanvasElement } from '@/types/template';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface ProposalData {
   id: string;
@@ -131,87 +128,6 @@ const ProposalView = () => {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
-  };
-
-  // Calendar helpers
-  const getEventDate = () => {
-    if (!proposal) return null;
-    const v = proposal.document.values as Record<string, any>;
-    const dateVal = v?.data_evento || v?.data || v?.date || v?.event_date || v?.data_inicio || null;
-    return dateVal ? String(dateVal) : null;
-  };
-
-  const getEventLocation = () => {
-    if (!proposal) return '';
-    const v = proposal.document.values as Record<string, any>;
-    return String(v?.local || v?.endereco || v?.location || v?.venue || '');
-  };
-
-  const getTotal = (values: Record<string, any>) => {
-    const total = values?.total || values?.subtotal || '';
-    return total ? `R$ ${total}` : null;
-  };
-
-  const buildCalendarEvent = () => {
-    if (!proposal) return null;
-    const doc = proposal.document;
-    const total = getTotal(doc.values);
-    const eventDate = getEventDate();
-    const location = getEventLocation();
-    const company = proposal.company;
-
-    const title = `${doc.templateName} - ${doc.clientName || 'Cliente'}`;
-    const description = [
-      `Proposta: ${doc.templateName}`,
-      `Cliente: ${doc.clientName || '—'}`,
-      total ? `Valor: ${total}` : '',
-      company?.name ? `Empresa: ${company.name}` : '',
-      company?.phone ? `Telefone: ${company.phone}` : '',
-      `Aprovada por: ${proposal.approverName || '—'}`,
-    ].filter(Boolean).join('\n');
-
-    let startDate = new Date();
-    if (eventDate) {
-      const parts = eventDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-      if (parts) {
-        startDate = new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1]));
-      } else {
-        const parsed = new Date(eventDate);
-        if (!isNaN(parsed.getTime())) startDate = parsed;
-      }
-    }
-    const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 2);
-    return { title, description, location, startDate, endDate };
-  };
-
-  const fmtICS = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-
-  const handleAppleCalendar = () => {
-    const event = buildCalendarEvent();
-    if (!event) return;
-    const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Freelox//Proposal//PT','BEGIN:VEVENT',
-      `DTSTART:${fmtICS(event.startDate)}`,`DTEND:${fmtICS(event.endDate)}`,
-      `SUMMARY:${event.title}`,`DESCRIPTION:${event.description.replace(/\n/g,'\\n')}`,
-      `LOCATION:${event.location}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
-    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'evento.ics'; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleGoogleCalendar = () => {
-    const event = buildCalendarEvent();
-    if (!event) return;
-    const params = new URLSearchParams({ action: 'TEMPLATE', text: event.title, details: event.description, location: event.location, dates: `${fmtICS(event.startDate)}/${fmtICS(event.endDate)}` });
-    window.open(`https://calendar.google.com/calendar/render?${params}`, '_blank');
-  };
-
-  const handleOutlookCalendar = () => {
-    const event = buildCalendarEvent();
-    if (!event) return;
-    const params = new URLSearchParams({ path: '/calendar/action/compose', rru: 'addevent', subject: event.title, body: event.description, location: event.location, startdt: event.startDate.toISOString(), enddt: event.endDate.toISOString() });
-    window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params}`, '_blank');
   };
 
   if (loading) {
@@ -362,20 +278,6 @@ const ProposalView = () => {
               {proposal.approvedAt && (
                 <p className="mt-1 text-xs text-green-600 dark:text-green-600">{formatDate(proposal.approvedAt)}</p>
               )}
-              <div className="mt-5">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2">
-                      <CalendarPlus className="h-4 w-4" /> Adicionar ao calendário
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center">
-                    <DropdownMenuItem onClick={handleGoogleCalendar}>Google Calendar</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleAppleCalendar}>Apple Calendar (.ics)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleOutlookCalendar}>Outlook</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
           ) : showApproveForm ? (
             <div className="rounded-xl border border-border bg-card p-6">
