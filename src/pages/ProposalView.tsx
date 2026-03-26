@@ -241,11 +241,24 @@ const ProposalView = () => {
 
   const variableValues = useMemo(() => {
     if (!proposal) return {};
+
+    // Start with document values
     const vals = proposal.document.values as Record<string, any>;
     const result: Record<string, string> = {};
     Object.entries(vals).forEach(([k, v]) => {
       result[k] = String(v ?? '');
     });
+
+    // If we have a full template object, use resolveAllValues for calculated fields
+    const templateId = proposal.document?.templateId;
+    const starter = templateId ? starterTemplates.find(t => t.id === templateId) : null;
+    if (starter) {
+      const resolved = resolveAllValues(starter, result);
+      Object.entries(resolved).forEach(([k, v]) => {
+        if (!result[k] || result[k] === '') result[k] = v;
+      });
+    }
+
     if (proposal.company?.logoUrl) {
       result['__logo_url__'] = proposal.company.logoUrl;
     }
