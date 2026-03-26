@@ -86,13 +86,13 @@ const Landing = () => {
             <a href="#como-funciona" className="hover:text-neutral-900 transition-colors">Como Funciona</a>
             <a href="#pricing" className="hover:text-neutral-900 transition-colors">Preços</a>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-neutral-600 hover:text-neutral-900 text-sm font-medium">
+              className="hidden sm:inline-flex text-neutral-600 hover:text-neutral-900 text-sm font-medium">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
-              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-5 text-sm font-semibold">
+              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-semibold">
               Começar Grátis
             </Button>
           </div>
