@@ -431,6 +431,22 @@ const Documents = () => {
                             </TooltipTrigger>
                             <TooltipContent>{link ? 'Copiar link' : 'Gerar link de proposta'}</TooltipContent>
                           </Tooltip>
+                          {link && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleResendLink(doc.id)}
+                                  disabled={resendingLink === doc.id}
+                                >
+                                  {resendingLink === doc.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Reenviar link</TooltipContent>
+                            </Tooltip>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpen(doc)}>
