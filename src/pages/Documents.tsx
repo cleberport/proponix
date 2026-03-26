@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus } from 'lucide-react';
+import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -19,12 +19,13 @@ import {
 } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
-type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado';
+type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado' | 'negociacao';
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Send }> = {
   enviado: { label: 'Enviado', variant: 'secondary', icon: Send },
   visualizado: { label: 'Visualizado', variant: 'outline', icon: Eye },
   aprovado: { label: 'Aprovado', variant: 'default', icon: CheckCircle },
+  negociacao: { label: 'Negociação', variant: 'outline', icon: MessageSquare },
   expirado: { label: 'Expirado', variant: 'destructive', icon: Clock },
 };
 
@@ -33,6 +34,7 @@ const TABS = [
   { value: 'enviado', label: 'Enviados' },
   { value: 'visualizado', label: 'Visualizados' },
   { value: 'aprovado', label: 'Aprovados' },
+  { value: 'negociacao', label: 'Negociação' },
   { value: 'expirado', label: 'Expirados' },
 ];
 
@@ -44,6 +46,7 @@ interface ProposalLink {
   viewed_at: string | null;
   approved_at: string | null;
   approver_name: string;
+  negotiation_message: string | null;
 }
 
 const Documents = () => {
@@ -78,6 +81,7 @@ const Documents = () => {
               viewed_at: updated.viewed_at,
               approved_at: updated.approved_at,
               approver_name: updated.approver_name,
+              negotiation_message: updated.negotiation_message,
             },
           }));
           // Also sync local history status
@@ -108,7 +112,7 @@ const Documents = () => {
 
       // Sync generated_documents status from proposal_links
       for (const link of Object.values(map)) {
-        if (['visualizado', 'aprovado'].includes(link.status)) {
+        if (['visualizado', 'aprovado', 'negociacao'].includes(link.status)) {
           setHistory((prev) =>
             prev.map((d) =>
               d.id === link.document_id && (d as any).status !== link.status
@@ -140,7 +144,7 @@ const Documents = () => {
   }, [history, search, activeTab, proposalLinks]);
 
   const getStatusCounts = useMemo(() => {
-    const counts: Record<string, number> = { todos: history.length, enviado: 0, visualizado: 0, aprovado: 0, expirado: 0 };
+    const counts: Record<string, number> = { todos: history.length, enviado: 0, visualizado: 0, aprovado: 0, negociacao: 0, expirado: 0 };
     history.forEach((doc) => {
       const s = (doc as any).status || proposalLinks[doc.id]?.status || 'enviado';
       if (counts[s] !== undefined) counts[s]++;

@@ -158,8 +158,10 @@ export type Database = {
           approver_name: string | null
           created_at: string
           document_id: string
+          expires_at: string | null
           id: string
           max_views: number
+          negotiation_message: string | null
           status: string
           token: string
           updated_at: string
@@ -174,8 +176,10 @@ export type Database = {
           approver_name?: string | null
           created_at?: string
           document_id: string
+          expires_at?: string | null
           id?: string
           max_views?: number
+          negotiation_message?: string | null
           status?: string
           token?: string
           updated_at?: string
@@ -190,8 +194,10 @@ export type Database = {
           approver_name?: string | null
           created_at?: string
           document_id?: string
+          expires_at?: string | null
           id?: string
           max_views?: number
+          negotiation_message?: string | null
           status?: string
           token?: string
           updated_at?: string
