@@ -398,7 +398,7 @@ const Documents = () => {
             ) : (
               <div className="space-y-2">
                 {/* Header row - desktop */}
-                <div className="hidden md:grid md:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                <div className="hidden lg:grid lg:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
                   <span>Cliente</span>
                   <span>Template</span>
                   <span>Valor</span>
@@ -415,11 +415,11 @@ const Documents = () => {
                   return (
                     <div
                       key={doc.id}
-                      className="group rounded-lg border border-border bg-card p-3 md:p-4 transition-colors hover:border-primary/30 cursor-pointer"
+                      className="group rounded-lg border border-border bg-card p-3 lg:p-4 transition-colors hover:border-primary/30 cursor-pointer"
                       onClick={() => handleOpen(doc)}
                     >
                       {/* Mobile layout */}
-                      <div className="md:hidden">
+                      <div className="lg:hidden">
                         {/* Row 1: Client name + status */}
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-base font-semibold text-foreground truncate">
@@ -518,7 +518,7 @@ const Documents = () => {
                       </div>
 
                       {/* Desktop layout */}
-                      <div className="hidden md:grid md:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 items-center">
+                      <div className="hidden lg:grid lg:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 items-center">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">
                             {doc.clientName || doc.fileName}
