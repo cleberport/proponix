@@ -455,6 +455,20 @@ const Documents = () => {
                               Reenviar
                             </Button>
                           )}
+                          {status === 'aprovado' && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={(e) => e.stopPropagation()}>
+                                  <CalendarPlus className="mr-1 h-3 w-3" /> Calendário
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="center">
+                                <DropdownMenuItem onClick={() => handleGoogleCalendar(doc)}>Google Calendar</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleAppleCalendar(doc)}>Apple Calendar (.ics)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOutlookCalendar(doc)}>Outlook</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                           <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
                             <Copy className="mr-1 h-3 w-3" /> Duplicar
                           </Button>
