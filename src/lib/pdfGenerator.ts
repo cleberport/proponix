@@ -425,7 +425,7 @@ export async function generateVectorPdf(
   elementsOrPages: CanvasElement[] | CanvasElement[][],
   variableValues: Record<string, string>,
   fileName: string,
-  options?: { backgroundColor?: string }
+  options?: { backgroundColor?: string; skipDownload?: boolean }
 ): Promise<Blob> {
   // Normalize to pages array
   const pages: CanvasElement[][] = Array.isArray(elementsOrPages[0]) && Array.isArray((elementsOrPages as any[])[0])
@@ -443,19 +443,21 @@ export async function generateVectorPdf(
     renderPageElements(pdf, pages[i], variableValues, imageMap, options?.backgroundColor);
   }
 
-  // Instant download
   const blob = pdf.output('blob');
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
+
+  if (!options?.skipDownload) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
 
   return blob;
 }
