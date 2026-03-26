@@ -9,7 +9,8 @@ import {
   CheckCircle, FileText, Loader2, AlertCircle, Eye, Clock,
   MessageSquare, Download, ShieldCheck,
 } from 'lucide-react';
-import { CanvasElement } from '@/types/template';
+import { CanvasElement, Template } from '@/types/template';
+import { starterTemplates } from '@/data/templates';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProposalData {
