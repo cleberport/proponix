@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { X, ArrowRight, ArrowLeft, Sparkles, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -19,21 +19,21 @@ interface TourStep {
   description: string;
 }
 
-const steps: TourStep[] = [
+const allSteps: TourStep[] = [
   {
     target: 'tour-dashboard-header',
     title: 'Dashboard',
     description: 'Aqui você vê e gerencia todos os seus templates de proposta.',
   },
   {
-    target: 'tour-template-cards',
-    title: 'Seus Templates',
-    description: 'Cada card é um template. Toque para editar ou gerar uma proposta.',
-  },
-  {
     target: 'tour-new-template',
     title: 'Novo Template',
     description: 'Crie um template do zero com o editor visual.',
+  },
+  {
+    target: 'tour-template-cards',
+    title: 'Seus Templates',
+    description: 'Cada card é um template. Toque para editar ou gerar uma proposta.',
   },
   {
     target: 'tour-starter-templates',
@@ -62,41 +62,46 @@ function getElRect(attr: string): Rect | null {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-/** Filter steps to only those whose target element exists in the DOM */
-function getAvailableSteps(): TourStep[] {
-  return steps.filter(s => {
-    const el = document.querySelector(`[data-tour="${s.target}"]`);
-    return el && el.getBoundingClientRect().width > 0;
-  });
+function getVisibleSteps(): TourStep[] {
+  return allSteps.filter(s => getElRect(s.target) !== null);
 }
 
 export default function OnboardingTour() {
   const [show, setShow] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
-  const [availableSteps, setAvailableSteps] = useState<TourStep[]>([]);
+  const [steps, setSteps] = useState<TourStep[]>([]);
   const [rect, setRect] = useState<Rect | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [completed, setCompleted] = useState(false);
 
+  // Auto-start: keep polling until elements appear
   useEffect(() => {
     const seen = localStorage.getItem(TOUR_SEEN_KEY);
-    if (!seen) {
-      const t = setTimeout(() => {
-        const available = getAvailableSteps();
-        if (available.length > 0) {
-          setAvailableSteps(available);
-          setShow(true);
-        }
-      }, 800);
-      return () => clearTimeout(t);
-    }
+    if (seen) return;
+
+    let attempts = 0;
+    const maxAttempts = 15; // ~6 seconds
+    const interval = setInterval(() => {
+      attempts++;
+      const visible = getVisibleSteps();
+      if (visible.length > 0) {
+        setSteps(visible);
+        setShow(true);
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 400);
+
+    return () => clearInterval(interval);
   }, []);
 
+  // Restart via custom event
   useEffect(() => {
     const handler = () => {
-      const available = getAvailableSteps();
-      if (available.length > 0) {
-        setAvailableSteps(available);
+      const visible = getVisibleSteps();
+      if (visible.length > 0) {
+        setSteps(visible);
         setStepIndex(0);
         setCompleted(false);
         setShow(true);
@@ -106,14 +111,14 @@ export default function OnboardingTour() {
     return () => window.removeEventListener('freelox-restart-tour', handler);
   }, []);
 
+  // Track target rect
   const updateRect = useCallback(() => {
-    if (!show || completed || availableSteps.length === 0) return;
-    const current = availableSteps[stepIndex];
+    if (!show || completed || steps.length === 0) return;
+    const current = steps[stepIndex];
     if (!current) return;
-    const r = getElRect(current.target);
-    setRect(r);
+    setRect(getElRect(current.target));
     setIsMobile(window.innerWidth < 768);
-  }, [show, stepIndex, completed, availableSteps]);
+  }, [show, stepIndex, completed, steps]);
 
   useEffect(() => {
     updateRect();
@@ -136,12 +141,12 @@ export default function OnboardingTour() {
   }, []);
 
   const next = useCallback(() => {
-    if (stepIndex < availableSteps.length - 1) {
+    if (stepIndex < steps.length - 1) {
       setStepIndex(s => s + 1);
     } else {
       setCompleted(true);
     }
-  }, [stepIndex, availableSteps.length]);
+  }, [stepIndex, steps.length]);
 
   const prev = useCallback(() => {
     if (stepIndex > 0) setStepIndex(s => s - 1);
@@ -163,88 +168,66 @@ export default function OnboardingTour() {
   // Completion screen
   if (completed) {
     return (
-      <AnimatePresence>
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="relative w-full max-w-sm rounded-2xl border border-border bg-card shadow-2xl overflow-hidden text-center"
+          onClick={e => e.stopPropagation()}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-sm rounded-2xl border border-border bg-card shadow-2xl overflow-hidden text-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="bg-gradient-to-b from-primary/15 to-transparent px-6 pt-10 pb-6">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', delay: 0.15 }}
-                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-              >
-                <Rocket className="h-8 w-8" />
-              </motion.div>
-              <h2 className="text-xl font-bold text-foreground">Tudo pronto! 🚀</h2>
-            </div>
-            <div className="px-6 pb-2">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Você já pode começar a criar propostas com o Freelox.
-              </p>
-            </div>
-            <div className="px-6 pb-6 pt-4">
-              <Button onClick={dismiss} className="w-full h-11 font-semibold">
-                Começar agora
-              </Button>
-            </div>
-          </motion.div>
+          <div className="bg-gradient-to-b from-primary/15 to-transparent px-6 pt-10 pb-6">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', delay: 0.15 }}
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+            >
+              <Rocket className="h-8 w-8" />
+            </motion.div>
+            <h2 className="text-xl font-bold text-foreground">Tudo pronto! 🚀</h2>
+          </div>
+          <div className="px-6 pb-2">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Você já pode começar a criar propostas com o Freelox.
+            </p>
+          </div>
+          <div className="px-6 pb-6 pt-4">
+            <Button onClick={dismiss} className="w-full h-11 font-semibold">
+              Começar agora
+            </Button>
+          </div>
         </motion.div>
-      </AnimatePresence>
+      </div>
     );
   }
 
-  if (availableSteps.length === 0) return null;
+  if (steps.length === 0) return null;
 
-  const currentStep = availableSteps[stepIndex];
+  const currentStep = steps[stepIndex];
   const spotPad = 8;
-  const totalSteps = availableSteps.length;
-
-  // Compute tooltip position
-  let tooltipStyle: React.CSSProperties;
   const tooltipW = isMobile ? window.innerWidth - 32 : 340;
 
+  // Tooltip positioning
+  let tooltipStyle: React.CSSProperties;
   if (rect) {
     const pad = 12;
     const tooltipH = 160;
     const spaceBelow = window.innerHeight - (rect.top + rect.height + pad);
     const spaceAbove = rect.top - pad;
-
-    let top: number;
-    if (spaceBelow >= tooltipH || spaceBelow >= spaceAbove) {
-      top = rect.top + rect.height + pad;
-    } else {
-      top = rect.top - tooltipH - pad;
-    }
-
+    let top = (spaceBelow >= tooltipH || spaceBelow >= spaceAbove)
+      ? rect.top + rect.height + pad
+      : rect.top - tooltipH - pad;
     const left = isMobile ? 16 : Math.max(16, Math.min(rect.left, window.innerWidth - tooltipW - 16));
     top = Math.max(16, Math.min(top, window.innerHeight - tooltipH - 16));
-
     tooltipStyle = { top, left, width: tooltipW, position: 'absolute' };
   } else {
-    // Centered fallback when element isn't measurable
-    tooltipStyle = {
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: tooltipW,
-      position: 'absolute',
-    };
+    tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: tooltipW, position: 'absolute' };
   }
 
   return (
     <div className="fixed inset-0 z-[200]">
-      {/* Dark overlay with spotlight cutout */}
+      {/* Overlay with spotlight */}
       <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
         <defs>
           <mask id="spotlight-mask">
@@ -273,12 +256,8 @@ export default function OnboardingTour() {
 
       {/* Glow ring */}
       {rect && (
-        <motion.div
-          key={`glow-${stepIndex}`}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.35 }}
-          className="absolute rounded-xl ring-2 ring-primary/60"
+        <div
+          className="absolute rounded-xl ring-2 ring-primary/60 transition-all duration-300"
           style={{
             top: rect.top - spotPad,
             left: rect.left - spotPad,
@@ -290,68 +269,65 @@ export default function OnboardingTour() {
       )}
 
       {/* Tooltip */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`tooltip-${stepIndex}`}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.25 }}
-          className="z-[201] rounded-xl border border-border bg-card shadow-2xl"
-          style={tooltipStyle}
+      <motion.div
+        key={`tooltip-${stepIndex}`}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="z-[201] rounded-xl border border-border bg-card shadow-2xl"
+        style={tooltipStyle}
+      >
+        <button
+          onClick={dismiss}
+          className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          <button
-            onClick={dismiss}
-            className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <X className="h-3.5 w-3.5" />
+        </button>
 
-          <div className="p-4 pb-2">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles className="h-4 w-4 text-primary shrink-0" />
-              <h3 className="font-semibold text-sm text-foreground">{currentStep.title}</h3>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {currentStep.description}
-            </p>
+        <div className="p-4 pb-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="font-semibold text-sm text-foreground">{currentStep.title}</h3>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {currentStep.description}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border px-4 py-3">
+          <div className="flex gap-1">
+            {steps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === stepIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/25'
+                }`}
+              />
+            ))}
           </div>
 
-          <div className="flex items-center justify-between border-t border-border px-4 py-3">
-            <div className="flex gap-1">
-              {availableSteps.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === stepIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/25'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={dismiss}
-                className="h-7 px-2 text-[11px] text-muted-foreground"
-              >
-                Pular
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={dismiss}
+              className="h-7 px-2 text-[11px] text-muted-foreground"
+            >
+              Pular
+            </Button>
+            {stepIndex > 0 && (
+              <Button variant="outline" size="sm" onClick={prev} className="h-7 px-2 text-[11px]">
+                <ArrowLeft className="mr-0.5 h-3 w-3" />
+                Voltar
               </Button>
-              {stepIndex > 0 && (
-                <Button variant="outline" size="sm" onClick={prev} className="h-7 px-2 text-[11px]">
-                  <ArrowLeft className="mr-0.5 h-3 w-3" />
-                  Voltar
-                </Button>
-              )}
-              <Button size="sm" onClick={next} className="h-7 px-3 text-[11px] font-semibold">
-                {stepIndex === totalSteps - 1 ? 'Finalizar' : 'Próximo'}
-                {stepIndex < totalSteps - 1 && <ArrowRight className="ml-0.5 h-3 w-3" />}
-              </Button>
-            </div>
+            )}
+            <Button size="sm" onClick={next} className="h-7 px-3 text-[11px] font-semibold">
+              {stepIndex === steps.length - 1 ? 'Finalizar' : 'Próximo'}
+              {stepIndex < steps.length - 1 && <ArrowRight className="ml-0.5 h-3 w-3" />}
+            </Button>
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </motion.div>
     </div>
   );
 }
