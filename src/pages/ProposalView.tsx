@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { CanvasElement } from '@/types/template';
 import { motion, AnimatePresence } from 'framer-motion';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProposalData {
   id: string;
