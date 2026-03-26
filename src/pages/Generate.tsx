@@ -253,7 +253,69 @@ const Generate = () => {
     );
   }, [template, tableRows, hasTable, tableInfo]);
 
-  const visibleElements = visiblePages[0] || [];
+  // Map each variable to the page index where it first appears
+  const fieldToPage = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!template) return map;
+    const pages = getTemplatePages(template);
+    const varPattern = /\{\{(\w+)\}\}/g;
+    pages.forEach((pageEls, pageIdx) => {
+      for (const el of pageEls) {
+        if (el.isVisible === false) continue;
+        if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
+          map[el.variable] = pageIdx;
+        }
+        if ((el.type === 'text' || el.type === 'notes') && el.content) {
+          let match: RegExpExecArray | null;
+          while ((match = varPattern.exec(el.content)) !== null) {
+            if (!(match[1] in map)) map[match[1]] = pageIdx;
+          }
+        }
+      }
+    });
+    return map;
+  }, [template]);
+
+  // Map each variable to the element id on its page for highlighting
+  const fieldToElementId = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (!template) return map;
+    const pages = getTemplatePages(template);
+    for (const pageEls of pages) {
+      for (const el of pageEls) {
+        if (el.isVisible === false) continue;
+        if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
+          map[el.variable] = el.id;
+        }
+      }
+    }
+    return map;
+  }, [template]);
+
+  const totalPages = visiblePages.length;
+  const currentPageElements = visiblePages[activePageIndex] || [];
+
+  // Auto-switch page when a field is focused
+  const handleFieldFocus = useCallback((fieldName: string) => {
+    setFocusedField(fieldName);
+    if (fieldName === 'price') {
+      setPriceFocused(true);
+    }
+    const pageIdx = fieldToPage[fieldName];
+    if (pageIdx !== undefined && pageIdx !== activePageIndex) {
+      setActivePageIndex(pageIdx);
+    }
+  }, [fieldToPage, activePageIndex]);
+
+  const handleFieldBlur = useCallback((fieldName: string) => {
+    setFocusedField(null);
+    if (fieldName === 'price') {
+      handlePriceBlur();
+    }
+  }, []);
+
+  // The element id to highlight in the preview
+  const highlightedElementId = focusedField ? fieldToElementId[focusedField] ?? null : null;
 
   const [priceDisplay, setPriceDisplay] = useState('');
   const [priceFocused, setPriceFocused] = useState(false);
