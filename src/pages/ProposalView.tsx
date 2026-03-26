@@ -780,18 +780,18 @@ const ProposalView = () => {
                   className="space-y-3"
                 >
                   <p className="text-center text-sm font-medium text-foreground">Gostou da proposta?</p>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <div className="flex gap-2.5">
                     <Button
                       size="lg"
-                      className="w-full sm:flex-1 h-12 rounded-xl gap-2 font-semibold text-sm"
+                      className="flex-1 h-12 rounded-xl gap-2 font-semibold text-sm"
                       onClick={() => setShowApproveForm(true)}
                     >
-                      <CheckCircle className="h-4 w-4 shrink-0" /> Aprovar proposta
+                      <CheckCircle className="h-4 w-4 shrink-0" /> Aprovar
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
-                      className="w-full sm:flex-1 h-12 rounded-xl gap-2 text-sm"
+                      className="flex-1 h-12 rounded-xl gap-2 text-sm"
                       onClick={() => setShowNegotiationForm(true)}
                     >
                       <MessageSquare className="h-4 w-4 shrink-0" /> Sugerir ajuste
