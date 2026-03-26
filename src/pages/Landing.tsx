@@ -147,7 +147,10 @@ const Landing = () => {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => navigate('#pricing')}
+              onClick={() => {
+                const el = document.getElementById('pricing');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
               className="h-14 px-10 text-base font-semibold rounded-full border-2 border-foreground/20 text-foreground hover:bg-accent"
             >
               Ver Planos

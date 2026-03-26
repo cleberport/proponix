@@ -62,7 +62,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[hsl(var(--landing-bg))] text-[hsl(var(--landing-fg))]">
+    <div className="flex min-h-screen flex-col bg-white text-neutral-900">
       <div className="flex items-center gap-3 p-4">
         <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-[hsl(var(--landing-muted))] hover:text-[hsl(var(--landing-fg))] transition-colors">
           <ArrowLeft className="h-4 w-4" />
