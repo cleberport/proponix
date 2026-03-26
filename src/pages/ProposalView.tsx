@@ -516,35 +516,22 @@ const ProposalView = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {hasTemplate ? (
+            {hasTemplate && pdfUrl ? (
               <div className="mb-6">
-                <div
-                  ref={docContainerRef}
-                  className="relative mx-auto w-full overflow-hidden rounded-lg shadow-lg bg-white"
-                  style={{
-                    maxWidth: canvasW,
-                    aspectRatio: `${canvasW} / ${canvasH}`,
-                  }}
-                >
-                  <div
-                    className="absolute inset-0 origin-top-left"
-                    style={{
-                      width: canvasW,
-                      height: canvasH,
-                      transform: `scale(${docScale})`,
-                    }}
-                  >
-                    <CanvasRenderer
-                      elements={templateElements}
-                      selectedId={null}
-                      onSelect={() => {}}
-                      onUpdate={() => {}}
-                      readOnly
-                      variableValues={variableValues}
-                      showGrid={false}
-                      backgroundColor={bgColor}
-                    />
-                  </div>
+                <div className="mx-auto overflow-hidden rounded-lg shadow-lg" style={{ maxWidth: 800 }}>
+                  <iframe
+                    src={`${pdfUrl}#toolbar=0&navpanes=0`}
+                    className="w-full border-0"
+                    style={{ height: 'calc(100vh - 200px)', minHeight: 500 }}
+                    title="Proposta"
+                  />
+                </div>
+              </div>
+            ) : hasTemplate && generatingPdf ? (
+              <div className="mb-6 flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-3" />
+                  <p className="text-sm text-muted-foreground">Carregando documento...</p>
                 </div>
               </div>
             ) : (
