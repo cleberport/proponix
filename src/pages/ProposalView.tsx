@@ -557,11 +557,36 @@ const ProposalView = () => {
   }
 
   // ──── STEP: VIEWING ────
+  const CANVAS_W = proposal?.template?.canvasWidth || 595;
+  const CANVAS_H = proposal?.template?.canvasHeight || 842;
+  const NOOP = useCallback(() => undefined, []);
+
+  const docContainerRef = useRef<HTMLDivElement | null>(null);
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const node = docContainerRef.current;
+    if (!node) return;
+    const measure = () => {
+      const rect = node.getBoundingClientRect();
+      setContainerSize({ w: rect.width, h: rect.height });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [step]);
+
+  // scale = min(viewportW / docW, viewportH / docH) — fit entire doc on screen
+  const docScale = containerSize.w > 0 && containerSize.h > 0
+    ? Math.min(containerSize.w / CANVAS_W, containerSize.h / CANVAS_H, 1)
+    : 0;
+
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="flex h-[100dvh] flex-col bg-muted/30">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur px-4 py-3 sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+      <header className="shrink-0 border-b border-border bg-card/95 backdrop-blur px-4 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
             {company?.logoUrl ? (
               <img src={company.logoUrl} alt={company.name} className="h-8 max-w-[120px] object-contain" />
@@ -581,98 +606,87 @@ const ProposalView = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* Document Visual Render */}
-        <AnimatePresence>
+      {/* Document area — fills remaining space */}
+      <div
+        ref={docContainerRef}
+        className="flex-1 min-h-0 flex items-center justify-center overflow-auto p-4 sm:p-6"
+      >
+        {hasTemplate && docScale > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
+            className="shrink-0"
           >
-            {hasTemplate && pdfUrl ? (
-              <div className="mb-6">
-                <div className="mx-auto overflow-hidden rounded-lg shadow-lg" style={{ maxWidth: 800 }}>
-                  <iframe
-                    src={`${pdfUrl}#toolbar=0&navpanes=0`}
-                    className="w-full border-0"
-                    style={{ height: 'calc(100vh - 200px)', minHeight: 500 }}
-                    title="Proposta"
+            {templatePages.map((pageElements, pageIdx) => (
+              <div
+                key={pageIdx}
+                className="mx-auto rounded-lg shadow-xl overflow-hidden"
+                style={{
+                  width: CANVAS_W * docScale,
+                  height: CANVAS_H * docScale,
+                  marginBottom: pageIdx < templatePages.length - 1 ? 16 : 0,
+                }}
+              >
+                <div
+                  style={{
+                    width: CANVAS_W,
+                    height: CANVAS_H,
+                    transform: `scale(${docScale})`,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <CanvasRenderer
+                    elements={pageElements}
+                    selectedId={null}
+                    onSelect={NOOP}
+                    onUpdate={NOOP}
+                    readOnly
+                    variableValues={variableValues}
+                    showGrid={false}
+                    backgroundColor={bgColor}
                   />
                 </div>
               </div>
-            ) : hasTemplate && generatingPdf ? (
-              <div className="mb-6 flex items-center justify-center py-20">
-                <div className="text-center">
-                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-3" />
-                  <p className="text-sm text-muted-foreground">Carregando documento...</p>
-                </div>
-              </div>
-            ) : (
-              <div className="mb-6">
-                {/* Paper-style document */}
-                <div className="mx-auto max-w-[595px] rounded-lg shadow-lg overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
-                  {/* Header band */}
-                  <div className="px-8 pt-10 pb-6" style={{ backgroundColor: '#ffffff' }}>
-                    {company?.logoUrl && (
-                      <img src={company.logoUrl} alt={company.name} className="mb-4 h-10 max-w-[140px] object-contain" />
-                    )}
-                    <h1 className="text-2xl font-bold" style={{ color: '#111827' }}>{doc.templateName}</h1>
-                    <p className="mt-1 text-sm" style={{ color: '#6b7280' }}>
-                      Proposta para <strong style={{ color: '#111827' }}>{doc.clientName || 'cliente'}</strong>
-                    </p>
-                    {doc.generatedAt && (
-                      <p className="mt-1 text-xs" style={{ color: '#9ca3af' }}>
-                        Emitido em {formatDate(doc.generatedAt)}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="mx-8" style={{ borderTop: '2px solid #e5e7eb' }} />
-
-                  {/* Fields */}
-                  <div className="px-8 py-6 space-y-0">
-                    {Object.entries(doc.values)
-                      .filter(([key]) => !['total', 'subtotal', 'tax', 'imposto', 'tax_rate', 'data_de_hoje', '__logo_url__'].includes(key.toLowerCase()))
-                      .map(([key, value]) => {
-                        if (!value || value === '') return null;
-                        const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-                        return (
-                          <div key={key} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <span className="text-sm" style={{ color: '#6b7280' }}>{label}</span>
-                            <span className="text-sm font-medium text-right max-w-[60%]" style={{ color: '#111827' }}>{String(value)}</span>
-                          </div>
-                        );
-                      })}
-                  </div>
-
-                  {/* Total */}
-                  {total && (
-                    <div className="mx-8 mb-8 rounded-lg px-6 py-5 text-center" style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>
-                      <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: '#9ca3af' }}>Valor total</p>
-                      <p className="text-3xl font-bold" style={{ color: '#111827' }}>{total}</p>
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  {company && (
-                    <div className="px-8 pb-8 text-center">
-                      <div className="pt-4" style={{ borderTop: '1px solid #f3f4f6' }}>
-                        {company.name && <p className="text-xs font-medium" style={{ color: '#6b7280' }}>{company.name}</p>}
-                        {company.phone && <p className="text-xs" style={{ color: '#9ca3af' }}>{company.phone}</p>}
-                        {company.email && <p className="text-xs" style={{ color: '#9ca3af' }}>{company.email}</p>}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            ))}
           </motion.div>
-        </AnimatePresence>
+        ) : !hasTemplate ? (
+          /* Fallback: render all dynamic values as a clean list */
+          <div className="w-full max-w-lg">
+            <Card className="border-0 shadow-xl">
+              <CardContent className="p-6 sm:p-8">
+                <h1 className="mb-1 text-xl font-bold text-foreground">{doc.templateName}</h1>
+                <p className="mb-6 text-sm text-muted-foreground">
+                  Para <strong className="text-foreground">{doc.clientName || 'cliente'}</strong>
+                </p>
+                <div className="space-y-0">
+                  {Object.entries(doc.values)
+                    .filter(([key, value]) => value && value !== '' && !['__logo_url__', 'data_de_hoje'].includes(key))
+                    .map(([key, value]) => {
+                      const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                      return (
+                        <div key={key} className="flex items-center justify-between border-b border-border py-3 last:border-0">
+                          <span className="text-sm text-muted-foreground">{label}</span>
+                          <span className="text-sm font-medium text-foreground text-right max-w-[60%]">{String(value)}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-3" />
+            <p className="text-sm text-muted-foreground">Carregando documento...</p>
+          </div>
+        )}
+      </div>
 
-        {/* Action Section */}
-        {!isExpired && (
-          <div className="mt-6 space-y-3">
+      {/* Sticky action bar */}
+      {!isExpired && (
+        <div className="shrink-0 border-t border-border bg-card/95 backdrop-blur px-4 py-3 sm:px-6 sm:py-4 safe-area-bottom">
+          <div className="mx-auto max-w-5xl">
             <AnimatePresence mode="wait">
               {showApproveForm ? (
                 <motion.div
@@ -680,15 +694,13 @@ const ProposalView = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="rounded-xl border border-border bg-card p-6"
+                  className="space-y-3"
                 >
-                  <h2 className="mb-4 text-lg font-semibold text-foreground">Aprovar proposta</h2>
-                  <p className="mb-4 text-sm text-muted-foreground">Insira seu nome para confirmar a aprovação.</p>
+                  <p className="text-sm text-muted-foreground">Insira seu nome para confirmar a aprovação.</p>
                   <Input
                     placeholder="Seu nome completo"
                     value={approverName}
                     onChange={(e) => setApproverName(e.target.value)}
-                    className="mb-4"
                     maxLength={200}
                   />
                   <div className="flex gap-3">
@@ -705,25 +717,19 @@ const ProposalView = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="rounded-xl border border-border bg-card p-6"
+                  className="space-y-3"
                 >
-                  <h2 className="mb-4 text-lg font-semibold text-foreground">Sugerir alteração</h2>
-                  <p className="mb-4 text-sm text-muted-foreground">Descreva o que gostaria de alterar na proposta.</p>
+                  <p className="text-sm text-muted-foreground">Descreva o que gostaria de alterar na proposta.</p>
                   <Textarea
                     placeholder="Ex: Gostaria de ajustar o valor do serviço X..."
                     value={negotiationMessage}
                     onChange={(e) => setNegotiationMessage(e.target.value)}
-                    className="mb-4 min-h-[100px]"
+                    className="min-h-[80px]"
                     maxLength={1000}
                   />
                   <div className="flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={() => setShowNegotiationForm(false)}>Cancelar</Button>
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={handleSendNegotiation}
-                      disabled={!negotiationMessage.trim() || sendingNegotiation}
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={handleSendNegotiation} disabled={!negotiationMessage.trim() || sendingNegotiation}>
                       {sendingNegotiation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
                       Enviar
                     </Button>
@@ -732,31 +738,30 @@ const ProposalView = () => {
               ) : (
                 <motion.div
                   key="action-buttons"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="space-y-3"
+                  className="flex flex-wrap items-center gap-3"
                 >
                   <Button
                     size="lg"
-                    className="w-full h-14 text-base font-semibold rounded-xl gap-2"
+                    className="flex-1 min-w-[180px] h-12 rounded-xl gap-2 font-semibold"
                     onClick={() => setShowApproveForm(true)}
                   >
-                    <CheckCircle className="h-5 w-5" /> Aprovar proposta
+                    <CheckCircle className="h-4 w-4" /> Aprovar proposta
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full h-12 rounded-xl gap-2"
+                    className="flex-1 min-w-[160px] h-12 rounded-xl gap-2"
                     onClick={() => setShowNegotiationForm(true)}
                   >
                     <MessageSquare className="h-4 w-4" /> Sugerir alteração
                   </Button>
                   {hasTemplate && (
                     <Button
-                      size="lg"
                       variant="ghost"
-                      className="w-full h-10 rounded-xl gap-2 text-muted-foreground"
+                      className="h-12 rounded-xl gap-2 text-muted-foreground"
                       onClick={handleDownloadPdf}
                       disabled={downloadingPdf}
                     >
@@ -768,25 +773,15 @@ const ProposalView = () => {
               )}
             </AnimatePresence>
           </div>
-        )}
+        </div>
+      )}
 
-        {isExpired && (
-          <div className="mt-6 rounded-xl border border-border bg-muted/50 p-6 text-center">
-            <Clock className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-            <p className="font-semibold text-foreground">Esta proposta expirou</p>
-            <p className="text-sm text-muted-foreground">Entre em contato para solicitar uma nova proposta.</p>
-          </div>
-        )}
-
-        {/* Footer */}
-        {company && (
-          <div className="mt-8 text-center text-xs text-muted-foreground">
-            {company.name && <p>{company.name}</p>}
-            {company.phone && <p>{company.phone}</p>}
-            {company.website && <p>{company.website}</p>}
-          </div>
-        )}
-      </main>
+      {isExpired && (
+        <div className="shrink-0 border-t border-border bg-muted/50 px-4 py-4 text-center">
+          <p className="text-sm font-medium text-foreground">Esta proposta expirou</p>
+          <p className="text-xs text-muted-foreground">Entre em contato para solicitar uma nova proposta.</p>
+        </div>
+      )}
     </div>
   );
 };
