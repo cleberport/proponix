@@ -41,6 +41,10 @@ const Generate = () => {
   const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [sendingLink, setSendingLink] = useState(false);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
