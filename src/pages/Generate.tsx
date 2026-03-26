@@ -572,6 +572,16 @@ const Generate = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="h-10 px-4 text-sm font-semibold"
+            onClick={handleSendByLink}
+            disabled={sendingLink}
+          >
+            {sendingLink ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Link2 className="mr-1.5 h-4 w-4" />}
+            <span className="hidden sm:inline">{sendingLink ? 'Gerando...' : 'Enviar por link'}</span>
+            <span className="sm:hidden">{sendingLink ? '...' : 'Link'}</span>
+          </Button>
           <Button className="h-10 px-4 text-sm font-semibold" onClick={handleGeneratePDF} disabled={generating}>
             <Download className="mr-1.5 h-4 w-4" />
             {generating ? 'Gerando...' : 'Gerar PDF'}
