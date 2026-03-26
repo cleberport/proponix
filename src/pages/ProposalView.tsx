@@ -531,31 +531,63 @@ const ProposalView = () => {
                 </div>
               </div>
             ) : (
-              <div className="mb-6 space-y-4">
-                <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                  <h1 className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">{doc.templateName}</h1>
-                  <p className="mb-6 text-sm text-muted-foreground">Proposta para {doc.clientName || 'cliente'}</p>
-                  <div className="space-y-3">
+              <div className="mb-6">
+                {/* Paper-style document */}
+                <div className="mx-auto max-w-[595px] rounded-lg shadow-lg overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+                  {/* Header band */}
+                  <div className="px-8 pt-10 pb-6" style={{ backgroundColor: '#ffffff' }}>
+                    {company?.logoUrl && (
+                      <img src={company.logoUrl} alt={company.name} className="mb-4 h-10 max-w-[140px] object-contain" />
+                    )}
+                    <h1 className="text-2xl font-bold" style={{ color: '#111827' }}>{doc.templateName}</h1>
+                    <p className="mt-1 text-sm" style={{ color: '#6b7280' }}>
+                      Proposta para <strong style={{ color: '#111827' }}>{doc.clientName || 'cliente'}</strong>
+                    </p>
+                    {doc.generatedAt && (
+                      <p className="mt-1 text-xs" style={{ color: '#9ca3af' }}>
+                        Emitido em {formatDate(doc.generatedAt)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="mx-8" style={{ borderTop: '2px solid #e5e7eb' }} />
+
+                  {/* Fields */}
+                  <div className="px-8 py-6 space-y-0">
                     {Object.entries(doc.values)
-                      .filter(([key]) => !['total', 'subtotal', 'tax', 'imposto'].includes(key.toLowerCase()))
+                      .filter(([key]) => !['total', 'subtotal', 'tax', 'imposto', 'tax_rate', 'data_de_hoje', '__logo_url__'].includes(key.toLowerCase()))
                       .map(([key, value]) => {
                         if (!value || value === '') return null;
                         const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
                         return (
-                          <div key={key} className="flex items-start justify-between gap-4 border-b border-border/50 pb-2 last:border-0">
-                            <span className="text-sm text-muted-foreground">{label}</span>
-                            <span className="text-sm font-medium text-foreground text-right max-w-[60%]">{String(value)}</span>
+                          <div key={key} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <span className="text-sm" style={{ color: '#6b7280' }}>{label}</span>
+                            <span className="text-sm font-medium text-right max-w-[60%]" style={{ color: '#111827' }}>{String(value)}</span>
                           </div>
                         );
                       })}
                   </div>
+
+                  {/* Total */}
+                  {total && (
+                    <div className="mx-8 mb-8 rounded-lg px-6 py-5 text-center" style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                      <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: '#9ca3af' }}>Valor total</p>
+                      <p className="text-3xl font-bold" style={{ color: '#111827' }}>{total}</p>
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  {company && (
+                    <div className="px-8 pb-8 text-center">
+                      <div className="pt-4" style={{ borderTop: '1px solid #f3f4f6' }}>
+                        {company.name && <p className="text-xs font-medium" style={{ color: '#6b7280' }}>{company.name}</p>}
+                        {company.phone && <p className="text-xs" style={{ color: '#9ca3af' }}>{company.phone}</p>}
+                        {company.email && <p className="text-xs" style={{ color: '#9ca3af' }}>{company.email}</p>}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {total && (
-                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-6 text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Valor total</p>
-                    <p className="text-3xl font-bold text-foreground">{total}</p>
-                  </div>
-                )}
               </div>
             )}
           </motion.div>
