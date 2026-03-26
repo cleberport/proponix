@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ADD COLUMN proposal_validity_days integer NOT NULL DEFAULT 5;

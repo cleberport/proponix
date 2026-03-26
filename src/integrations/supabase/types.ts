@@ -251,6 +251,7 @@ export type Database = {
           logo_width: number | null
           pdf_base_name: string
           profile_name: string
+          proposal_validity_days: number
           theme: string
           updated_at: string
           user_id: string
@@ -272,6 +273,7 @@ export type Database = {
           logo_width?: number | null
           pdf_base_name?: string
           profile_name?: string
+          proposal_validity_days?: number
           theme?: string
           updated_at?: string
           user_id: string
@@ -293,6 +295,7 @@ export type Database = {
           logo_width?: number | null
           pdf_base_name?: string
           profile_name?: string
+          proposal_validity_days?: number
           theme?: string
           updated_at?: string
           user_id?: string
