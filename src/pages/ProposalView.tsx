@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -327,11 +327,8 @@ const ProposalView = () => {
     );
   }
 
-  const { document: doc, company, template } = proposal;
+  const { document: doc, company } = proposal;
   const total = getTotal(doc.values);
-  const canvasW = template?.canvasWidth || 595;
-  const canvasH = template?.canvasHeight || 842;
-  const bgColor = template?.settings?.backgroundColor || '#ffffff';
 
   // ──── STEP: ENTRY SCREEN ────
   if (step === 'entry') {
