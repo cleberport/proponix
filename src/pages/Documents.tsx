@@ -689,7 +689,7 @@ const Documents = () => {
 
               {/* WhatsApp primary */}
               <Button
-                className="w-full h-11 sm:h-12 rounded-xl gap-2 px-3 font-semibold text-xs sm:text-sm whitespace-nowrap"
+                className="w-full h-11 sm:h-12 rounded-xl gap-2 px-3 font-semibold text-xs sm:text-sm whitespace-nowrap bg-[#25D366] hover:bg-[#1da851] text-white"
                 onClick={() => {
                   const msg = encodeURIComponent(
                     `Olá! Segue novamente o orçamento para sua análise:\n\n${resendModal.url}\n\nQualquer dúvida, me avise 👍`
