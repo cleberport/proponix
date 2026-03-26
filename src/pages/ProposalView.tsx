@@ -114,6 +114,116 @@ const ProposalView = () => {
     return total ? `R$ ${total}` : null;
   };
 
+  const getEventDate = () => {
+    if (!proposal) return null;
+    const v = proposal.document.values as Record<string, any>;
+    // Try common date field names
+    const dateVal = v?.data_evento || v?.data || v?.date || v?.event_date || v?.data_inicio || null;
+    return dateVal ? String(dateVal) : null;
+  };
+
+  const getEventLocation = () => {
+    if (!proposal) return '';
+    const v = proposal.document.values as Record<string, any>;
+    return String(v?.local || v?.endereco || v?.location || v?.venue || '');
+  };
+
+  const buildCalendarEvent = () => {
+    if (!proposal) return null;
+    const doc = proposal.document;
+    const total = getTotal(doc.values);
+    const eventDate = getEventDate();
+    const location = getEventLocation();
+    const company = proposal.company;
+
+    const title = `${doc.templateName} - ${doc.clientName || 'Cliente'}`;
+    const description = [
+      `Proposta: ${doc.templateName}`,
+      `Cliente: ${doc.clientName || '—'}`,
+      total ? `Valor: ${total}` : '',
+      company?.name ? `Empresa: ${company.name}` : '',
+      company?.phone ? `Telefone: ${company.phone}` : '',
+      `Aprovada por: ${proposal.approverName || '—'}`,
+    ].filter(Boolean).join('\n');
+
+    // Parse date - try common formats
+    let startDate = new Date();
+    if (eventDate) {
+      // Try dd/mm/yyyy
+      const parts = eventDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (parts) {
+        startDate = new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1]));
+      } else {
+        const parsed = new Date(eventDate);
+        if (!isNaN(parsed.getTime())) startDate = parsed;
+      }
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setHours(endDate.getHours() + 2);
+
+    return { title, description, location, startDate, endDate };
+  };
+
+  const formatDateForICS = (d: Date) => {
+    return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+
+  const handleAppleCalendar = () => {
+    const event = buildCalendarEvent();
+    if (!event) return;
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Freelox//Proposal//PT',
+      'BEGIN:VEVENT',
+      `DTSTART:${formatDateForICS(event.startDate)}`,
+      `DTEND:${formatDateForICS(event.endDate)}`,
+      `SUMMARY:${event.title}`,
+      `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`,
+      `LOCATION:${event.location}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'evento.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGoogleCalendar = () => {
+    const event = buildCalendarEvent();
+    if (!event) return;
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      details: event.description,
+      location: event.location,
+      dates: `${fmt(event.startDate)}/${fmt(event.endDate)}`,
+    });
+    window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank');
+  };
+
+  const handleOutlookCalendar = () => {
+    const event = buildCalendarEvent();
+    if (!event) return;
+    const params = new URLSearchParams({
+      path: '/calendar/action/compose',
+      rru: 'addevent',
+      subject: event.title,
+      body: event.description,
+      location: event.location,
+      startdt: event.startDate.toISOString(),
+      enddt: event.endDate.toISOString(),
+    });
+    window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`, '_blank');
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
