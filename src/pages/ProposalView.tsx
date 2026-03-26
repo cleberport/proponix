@@ -577,19 +577,6 @@ const ProposalView = () => {
   const CANVAS_W = proposal?.template?.canvasWidth || 595;
   const CANVAS_H = proposal?.template?.canvasHeight || 842;
 
-  useEffect(() => {
-    const node = docContainerRef.current;
-    if (!node) return;
-    const measure = () => {
-      const rect = node.getBoundingClientRect();
-      setContainerSize({ w: rect.width, h: rect.height });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(node);
-    return () => ro.disconnect();
-  }, [step]);
-
   // scale = min(viewportW / docW, viewportH / docH) — fit entire doc on screen
   const docScale = containerSize.w > 0 && containerSize.h > 0
     ? Math.min(containerSize.w / CANVAS_W, containerSize.h / CANVAS_H, 1)
