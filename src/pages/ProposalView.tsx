@@ -577,10 +577,22 @@ const ProposalView = () => {
   const CANVAS_W = proposal?.template?.canvasWidth || 595;
   const CANVAS_H = proposal?.template?.canvasHeight || 842;
 
-  // scale = min(viewportW / docW, viewportH / docH) — fit entire doc on screen
+  // Compute scale accounting for padding (16px each side on mobile, 24px on desktop)
+  const PAD = 16;
+  const availW = Math.max(containerSize.w - PAD * 2, 1);
+  const availH = Math.max(containerSize.h - PAD * 2, 1);
   const docScale = containerSize.w > 0 && containerSize.h > 0
-    ? Math.min(containerSize.w / CANVAS_W, containerSize.h / CANVAS_H, 1)
+    ? Math.min(availW / CANVAS_W, availH / CANVAS_H, 1)
     : 0;
+
+  // Detect if header bg is dark to adapt logo contrast
+  const headerIsDark = (() => {
+    // Use muted/30 background — in light theme it's light, dark theme it's dark
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  })();
 
   return (
     <div className="flex h-[100dvh] flex-col bg-muted/30">
@@ -589,7 +601,12 @@ const ProposalView = () => {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
             {company?.logoUrl ? (
-              <img src={company.logoUrl} alt={company.name} className="h-8 max-w-[120px] object-contain" />
+              <img
+                src={company.logoUrl}
+                alt={company.name}
+                className="h-8 max-w-[120px] object-contain"
+                style={headerIsDark ? { filter: 'brightness(0) invert(1)' } : undefined}
+              />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded bg-primary">
                 <FileText className="h-4 w-4 text-primary-foreground" />
@@ -606,10 +623,11 @@ const ProposalView = () => {
         </div>
       </header>
 
-      {/* Document area — fills remaining space */}
+      {/* Document area — fills remaining space, centers doc */}
       <div
         ref={docContainerRef}
-        className="flex-1 min-h-0 flex items-center justify-center overflow-auto p-4 sm:p-6"
+        className="flex-1 min-h-0 flex items-center justify-center overflow-auto"
+        style={{ padding: PAD }}
       >
         {hasTemplate && docScale > 0 ? (
           <motion.div
@@ -621,11 +639,13 @@ const ProposalView = () => {
             {templatePages.map((pageElements, pageIdx) => (
               <div
                 key={pageIdx}
-                className="mx-auto rounded-lg shadow-xl overflow-hidden"
+                className="mx-auto overflow-hidden"
                 style={{
                   width: CANVAS_W * docScale,
                   height: CANVAS_H * docScale,
-                  marginBottom: pageIdx < templatePages.length - 1 ? 16 : 0,
+                  marginBottom: pageIdx < templatePages.length - 1 ? 12 * docScale : 0,
+                  borderRadius: 8 * docScale,
+                  boxShadow: '0 4px 24px -4px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
                 }}
               >
                 <div
