@@ -671,7 +671,7 @@ const Documents = () => {
 
       {/* Resend Modal */}
       <Dialog open={!!resendModal} onOpenChange={(open) => !open && setResendModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Reenviar proposta</DialogTitle>
             <DialogDescription>Escolha como enviar o link para o cliente.</DialogDescription>
