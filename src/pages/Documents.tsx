@@ -527,16 +527,14 @@ const Documents = () => {
                               </Tooltip>
                             )}
                             {link?.negotiation_message && status === 'negociacao' && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="text-amber-500 cursor-help">💬</span>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <p className="font-medium text-xs mb-1">Sugestão do cliente:</p>
-                                  <p className="text-xs">{link.negotiation_message}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                              <span className="text-amber-500">💬</span>
                             )}
+                          </div>
+                          {link?.negotiation_message && status === 'negociacao' && (
+                            <p className="mt-1 text-xs text-muted-foreground truncate max-w-[250px]" title={link.negotiation_message}>
+                              💬 {link.negotiation_message}
+                            </p>
+                          )}
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">{doc.templateName}</p>
