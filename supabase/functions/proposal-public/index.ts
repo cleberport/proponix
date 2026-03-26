@@ -212,7 +212,6 @@ Deno.serve(async (req) => {
         approved_at: now,
         approver_name: approverName,
         viewed_at: link.status === "enviado" ? now : undefined,
-        view_count: link.max_views ?? 1,
       }).eq("id", link.id);
 
       await supabase.from("generated_documents").update({ status: "aprovado" }).eq("id", link.document_id);
