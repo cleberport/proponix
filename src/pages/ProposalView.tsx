@@ -502,41 +502,31 @@ const ProposalView = () => {
             {hasTemplate ? (
               <div className="mb-6">
                 <div
-                  className="mx-auto overflow-hidden rounded-lg shadow-lg"
-                  style={{ maxWidth: canvasW }}
+                  ref={docContainerRef}
+                  className="relative mx-auto w-full overflow-hidden rounded-lg shadow-lg bg-white"
+                  style={{
+                    maxWidth: canvasW,
+                    aspectRatio: `${canvasW} / ${canvasH}`,
+                  }}
                 >
-                  <div className="w-full" style={{ aspectRatio: `${canvasW} / ${canvasH}` }}>
-                    <div
-                      className="origin-top-left"
-                      style={{
-                        width: canvasW,
-                        height: canvasH,
-                        transform: `scale(var(--proposal-scale, 1))`,
-                      }}
-                      ref={(el) => {
-                        if (!el) return;
-                        const parent = el.parentElement;
-                        if (!parent) return;
-                        const observer = new ResizeObserver(() => {
-                          const scale = parent.clientWidth / canvasW;
-                          el.style.setProperty('--proposal-scale', String(Math.min(scale, 1)));
-                        });
-                        observer.observe(parent);
-                        const scale = parent.clientWidth / canvasW;
-                        el.style.setProperty('--proposal-scale', String(Math.min(scale, 1)));
-                      }}
-                    >
-                      <CanvasRenderer
-                        elements={template!.elements}
-                        selectedId={null}
-                        onSelect={() => {}}
-                        onUpdate={() => {}}
-                        readOnly
-                        variableValues={variableValues}
-                        showGrid={false}
-                        backgroundColor={bgColor}
-                      />
-                    </div>
+                  <div
+                    className="absolute inset-0 origin-top-left"
+                    style={{
+                      width: canvasW,
+                      height: canvasH,
+                      transform: `scale(${docScale})`,
+                    }}
+                  >
+                    <CanvasRenderer
+                      elements={templateElements}
+                      selectedId={null}
+                      onSelect={() => {}}
+                      onUpdate={() => {}}
+                      readOnly
+                      variableValues={variableValues}
+                      showGrid={false}
+                      backgroundColor={bgColor}
+                    />
                   </div>
                 </div>
               </div>
