@@ -148,7 +148,7 @@ const Landing = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate('#pricing')}
-              className="h-14 px-10 text-base font-semibold rounded-full border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              className="h-14 px-10 text-base font-semibold rounded-full border-2 border-foreground/20 text-foreground hover:bg-accent"
             >
               Ver Planos
             </Button>
