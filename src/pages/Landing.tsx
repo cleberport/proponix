@@ -139,9 +139,9 @@ const Landing = () => {
             <Button
               size="lg"
               onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 px-10 text-base font-semibold rounded-full group bg-neutral-900 text-white hover:bg-neutral-800 shadow-xl"
+              className="h-14 px-10 text-base font-semibold rounded-full group bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
             >
-              Criar Minha Primeira Proposta
+              Começar Grátis
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
