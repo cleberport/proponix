@@ -573,7 +573,7 @@ const ProposalView = () => {
     );
   }
 
-  // ──── STEP: VIEWING ────
+  // ──── STEP: VIEWING / DECISION ────
   const CANVAS_W = proposal?.template?.canvasWidth || 595;
   const CANVAS_H = proposal?.template?.canvasHeight || 842;
 
