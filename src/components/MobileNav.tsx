@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const items = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Importar', path: '/import', icon: FileUp },
-  { label: 'Histórico', path: '/documents', icon: Clock },
+  { label: 'Docs', path: '/documents', icon: FileText },
   { label: 'Plano', path: '/billing', icon: CreditCard },
   { label: 'Config', path: '/settings', icon: Settings },
 ];
