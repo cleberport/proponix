@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
           approvedAt: link.approved_at,
           approverName: link.approver_name,
           viewCount: link.view_count,
+          lastViewedAt: link.last_viewed_at,
           maxViews: maxViews,
           expiresAt: link.expires_at,
           negotiationMessage: link.negotiation_message,
