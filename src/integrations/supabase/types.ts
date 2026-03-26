@@ -160,6 +160,7 @@ export type Database = {
           document_id: string
           expires_at: string | null
           id: string
+          last_viewed_at: string | null
           max_views: number
           negotiation_message: string | null
           status: string
@@ -178,6 +179,7 @@ export type Database = {
           document_id: string
           expires_at?: string | null
           id?: string
+          last_viewed_at?: string | null
           max_views?: number
           negotiation_message?: string | null
           status?: string
@@ -196,6 +198,7 @@ export type Database = {
           document_id?: string
           expires_at?: string | null
           id?: string
+          last_viewed_at?: string | null
           max_views?: number
           negotiation_message?: string | null
           status?: string
