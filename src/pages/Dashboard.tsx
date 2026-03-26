@@ -151,13 +151,12 @@ const Dashboard = () => {
       {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4" data-tour="tour-template-cards">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:gap-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
             {saved.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
-                  onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('saved'); setDeleteId(t.id); }}
                   onDuplicate={() => { void handleDuplicate(t.id); }}
                   isSaved
@@ -185,13 +184,12 @@ const Dashboard = () => {
               Remover todos
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:gap-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
             {starters.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
-                  onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('starter'); setDeleteId(t.id); }}
                   onDuplicate={() => { void handleDuplicate(t.id); }}
                 />

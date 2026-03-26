@@ -1,65 +1,55 @@
 import { Template } from '@/types/template';
-import { Pencil, Play, Trash2, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Pencil, Trash2, Copy } from 'lucide-react';
 import TemplatePreview from '@/components/TemplatePreview';
 
 interface Props {
   template: Template;
   onEdit: () => void;
-  onGenerate: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
   isSaved?: boolean;
 }
 
-const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: Props) => {
+const TemplateCard = ({ template, onEdit, onDelete, onDuplicate }: Props) => {
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="relative overflow-hidden border-b border-border/70 bg-muted/20">
-        <div className="transition-transform duration-300 group-hover:scale-[1.02]">
-          <TemplatePreview template={template} className="w-full" />
+    <article
+      className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card cursor-pointer transition-all duration-200 hover:shadow-lg"
+      onClick={onEdit}
+    >
+      {/* Preview with hover overlay */}
+      <div className="relative overflow-hidden bg-muted/20">
+        <TemplatePreview template={template} className="w-full" />
+
+        {/* Dark overlay + edit icon on hover */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/50 group-hover:opacity-100">
+          <Pencil className="h-5 w-5 text-white drop-shadow-md" />
+          <span className="text-xs font-semibold text-white drop-shadow-md">Editar</span>
         </div>
 
-        <div className="absolute right-2 top-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        {/* Action icons top-right */}
+        <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           {onDuplicate && (
             <button
               className="rounded-md bg-background/90 p-1.5 text-foreground shadow-sm backdrop-blur-sm hover:text-primary border border-border/50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate();
-              }}
+              onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
             >
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-3 w-3" />
             </button>
           )}
           {onDelete && (
             <button
               className="rounded-md bg-background/90 p-1.5 text-destructive shadow-sm backdrop-blur-sm hover:text-destructive/80 border border-border/50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3 w-3" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-2 md:gap-2 md:p-3">
-        <h3 className="truncate text-xs font-semibold text-foreground md:text-sm">{template.name}</h3>
-        <p className="line-clamp-1 text-[10px] text-muted-foreground md:line-clamp-2 md:text-[11px]">{template.description}</p>
-
-        <div className="mt-auto flex items-center gap-1 pt-0.5 md:gap-1.5 md:pt-1">
-          <Button variant="outline" size="sm" className="h-7 flex-1 text-[11px] px-1.5 md:h-8 md:px-2" onClick={onEdit}>
-            <Pencil className="mr-1 h-3 w-3 shrink-0 hidden md:inline-block" />
-            Editar
-          </Button>
-          <Button size="sm" className="h-7 flex-1 text-[11px] px-1.5 md:h-8 md:px-2" onClick={onGenerate}>
-            <Play className="mr-1 h-3 w-3 shrink-0 hidden md:inline-block" />
-            Gerar
-          </Button>
-        </div>
+      {/* Compact label */}
+      <div className="px-2 py-1.5">
+        <h3 className="truncate text-xs font-medium text-foreground">{template.name}</h3>
       </div>
     </article>
   );
