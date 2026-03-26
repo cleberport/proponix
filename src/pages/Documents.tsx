@@ -54,6 +54,7 @@ const Documents = () => {
   const [activeTab, setActiveTab] = useState('todos');
   const [proposalLinks, setProposalLinks] = useState<Record<string, ProposalLink>>({});
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
+  const [resendingLink, setResendingLink] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocumentHistoryFromServer().then(setHistory);
