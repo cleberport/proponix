@@ -675,6 +675,18 @@ const ProposalView = () => {
                   >
                     <MessageSquare className="h-4 w-4" /> Sugerir alteração
                   </Button>
+                  {hasTemplate && (
+                    <Button
+                      size="lg"
+                      variant="ghost"
+                      className="w-full h-10 rounded-xl gap-2 text-muted-foreground"
+                      onClick={handleDownloadPdf}
+                      disabled={downloadingPdf}
+                    >
+                      {downloadingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      Baixar PDF
+                    </Button>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
