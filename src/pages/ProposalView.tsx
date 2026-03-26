@@ -35,6 +35,8 @@ const ProposalView = () => {
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [blocked, setBlocked] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState('');
   const [approverName, setApproverName] = useState('');
   const [approving, setApproving] = useState(false);
   const [showApproveForm, setShowApproveForm] = useState(false);
