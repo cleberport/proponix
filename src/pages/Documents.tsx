@@ -61,7 +61,7 @@ const Documents = () => {
   const [proposalLinks, setProposalLinks] = useState<Record<string, ProposalLink>>({});
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [resendingLink, setResendingLink] = useState<string | null>(null);
-
+  const [resendModal, setResendModal] = useState<{ docId: string; clientName: string; total: string; url: string } | null>(null);
   useEffect(() => {
     loadDocumentHistoryFromServer().then(setHistory);
     loadProposalLinks();
