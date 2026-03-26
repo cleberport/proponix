@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle } from 'lucide-react';
+import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle, Clock } from 'lucide-react';
 import { resetTour } from '@/components/OnboardingTour';
 import { toast } from 'sonner';
 
@@ -173,6 +173,24 @@ const SettingsPage = () => {
             <span className="text-sm text-muted-foreground">%</span>
           </div>
           <p className="mt-1 text-[10px] text-muted-foreground">Ex: 10 = 10%, 11.29 = 11,29%</p>
+        </section>
+
+        {/* Proposal validity */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Validade das Propostas</h2>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Tempo que o cliente tem para visualizar e aprovar a proposta</p>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number" min="1" max="90"
+              value={settings.proposalValidityDays}
+              onChange={(e) => update({ proposalValidityDays: Math.max(1, Math.min(90, parseInt(e.target.value) || 5)) })}
+              className="h-11 md:h-9 max-w-[100px]"
+            />
+            <span className="text-sm text-muted-foreground">dias</span>
+          </div>
         </section>
 
         {/* PDF name */}

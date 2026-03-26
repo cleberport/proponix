@@ -473,10 +473,13 @@ const Generate = () => {
         values: { ...userInputs },
       });
 
-      // Generate proposal link
+      // Generate proposal link with custom validity
+      const settings = getSettings();
+      const validityDays = settings.proposalValidityDays || 5;
+      const expiresAt = new Date(Date.now() + validityDays * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('proposal_links')
-        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .insert({ user_id: session.user.id, document_id: docId, expires_at: expiresAt } as any)
         .select()
         .single();
 
