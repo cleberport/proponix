@@ -50,7 +50,7 @@ interface ProposalData {
   } | null;
 }
 
-type Step = 'entry' | 'viewing' | 'approved' | 'negotiation-sent' | 'expired';
+type Step = 'entry' | 'viewing' | 'decision' | 'approved' | 'negotiation-sent' | 'expired';
 
 const normalizeTemplatePages = (layout: unknown): CanvasElement[][] => {
   if (Array.isArray(layout)) {
@@ -573,7 +573,7 @@ const ProposalView = () => {
     );
   }
 
-  // ──── STEP: VIEWING ────
+  // ──── STEP: VIEWING / DECISION ────
   const CANVAS_W = proposal?.template?.canvasWidth || 595;
   const CANVAS_H = proposal?.template?.canvasHeight || 842;
 
@@ -688,7 +688,23 @@ const ProposalView = () => {
         <div className="shrink-0 border-t border-border bg-card/95 backdrop-blur px-4 py-3 sm:px-6 sm:py-4 safe-area-bottom">
           <div className="mx-auto max-w-5xl">
             <AnimatePresence mode="wait">
-              {showApproveForm ? (
+              {step === 'viewing' ? (
+                <motion.div
+                  key="continue-btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-center"
+                >
+                  <Button
+                    size="lg"
+                    className="h-12 px-10 rounded-xl gap-2 font-semibold"
+                    onClick={() => setStep('decision')}
+                  >
+                    Continuar
+                  </Button>
+                </motion.div>
+              ) : showApproveForm ? (
                 <motion.div
                   key="approve-form"
                   initial={{ opacity: 0, y: 10 }}
@@ -737,37 +753,43 @@ const ProposalView = () => {
                 </motion.div>
               ) : (
                 <motion.div
-                  key="action-buttons"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  key="decision-buttons"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-wrap items-center gap-3"
+                  className="space-y-3"
                 >
-                  <Button
-                    size="lg"
-                    className="flex-1 min-w-[180px] h-12 rounded-xl gap-2 font-semibold"
-                    onClick={() => setShowApproveForm(true)}
-                  >
-                    <CheckCircle className="h-4 w-4" /> Aprovar proposta
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="flex-1 min-w-[160px] h-12 rounded-xl gap-2"
-                    onClick={() => setShowNegotiationForm(true)}
-                  >
-                    <MessageSquare className="h-4 w-4" /> Sugerir alteração
-                  </Button>
-                  {hasTemplate && (
+                  <p className="text-center text-sm font-medium text-foreground">Gostou da proposta?</p>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Button
-                      variant="ghost"
-                      className="h-12 rounded-xl gap-2 text-muted-foreground"
-                      onClick={handleDownloadPdf}
-                      disabled={downloadingPdf}
+                      size="lg"
+                      className="w-full sm:flex-1 h-12 rounded-xl gap-2 font-semibold text-sm"
+                      onClick={() => setShowApproveForm(true)}
                     >
-                      {downloadingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                      Baixar PDF
+                      <CheckCircle className="h-4 w-4 shrink-0" /> Aprovar proposta
                     </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:flex-1 h-12 rounded-xl gap-2 text-sm"
+                      onClick={() => setShowNegotiationForm(true)}
+                    >
+                      <MessageSquare className="h-4 w-4 shrink-0" /> Sugerir ajuste
+                    </Button>
+                  </div>
+                  {hasTemplate && (
+                    <div className="flex justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-muted-foreground"
+                        onClick={handleDownloadPdf}
+                        disabled={downloadingPdf}
+                      >
+                        {downloadingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                        Baixar PDF
+                      </Button>
+                    </div>
                   )}
                 </motion.div>
               )}
