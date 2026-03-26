@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
