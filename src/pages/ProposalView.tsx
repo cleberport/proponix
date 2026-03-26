@@ -226,23 +226,40 @@ const ProposalView = () => {
 
   const hasTemplate = templateElements.length > 0;
 
-  // Responsive scaling for document render
-  const docContainerRef = useRef<HTMLDivElement | null>(null);
-  const [docScale, setDocScale] = useState(1);
-
+  // Generate PDF blob for inline display when step becomes 'viewing'
   useEffect(() => {
-    const node = docContainerRef.current;
-    if (!node || !hasTemplate) return;
-    const cw = proposal?.template?.canvasWidth || 595;
-    const update = () => {
-      const w = node.clientWidth;
-      if (w > 0) setDocScale(Math.min(w / cw, 1));
+    if (step !== 'viewing' || !hasTemplate || pdfUrl) return;
+    let cancelled = false;
+    const generate = async () => {
+      setGeneratingPdf(true);
+      try {
+        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
+        const bgColor = proposal?.template?.settings?.backgroundColor;
+        const blob = await generateVectorPdf(
+          [templateElements],
+          variableValues,
+          'preview.pdf',
+          { backgroundColor: bgColor }
+        );
+        if (blob && !cancelled) {
+          setPdfUrl(URL.createObjectURL(blob));
+        }
+      } catch (e) {
+        console.error('PDF generation failed', e);
+      } finally {
+        if (!cancelled) setGeneratingPdf(false);
+      }
     };
-    update();
-    const obs = new ResizeObserver(update);
-    obs.observe(node);
-    return () => obs.disconnect();
-  }, [hasTemplate, proposal?.template?.canvasWidth]);
+    generate();
+    return () => { cancelled = true; };
+  }, [step, hasTemplate, templateElements, variableValues, proposal?.template?.settings?.backgroundColor]);
+
+  // Cleanup PDF URL on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('pt-BR', {
