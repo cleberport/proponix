@@ -86,13 +86,13 @@ const Landing = () => {
             <a href="#como-funciona" className="hover:text-neutral-900 transition-colors">Como Funciona</a>
             <a href="#pricing" className="hover:text-neutral-900 transition-colors">Preços</a>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}
-              className="text-neutral-600 hover:text-neutral-900 text-sm font-medium">
+              className="hidden sm:inline-flex text-neutral-600 hover:text-neutral-900 text-sm font-medium">
               Entrar
             </Button>
             <Button size="sm" onClick={() => navigate('/auth?tab=signup')}
-              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-5 text-sm font-semibold">
+              className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-semibold">
               Começar Grátis
             </Button>
           </div>
@@ -133,13 +133,13 @@ const Landing = () => {
           </motion.p>
 
           <motion.div
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mx-auto"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45 }}
           >
             <Button
               size="lg"
               onClick={() => navigate('/auth?tab=signup')}
-              className="h-14 px-10 text-base font-semibold rounded-full group bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
+              className="h-14 w-full sm:w-auto px-10 text-base font-semibold rounded-full group bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
             >
               Começar Grátis
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -151,7 +151,7 @@ const Landing = () => {
                 const el = document.getElementById('pricing');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="h-14 px-10 text-base font-semibold rounded-full border-2 border-foreground/20 text-foreground hover:bg-accent"
+              className="h-14 w-full sm:w-auto px-10 text-base font-semibold rounded-full border-2 border-foreground/20 text-foreground hover:bg-accent"
             >
               Ver Planos
             </Button>
