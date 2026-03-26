@@ -119,6 +119,20 @@ const ProposalView = () => {
     );
   }
 
+  if (blocked) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h1 className="text-xl font-semibold text-foreground">Link indisponível</h1>
+        <p className="max-w-sm text-center text-sm text-muted-foreground">
+          {blockedMessage}
+        </p>
+      </div>
+    );
+  }
+
   if (error || !proposal) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6">
