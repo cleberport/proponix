@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import {
 import { CanvasElement, Template } from '@/types/template';
 import { starterTemplates } from '@/data/templates';
 import { motion, AnimatePresence } from 'framer-motion';
+import CanvasRenderer from '@/components/editor/CanvasRenderer';
+import { resolveAllValues } from '@/lib/calculations';
 
 interface ProposalData {
   id: string;
