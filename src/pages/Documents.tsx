@@ -419,80 +419,101 @@ const Documents = () => {
                       onClick={() => handleOpen(doc)}
                     >
                       {/* Mobile layout */}
-                      <div className="md:hidden space-y-2">
-                        <div className="flex items-start justify-between">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-foreground truncate">
-                              {doc.clientName || doc.fileName}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate">{doc.templateName}</p>
-                          </div>
-                          <Badge variant={config.variant} className="ml-2 text-[10px] shrink-0">
+                      <div className="md:hidden">
+                        {/* Row 1: Client name + status */}
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-base font-semibold text-foreground truncate">
+                            {doc.clientName || 'Cliente'}
+                          </p>
+                          <Badge variant={config.variant} className="text-[10px] shrink-0 px-2 py-0.5">
                             <StatusIcon className="mr-1 h-2.5 w-2.5" />
                             {config.label}
                           </Badge>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{getTotal(doc)}</span>
-                          <span>{formatDate(doc.generatedAt)}</span>
+
+                        {/* Row 2: Value + date */}
+                        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground text-sm">{getTotal(doc)}</span>
+                          <span className="text-muted-foreground/60">·</span>
+                          <span>{new Date(doc.generatedAt).toLocaleDateString('pt-BR')}</span>
                         </div>
-                        {/* Tracking info */}
-                        {link && (link.viewed_at || link.approved_at) && (
-                          <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                            {link.viewed_at && <span>👁 Visto {formatDate(link.viewed_at)}</span>}
-                            {link.approved_at && <span>✅ Aprovado {formatDate(link.approved_at)} {link.approver_name && `por ${link.approver_name}`}</span>}
-                          </div>
-                        )}
-                        {/* Negotiation message - mobile */}
+
+                        {/* Negotiation message */}
                         {link?.negotiation_message && status === 'negociacao' && (
-                          <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 px-3 py-2">
-                            <p className="text-[10px] font-medium text-amber-800 dark:text-amber-400 mb-0.5">💬 Sugestão do cliente:</p>
+                          <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 px-3 py-2">
+                            <p className="text-[10px] font-medium text-amber-800 dark:text-amber-400 mb-0.5">Sugestão do cliente</p>
                             <p className="text-xs text-amber-700 dark:text-amber-300">{link.negotiation_message}</p>
                           </div>
                         )}
-                        <div className="flex items-center gap-1 pt-1 border-t border-border flex-wrap" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-xs flex-1"
-                            onClick={() => handleGenerateLink(doc.id)}
-                            disabled={isGenerating}
-                          >
-                            {isGenerating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Link2 className="mr-1 h-3 w-3" />}
-                            {link ? 'Copiar link' : 'Gerar link'}
-                          </Button>
+
+                        {/* Row 3: Icon-only actions */}
+                        <div className="mt-2.5 flex items-center gap-0.5 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9"
+                                onClick={() => handleGenerateLink(doc.id)}
+                                disabled={isGenerating}
+                              >
+                                {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{link ? 'Copiar link' : 'Gerar link'}</TooltipContent>
+                          </Tooltip>
+
                           {link && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 text-xs flex-1"
-                              onClick={() => handleResendLink(doc.id)}
-                              disabled={resendingLink === doc.id}
-                            >
-                              {resendingLink === doc.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-1 h-3 w-3" />}
-                              Reenviar
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-9 w-9"
+                                  onClick={() => handleResendLink(doc.id)}
+                                  disabled={resendingLink === doc.id}
+                                >
+                                  {resendingLink === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Reenviar link</TooltipContent>
+                            </Tooltip>
                           )}
+
                           {status === 'aprovado' && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={(e) => e.stopPropagation()}>
-                                  <CalendarPlus className="mr-1 h-3 w-3" /> Calendário
+                                <Button variant="ghost" size="icon" className="h-9 w-9" onClick={(e) => e.stopPropagation()}>
+                                  <CalendarPlus className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="center">
+                              <DropdownMenuContent align="start">
                                 <DropdownMenuItem onClick={() => handleGoogleCalendar(doc)}>Google Calendar</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAppleCalendar(doc)}>Apple Calendar (.ics)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleAppleCalendar(doc)}>Apple Calendar</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleOutlookCalendar(doc)}>Outlook</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
-                          <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
-                            <Copy className="mr-1 h-3 w-3" /> Duplicar
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setDeleteId(doc.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleDuplicate(doc)}>
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Duplicar</TooltipContent>
+                          </Tooltip>
+
+                          <div className="flex-1" />
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive/70" onClick={() => setDeleteId(doc.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Excluir</TooltipContent>
+                          </Tooltip>
                         </div>
                       </div>
 
