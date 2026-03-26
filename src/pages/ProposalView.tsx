@@ -150,6 +150,20 @@ const ProposalView = () => {
     fetchProposal(false);
   }, [token, fetchProposal]);
 
+  // Measure container for document scaling
+  useEffect(() => {
+    const node = docContainerRef.current;
+    if (!node) return;
+    const measure = () => {
+      const rect = node.getBoundingClientRect();
+      setContainerSize({ w: rect.width, h: rect.height });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [step]);
+
   const handleViewProposal = async () => {
     setMarkingViewed(true);
     await fetchProposal(true);
