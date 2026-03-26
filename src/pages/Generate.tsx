@@ -523,8 +523,11 @@ const Generate = () => {
                         placeholder={getPlaceholder(v)}
                         className="h-12 text-base md:h-10 md:text-sm"
                         inputMode={v === 'price' ? 'numeric' : 'text'}
-                        onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
-                        onBlur={v === 'price' ? handlePriceBlur : undefined}
+                        onFocus={() => handleFieldFocus(v)}
+                        onBlur={() => handleFieldBlur(v)}
+                        list={suggestions.length > 0 ? listId : undefined}
+                        autoComplete="off"
+                      />
                         list={suggestions.length > 0 ? listId : undefined}
                         autoComplete="off"
                       />
