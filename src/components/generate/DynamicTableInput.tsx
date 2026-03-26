@@ -12,9 +12,11 @@ interface Props {
   headers: string[];
   rows: DynamicRow[];
   onChange: (rows: DynamicRow[]) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
-const DynamicTableInput = ({ headers, rows, onChange }: Props) => {
+const DynamicTableInput = ({ headers, rows, onChange, onFocus, onBlur }: Props) => {
   const addRow = () => {
     onChange([...rows, { cells: headers.map(() => '') }]);
   };
@@ -78,6 +80,8 @@ const DynamicTableInput = ({ headers, rows, onChange }: Props) => {
                 onChange={(e) => updateCell(ri, ci, e.target.value)}
                 className="h-10 text-sm"
                 inputMode={ci === priceColIndex ? 'numeric' : 'text'}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             ))}
           </div>

@@ -265,6 +265,9 @@ const Generate = () => {
         if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
           map[el.variable] = pageIdx;
         }
+        if (el.type === 'table' && !('__table__' in map)) {
+          map['__table__'] = pageIdx;
+        }
         if ((el.type === 'text' || el.type === 'notes') && el.content) {
           let match: RegExpExecArray | null;
           while ((match = varPattern.exec(el.content)) !== null) {
@@ -286,6 +289,9 @@ const Generate = () => {
         if (el.isVisible === false) continue;
         if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
           map[el.variable] = el.id;
+        }
+        if (el.type === 'table' && !('__table__' in map)) {
+          map['__table__'] = el.id;
         }
       }
     }
@@ -546,6 +552,8 @@ const Generate = () => {
                 headers={tableInfo.headers}
                 rows={tableRows}
                 onChange={setTableRows}
+                onFocus={() => handleFieldFocus('__table__')}
+                onBlur={() => handleFieldBlur('__table__')}
               />
             )}
           </div>
