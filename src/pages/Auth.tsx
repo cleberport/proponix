@@ -62,7 +62,28 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-neutral-900" data-theme="light" style={{ colorScheme: 'light' }}>
+    <div className="flex min-h-screen flex-col light" style={{
+      colorScheme: 'light',
+      ['--background' as any]: '0 0% 100%',
+      ['--foreground' as any]: '240 10% 4%',
+      ['--card' as any]: '0 0% 100%',
+      ['--card-foreground' as any]: '240 10% 4%',
+      ['--popover' as any]: '0 0% 100%',
+      ['--popover-foreground' as any]: '240 10% 4%',
+      ['--border' as any]: '240 6% 90%',
+      ['--input' as any]: '240 6% 90%',
+      ['--ring' as any]: '346 100% 59%',
+      ['--primary' as any]: '346 100% 59%',
+      ['--primary-foreground' as any]: '0 0% 100%',
+      ['--muted' as any]: '240 5% 96%',
+      ['--muted-foreground' as any]: '240 4% 46%',
+      ['--accent' as any]: '240 5% 96%',
+      ['--accent-foreground' as any]: '240 6% 10%',
+      ['--secondary' as any]: '240 5% 96%',
+      ['--secondary-foreground' as any]: '240 6% 10%',
+      backgroundColor: 'hsl(0 0% 100%)',
+      color: 'hsl(240 10% 4%)',
+    }}>
       <div className="flex items-center gap-3 p-4">
         <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
           <ArrowLeft className="h-4 w-4" />
