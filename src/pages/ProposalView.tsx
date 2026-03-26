@@ -21,6 +21,8 @@ interface ProposalData {
   approverName: string;
   expiresAt: string | null;
   negotiationMessage: string | null;
+  viewCount: number;
+  lastViewedAt: string | null;
   document: {
     clientName: string;
     templateName: string;
