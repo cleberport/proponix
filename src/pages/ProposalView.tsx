@@ -211,29 +211,24 @@ const ProposalView = () => {
     if (!hasTemplate) return;
     setDownloadingPdf(true);
     try {
-      // Reuse already-generated blob if available
       if (pdfUrl) {
+        // Fetch the blob from the object URL to trigger a proper download
+        const resp = await fetch(pdfUrl);
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = pdfUrl;
-        a.download = proposal.document.fileName;
+        a.href = url;
+        a.download = proposal!.document.fileName;
         a.click();
+        URL.revokeObjectURL(url);
       } else {
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-        const bgColor = proposal.template.settings?.backgroundColor;
-        const blob = await generateVectorPdf(
+        await generateVectorPdf(
           templatePages,
           variableValues,
-          proposal.document.fileName,
+          proposal!.document.fileName,
           { backgroundColor: bgColor }
         );
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = proposal.document.fileName;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
       }
     } catch {
       // silent
