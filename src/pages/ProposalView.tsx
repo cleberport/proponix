@@ -21,6 +21,8 @@ interface ProposalData {
   approverName: string;
   expiresAt: string | null;
   negotiationMessage: string | null;
+  viewCount: number;
+  lastViewedAt: string | null;
   document: {
     clientName: string;
     templateName: string;
@@ -384,6 +386,15 @@ const ProposalView = () => {
                 </div>
               )}
 
+              {proposal.viewCount > 0 && (
+                <div className="mb-4 rounded-lg border border-border bg-muted/50 px-4 py-3">
+                  <p className="text-sm text-muted-foreground">
+                    <Eye className="mr-1.5 inline h-3.5 w-3.5" />
+                    Você já visualizou esta proposta
+                  </p>
+                </div>
+              )}
+
               <Button
                 size="lg"
                 className="w-full h-14 text-base font-semibold rounded-xl gap-2"
@@ -395,7 +406,7 @@ const ProposalView = () => {
                 ) : (
                   <>
                     <Eye className="h-5 w-5" />
-                    Visualizar proposta
+                    {proposal.viewCount > 0 ? 'Continuar visualizando' : 'Visualizar proposta'}
                   </>
                 )}
               </Button>

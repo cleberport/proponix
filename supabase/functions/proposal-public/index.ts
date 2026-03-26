@@ -59,12 +59,12 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "expired", message: "Esta proposta expirou e não está mais disponível." }, 410);
       }
 
-      // Check view limit (skip for peek and already viewed/approved/negotiation)
-      const maxViews = link.max_views ?? 1;
-      if (!isPeek && link.view_count >= maxViews && !["enviado", "visualizado", "negociacao", "aprovado"].includes(link.status)) {
+      // Check view limit
+      const maxViews = link.max_views ?? 50;
+      if (link.view_count >= maxViews && !["aprovado"].includes(link.status)) {
         return jsonResponse({
           error: "blocked",
-          message: "Este orçamento já foi visualizado e não está mais disponível.",
+          message: "Este orçamento atingiu o limite de visualizações e não está mais disponível.",
         }, 403);
       }
 
@@ -89,21 +89,23 @@ Deno.serve(async (req) => {
         if (tmpl) templateData = tmpl;
       }
 
-      // If NOT a peek, mark as viewed and increment counter
+      // If NOT a peek, increment counter and track views
       if (!isPeek) {
         const newViewCount = (link.view_count ?? 0) + 1;
+        const now = new Date().toISOString();
         const updateData: Record<string, unknown> = {
           view_count: newViewCount,
           viewer_ip: viewerIp,
           viewer_device: viewerDevice,
+          last_viewed_at: now,
         };
 
         if (link.status === "enviado") {
           updateData.status = "visualizado";
-          updateData.viewed_at = new Date().toISOString();
+          updateData.viewed_at = now;
           await supabase.from("generated_documents").update({ status: "visualizado" }).eq("id", link.document_id);
           link.status = "visualizado";
-          link.viewed_at = new Date().toISOString();
+          link.viewed_at = now;
         }
 
         link.view_count = newViewCount;
@@ -125,6 +127,7 @@ Deno.serve(async (req) => {
           approvedAt: link.approved_at,
           approverName: link.approver_name,
           viewCount: link.view_count,
+          lastViewedAt: link.last_viewed_at,
           maxViews: maxViews,
           expiresAt: link.expires_at,
           negotiationMessage: link.negotiation_message,
@@ -209,7 +212,6 @@ Deno.serve(async (req) => {
         approved_at: now,
         approver_name: approverName,
         viewed_at: link.status === "enviado" ? now : undefined,
-        view_count: link.max_views ?? 1,
       }).eq("id", link.id);
 
       await supabase.from("generated_documents").update({ status: "aprovado" }).eq("id", link.document_id);
