@@ -183,21 +183,29 @@ const ProposalView = () => {
     if (!proposal?.template?.elements) return;
     setDownloadingPdf(true);
     try {
-      const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-      const bgColor = proposal.template.settings?.backgroundColor;
-      const blob = await generateVectorPdf(
-        [proposal.template.elements],
-        variableValues,
-        proposal.document.fileName,
-        { backgroundColor: bgColor }
-      );
-      if (blob) {
-        const url = URL.createObjectURL(blob);
+      // Reuse already-generated blob if available
+      if (pdfUrl) {
         const a = document.createElement('a');
-        a.href = url;
+        a.href = pdfUrl;
         a.download = proposal.document.fileName;
         a.click();
-        URL.revokeObjectURL(url);
+      } else {
+        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
+        const bgColor = proposal.template.settings?.backgroundColor;
+        const blob = await generateVectorPdf(
+          [proposal.template.elements],
+          variableValues,
+          proposal.document.fileName,
+          { backgroundColor: bgColor }
+        );
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = proposal.document.fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
       }
     } catch {
       // silent
