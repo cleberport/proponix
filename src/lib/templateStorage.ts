@@ -66,6 +66,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   pdfBaseName: string;
   defaultTemplateId: string;
+  proposalValidityDays: number;
 }
 
 export interface GeneratedDocument {
@@ -91,6 +92,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'light',
   pdfBaseName: 'Proposta',
   defaultTemplateId: '',
+  proposalValidityDays: 5,
 };
 
 const toStringArray = (value: unknown): string[] => {
@@ -524,6 +526,7 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
     theme: (data.theme === 'dark' ? 'dark' : 'light'),
     pdfBaseName: data.pdf_base_name ?? 'Proposta',
     defaultTemplateId: data.default_template_id ?? '',
+    proposalValidityDays: Number(data.proposal_validity_days) || 5,
   };
 
   // Update local cache with server data
@@ -552,6 +555,7 @@ async function syncSettingsToServer(settings: AppSettings): Promise<void> {
     theme: settings.theme,
     pdf_base_name: settings.pdfBaseName,
     default_template_id: settings.defaultTemplateId,
+    proposal_validity_days: settings.proposalValidityDays,
   };
 
   const { error } = await db

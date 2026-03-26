@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
+import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory, getSettings } from '@/lib/templateStorage';
 import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -179,9 +179,12 @@ const Documents = () => {
         return;
       }
 
+      const settings = getSettings();
+      const validityDays = settings.proposalValidityDays || 5;
+      const expiresAt = new Date(Date.now() + validityDays * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('proposal_links')
-        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .insert({ user_id: session.user.id, document_id: docId, expires_at: expiresAt } as any)
         .select()
         .single();
 
@@ -231,9 +234,12 @@ const Documents = () => {
           .eq('id', existing.id);
       }
 
+      const settings = getSettings();
+      const validityDays = settings.proposalValidityDays || 5;
+      const expiresAt = new Date(Date.now() + validityDays * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('proposal_links')
-        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .insert({ user_id: session.user.id, document_id: docId, expires_at: expiresAt } as any)
         .select()
         .single();
 
