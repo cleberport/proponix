@@ -27,7 +27,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract viewer info from request
     const viewerIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("cf-connecting-ip") || "unknown";
     const viewerDevice = req.headers.get("user-agent") || "unknown";
@@ -46,7 +45,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Check if link has been used up (view_count >= max_views) AND is not the first view
       const maxViews = link.max_views ?? 1;
       if (link.view_count >= maxViews && link.status !== "enviado") {
         return new Response(
@@ -61,12 +59,10 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Also block if already approved
       if (link.status === "aprovado") {
         // Allow viewing approved proposals (read-only)
       }
 
-      // Fetch the document
       const { data: doc, error: docErr } = await supabase
         .from("generated_documents")
         .select("*")
@@ -80,7 +76,19 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Increment view count and store viewer info
+      // Fetch the template elements for visual rendering
+      let templateData: { elements: unknown; settings: unknown; canvas_width: number; canvas_height: number } | null = null;
+      if (doc.template_id) {
+        const { data: tmpl } = await supabase
+          .from("custom_templates")
+          .select("elements, settings, canvas_width, canvas_height")
+          .eq("id", doc.template_id)
+          .maybeSingle();
+        if (tmpl) {
+          templateData = tmpl;
+        }
+      }
+
       const newViewCount = (link.view_count ?? 0) + 1;
       const updateData: Record<string, unknown> = {
         view_count: newViewCount,
@@ -88,7 +96,6 @@ Deno.serve(async (req) => {
         viewer_device: viewerDevice,
       };
 
-      // Mark as viewed if first time
       if (link.status === "enviado") {
         updateData.status = "visualizado";
         updateData.viewed_at = new Date().toISOString();
@@ -107,7 +114,6 @@ Deno.serve(async (req) => {
         .update(updateData)
         .eq("id", link.id);
 
-      // Fetch user settings for company info
       const { data: settings } = await supabase
         .from("user_settings")
         .select("company_name, company_email, company_phone, company_website, company_address, logo_url")
@@ -128,10 +134,19 @@ Deno.serve(async (req) => {
             document: {
               clientName: doc.client_name,
               templateName: doc.template_name,
+              templateId: doc.template_id,
               fileName: doc.file_name,
               values: doc.values,
               generatedAt: doc.generated_at,
             },
+            template: templateData
+              ? {
+                  elements: templateData.elements,
+                  settings: templateData.settings,
+                  canvasWidth: templateData.canvas_width,
+                  canvasHeight: templateData.canvas_height,
+                }
+              : null,
             company: settings
               ? {
                   name: settings.company_name,
@@ -190,7 +205,6 @@ Deno.serve(async (req) => {
       }
 
       const now = new Date().toISOString();
-      // On approval, set view_count to max_views to invalidate the link
       await supabase
         .from("proposal_links")
         .update({
