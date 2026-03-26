@@ -87,7 +87,6 @@ const Templates = () => {
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
-                  onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => setDeleteId(t.id)}
                   onDuplicate={() => { void handleDuplicate(t.id); }}
                   isSaved
@@ -106,7 +105,6 @@ const Templates = () => {
               <TemplateCard
                 template={t}
                 onEdit={() => navigate(`/editor/${t.id}`)}
-                onGenerate={() => navigate(`/generate/${t.id}`)}
                 onDuplicate={() => { void handleDuplicate(t.id); }}
               />
             </motion.div>
