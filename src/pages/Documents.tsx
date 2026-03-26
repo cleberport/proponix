@@ -63,7 +63,6 @@ const Documents = () => {
     loadDocumentHistoryFromServer().then(setHistory);
     loadProposalLinks();
 
-    // Subscribe to realtime status changes on proposal_links
     const channel = supabase
       .channel('proposal-status-changes')
       .on(
@@ -84,7 +83,6 @@ const Documents = () => {
               negotiation_message: updated.negotiation_message,
             },
           }));
-          // Also sync local history status
           setHistory((prev) =>
             prev.map((d) =>
               d.id === updated.document_id ? { ...d, status: updated.status } as any : d
@@ -105,12 +103,10 @@ const Documents = () => {
       .select('*') as { data: ProposalLink[] | null };
     if (data) {
       const map: Record<string, ProposalLink> = {};
-      // Keep only the latest link per document
       data.sort((a, b) => (a as any).created_at > (b as any).created_at ? 1 : -1);
       data.forEach((link) => { map[link.document_id] = link; });
       setProposalLinks(map);
 
-      // Sync generated_documents status from proposal_links
       for (const link of Object.values(map)) {
         if (['visualizado', 'aprovado', 'negociacao'].includes(link.status)) {
           setHistory((prev) =>
@@ -175,7 +171,6 @@ const Documents = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Você precisa estar logado'); return; }
 
-      // Check if link already exists
       const existing = proposalLinks[docId];
       if (existing) {
         const url = `${window.location.origin}/p/${existing.token}`;
@@ -199,7 +194,6 @@ const Documents = () => {
       await navigator.clipboard.writeText(url);
       toast.success('Link gerado e copiado!');
 
-      // Update document status to 'enviado'
       await supabase
         .from('generated_documents')
         .update({ status: 'enviado' } as any)
@@ -229,7 +223,6 @@ const Documents = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error('Você precisa estar logado'); return; }
 
-      // Invalidate old link by setting view_count = max_views
       const existing = proposalLinks[docId];
       if (existing) {
         await supabase
@@ -238,7 +231,6 @@ const Documents = () => {
           .eq('id', existing.id);
       }
 
-      // Create new link
       const { data, error } = await supabase
         .from('proposal_links')
         .insert({ user_id: session.user.id, document_id: docId } as any)
@@ -250,7 +242,6 @@ const Documents = () => {
       const link = data as unknown as ProposalLink;
       setProposalLinks((prev) => ({ ...prev, [docId]: link }));
 
-      // Reset document status to 'enviado'
       await supabase
         .from('generated_documents')
         .update({ status: 'enviado' } as any)
@@ -291,7 +282,6 @@ const Documents = () => {
   const getTotal = (doc: typeof history[0]) => {
     const vals = doc.values as Record<string, any>;
     if (!vals) return '—';
-    // Try common total field names
     const totalKeys = ['total', 'valor_total', 'preco_total', 'subtotal', 'valor', 'price', 'preco'];
     for (const key of totalKeys) {
       const v = vals[key];
@@ -447,6 +437,7 @@ const Documents = () => {
                             {link.approved_at && <span>✅ Aprovado {formatDate(link.approved_at)} {link.approver_name && `por ${link.approver_name}`}</span>}
                           </div>
                         )}
+                        {/* Negotiation message - mobile */}
                         {link?.negotiation_message && status === 'negociacao' && (
                           <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 px-3 py-2">
                             <p className="text-[10px] font-medium text-amber-800 dark:text-amber-400 mb-0.5">💬 Sugestão do cliente:</p>
@@ -530,12 +521,12 @@ const Documents = () => {
                               <span className="text-amber-500">💬</span>
                             )}
                           </div>
+                          {/* Negotiation message - desktop inline */}
                           {link?.negotiation_message && status === 'negociacao' && (
                             <p className="mt-1 text-xs text-muted-foreground truncate max-w-[250px]" title={link.negotiation_message}>
                               💬 {link.negotiation_message}
                             </p>
                           )}
-                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">{doc.templateName}</p>
                         <p className="text-sm font-medium text-foreground">{getTotal(doc)}</p>
@@ -571,7 +562,7 @@ const Documents = () => {
                                 {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{link ? 'Copiar link' : 'Gerar link de proposta'}</TooltipContent>
+                            <TooltipContent>{link ? 'Copiar link' : 'Gerar link'}</TooltipContent>
                           </Tooltip>
                           {link && (
                             <Tooltip>
@@ -592,7 +583,7 @@ const Documents = () => {
                           {status === 'aprovado' && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
                                   <CalendarPlus className="h-3.5 w-3.5" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -603,14 +594,6 @@ const Documents = () => {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpen(doc)}>
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Abrir</TooltipContent>
-                          </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(doc)}>
