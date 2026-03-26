@@ -259,8 +259,13 @@ const Documents = () => {
       setHistory((prev) => prev.map((d) => d.id === docId ? { ...d, status: 'enviado' } as any : d));
 
       const url = `${window.location.origin}/p/${link.token}`;
-      await navigator.clipboard.writeText(url);
-      toast.success('Novo link gerado e copiado!');
+      const doc = history.find((d) => d.id === docId);
+      setResendModal({
+        docId,
+        clientName: doc?.clientName || 'Cliente',
+        total: doc ? getTotal(doc) : '—',
+        url,
+      });
     } catch (err) {
       console.error(err);
       toast.error('Erro ao reenviar link');
