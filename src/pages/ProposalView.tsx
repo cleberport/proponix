@@ -256,25 +256,47 @@ const ProposalView = () => {
   }, [proposal]);
 
   const templatePages = useMemo(() => {
-    return normalizeTemplatePages(proposal?.template?.elements);
-  }, [proposal?.template?.elements]);
+    // First try from API template data
+    const apiPages = normalizeTemplatePages(proposal?.template?.elements);
+    if (apiPages.some(p => p.length > 0)) return apiPages;
+
+    // Fallback: try starter templates by template ID
+    const templateId = proposal?.document?.templateId;
+    if (templateId) {
+      const starter = starterTemplates.find(t => t.id === templateId);
+      if (starter) {
+        if (starter.pages && starter.pages.length > 0) return starter.pages;
+        if (starter.elements && starter.elements.length > 0) return [starter.elements];
+      }
+    }
+    return apiPages;
+  }, [proposal?.template?.elements, proposal?.document?.templateId]);
+
+  const bgColor = useMemo(() => {
+    if (proposal?.template?.settings?.backgroundColor) return proposal.template.settings.backgroundColor;
+    const templateId = proposal?.document?.templateId;
+    if (templateId) {
+      const starter = starterTemplates.find(t => t.id === templateId);
+      if (starter?.settings?.backgroundColor) return starter.settings.backgroundColor;
+    }
+    return undefined;
+  }, [proposal?.template?.settings?.backgroundColor, proposal?.document?.templateId]);
 
   const hasTemplate = templatePages.some((page) => page.length > 0);
 
-  // Generate PDF blob for inline display when step becomes 'viewing'
+  // Generate PDF blob as soon as we have template data (don't wait for step)
   useEffect(() => {
-    if (step !== 'viewing' || !hasTemplate || pdfUrl) return;
+    if (!hasTemplate || !proposal || pdfUrl) return;
     let cancelled = false;
     const generate = async () => {
       setGeneratingPdf(true);
       try {
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-        const bgColor = proposal?.template?.settings?.backgroundColor;
         const blob = await generateVectorPdf(
           templatePages,
           variableValues,
           'preview.pdf',
-          { backgroundColor: bgColor }
+          { backgroundColor: bgColor, skipDownload: true }
         );
         if (blob && !cancelled) {
           setPdfUrl(URL.createObjectURL(blob));
@@ -287,7 +309,7 @@ const ProposalView = () => {
     };
     generate();
     return () => { cancelled = true; };
-  }, [step, hasTemplate, pdfUrl, templatePages, variableValues, proposal?.template?.settings?.backgroundColor]);
+  }, [hasTemplate, proposal, pdfUrl, templatePages, variableValues, bgColor]);
 
   // Cleanup PDF URL on unmount
   useEffect(() => {
