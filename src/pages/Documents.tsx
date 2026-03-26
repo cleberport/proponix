@@ -671,7 +671,7 @@ const Documents = () => {
 
       {/* Resend Modal */}
       <Dialog open={!!resendModal} onOpenChange={(open) => !open && setResendModal(null)}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-md p-4 sm:p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Reenviar proposta</DialogTitle>
             <DialogDescription>Escolha como enviar o link para o cliente.</DialogDescription>
@@ -695,7 +695,7 @@ const Documents = () => {
 
               {/* WhatsApp primary */}
               <Button
-                className="w-full h-12 rounded-xl gap-2 font-semibold text-sm bg-[#25D366] hover:bg-[#1da851] text-white"
+                className="w-full h-12 rounded-xl gap-2 font-semibold text-[13px] sm:text-sm"
                 onClick={() => {
                   const msg = encodeURIComponent(
                     `Olá! Segue novamente o orçamento para sua análise:\n\n${resendModal.url}\n\nQualquer dúvida, me avise 👍`
@@ -711,10 +711,10 @@ const Documents = () => {
               </Button>
 
               {/* Secondary actions */}
-              <div className="flex gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Button
                   variant="outline"
-                  className="flex-1 h-10 rounded-xl gap-2 text-sm"
+                  className="h-10 rounded-xl gap-2 text-xs sm:text-sm"
                   onClick={async () => {
                     await navigator.clipboard.writeText(resendModal.url);
                     toast.success('Link copiado!');
@@ -725,7 +725,7 @@ const Documents = () => {
                 {typeof navigator.share === 'function' && (
                   <Button
                     variant="outline"
-                    className="flex-1 h-10 rounded-xl gap-2 text-sm"
+                    className="h-10 rounded-xl gap-2 text-xs sm:text-sm"
                     onClick={async () => {
                       try {
                         await navigator.share({
