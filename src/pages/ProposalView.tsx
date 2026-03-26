@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   CheckCircle, FileText, Loader2, AlertCircle, Eye, Clock,
-  MessageSquare, Download, CalendarPlus, ArrowRight, ShieldCheck,
+  MessageSquare, Download, ShieldCheck,
 } from 'lucide-react';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { CanvasElement } from '@/types/template';
