@@ -334,7 +334,7 @@ const Documents = () => {
                             {link.approved_at && <span>✅ Aprovado {formatDate(link.approved_at)} {link.approver_name && `por ${link.approver_name}`}</span>}
                           </div>
                         )}
-                        <div className="flex items-center gap-1 pt-1 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1 pt-1 border-t border-border flex-wrap" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -345,6 +345,18 @@ const Documents = () => {
                             {isGenerating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Link2 className="mr-1 h-3 w-3" />}
                             {link ? 'Copiar link' : 'Gerar link'}
                           </Button>
+                          {link && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs flex-1"
+                              onClick={() => handleResendLink(doc.id)}
+                              disabled={resendingLink === doc.id}
+                            >
+                              {resendingLink === doc.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-1 h-3 w-3" />}
+                              Reenviar
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
                             <Copy className="mr-1 h-3 w-3" /> Duplicar
                           </Button>
