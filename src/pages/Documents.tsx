@@ -292,6 +292,55 @@ const Documents = () => {
 
   const docStatus = (doc: any): DocStatus => doc.status || proposalLinks[doc.id]?.status || 'enviado';
 
+  const buildCalendarEvent = (doc: typeof history[0]) => {
+    const vals = doc.values as Record<string, any>;
+    const total = getTotal(doc);
+    const link = proposalLinks[doc.id];
+    const title = `${doc.templateName} - ${doc.clientName || 'Cliente'}`;
+    const description = [
+      `Proposta: ${doc.templateName}`,
+      `Cliente: ${doc.clientName || '—'}`,
+      total !== '—' ? `Valor: ${total}` : '',
+      link?.approver_name ? `Aprovada por: ${link.approver_name}` : '',
+    ].filter(Boolean).join('\n');
+    const location = String(vals?.local || vals?.endereco || vals?.location || vals?.venue || '');
+    let startDate = new Date();
+    const dateVal = vals?.data_evento || vals?.data || vals?.date || vals?.event_date || null;
+    if (dateVal) {
+      const parts = String(dateVal).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (parts) startDate = new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1]));
+      else { const p = new Date(dateVal); if (!isNaN(p.getTime())) startDate = p; }
+    }
+    const endDate = new Date(startDate); endDate.setHours(endDate.getHours() + 2);
+    return { title, description, location, startDate, endDate };
+  };
+
+  const fmtICS = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
+  const handleAppleCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const ics = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',
+      `DTSTART:${fmtICS(e.startDate)}`,`DTEND:${fmtICS(e.endDate)}`,
+      `SUMMARY:${e.title}`,`DESCRIPTION:${e.description.replace(/\n/g,'\\n')}`,
+      `LOCATION:${e.location}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'evento.ics'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGoogleCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const params = new URLSearchParams({ action: 'TEMPLATE', text: e.title, details: e.description, location: e.location, dates: `${fmtICS(e.startDate)}/${fmtICS(e.endDate)}` });
+    window.open(`https://calendar.google.com/calendar/render?${params}`, '_blank');
+  };
+
+  const handleOutlookCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const params = new URLSearchParams({ path: '/calendar/action/compose', rru: 'addevent', subject: e.title, body: e.description, location: e.location, startdt: e.startDate.toISOString(), enddt: e.endDate.toISOString() });
+    window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params}`, '_blank');
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
