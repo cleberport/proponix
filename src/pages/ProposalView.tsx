@@ -95,6 +95,9 @@ const ProposalView = () => {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const docContainerRef = useRef<HTMLDivElement | null>(null);
+  const NOOP = useCallback(() => undefined, []);
 
   const fetchProposal = useCallback(async (markViewed = false) => {
     try {
