@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -292,6 +292,55 @@ const Documents = () => {
 
   const docStatus = (doc: any): DocStatus => doc.status || proposalLinks[doc.id]?.status || 'enviado';
 
+  const buildCalendarEvent = (doc: typeof history[0]) => {
+    const vals = doc.values as Record<string, any>;
+    const total = getTotal(doc);
+    const link = proposalLinks[doc.id];
+    const title = `${doc.templateName} - ${doc.clientName || 'Cliente'}`;
+    const description = [
+      `Proposta: ${doc.templateName}`,
+      `Cliente: ${doc.clientName || '—'}`,
+      total !== '—' ? `Valor: ${total}` : '',
+      link?.approver_name ? `Aprovada por: ${link.approver_name}` : '',
+    ].filter(Boolean).join('\n');
+    const location = String(vals?.local || vals?.endereco || vals?.location || vals?.venue || '');
+    let startDate = new Date();
+    const dateVal = vals?.data_evento || vals?.data || vals?.date || vals?.event_date || null;
+    if (dateVal) {
+      const parts = String(dateVal).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (parts) startDate = new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1]));
+      else { const p = new Date(dateVal); if (!isNaN(p.getTime())) startDate = p; }
+    }
+    const endDate = new Date(startDate); endDate.setHours(endDate.getHours() + 2);
+    return { title, description, location, startDate, endDate };
+  };
+
+  const fmtICS = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
+  const handleAppleCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const ics = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',
+      `DTSTART:${fmtICS(e.startDate)}`,`DTEND:${fmtICS(e.endDate)}`,
+      `SUMMARY:${e.title}`,`DESCRIPTION:${e.description.replace(/\n/g,'\\n')}`,
+      `LOCATION:${e.location}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'evento.ics'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGoogleCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const params = new URLSearchParams({ action: 'TEMPLATE', text: e.title, details: e.description, location: e.location, dates: `${fmtICS(e.startDate)}/${fmtICS(e.endDate)}` });
+    window.open(`https://calendar.google.com/calendar/render?${params}`, '_blank');
+  };
+
+  const handleOutlookCalendar = (doc: typeof history[0]) => {
+    const e = buildCalendarEvent(doc);
+    const params = new URLSearchParams({ path: '/calendar/action/compose', rru: 'addevent', subject: e.title, body: e.description, location: e.location, startdt: e.startDate.toISOString(), enddt: e.endDate.toISOString() });
+    window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params}`, '_blank');
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
@@ -406,6 +455,20 @@ const Documents = () => {
                               Reenviar
                             </Button>
                           )}
+                          {status === 'aprovado' && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={(e) => e.stopPropagation()}>
+                                  <CalendarPlus className="mr-1 h-3 w-3" /> Calendário
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="center">
+                                <DropdownMenuItem onClick={() => handleGoogleCalendar(doc)}>Google Calendar</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleAppleCalendar(doc)}>Apple Calendar (.ics)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOutlookCalendar(doc)}>Outlook</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                           <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
                             <Copy className="mr-1 h-3 w-3" /> Duplicar
                           </Button>
@@ -495,6 +558,20 @@ const Documents = () => {
                               </TooltipTrigger>
                               <TooltipContent>Reenviar link</TooltipContent>
                             </Tooltip>
+                          )}
+                          {status === 'aprovado' && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <CalendarPlus className="h-3.5 w-3.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleGoogleCalendar(doc)}>Google Calendar</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleAppleCalendar(doc)}>Apple Calendar (.ics)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOutlookCalendar(doc)}>Outlook</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                           <Tooltip>
                             <TooltipTrigger asChild>
