@@ -562,10 +562,6 @@ const ProposalView = () => {
   // ──── STEP: VIEWING ────
   const CANVAS_W = proposal?.template?.canvasWidth || 595;
   const CANVAS_H = proposal?.template?.canvasHeight || 842;
-  const NOOP = useCallback(() => undefined, []);
-
-  const docContainerRef = useRef<HTMLDivElement | null>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     const node = docContainerRef.current;
