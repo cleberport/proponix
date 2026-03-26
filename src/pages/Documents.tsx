@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, RefreshCw, Search, X, Copy, ExternalLink, History, Send } from 'lucide-react';
+import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -12,17 +12,20 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip, TooltipContent, TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
 type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado';
 
-const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  enviado: { label: 'Enviado', variant: 'secondary' },
-  visualizado: { label: 'Visualizado', variant: 'outline' },
-  aprovado: { label: 'Aprovado', variant: 'default' },
-  expirado: { label: 'Expirado', variant: 'destructive' },
+const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Send }> = {
+  enviado: { label: 'Enviado', variant: 'secondary', icon: Send },
+  visualizado: { label: 'Visualizado', variant: 'outline', icon: Eye },
+  aprovado: { label: 'Aprovado', variant: 'default', icon: CheckCircle },
+  expirado: { label: 'Expirado', variant: 'destructive', icon: Clock },
 };
 
 const TABS = [
@@ -33,21 +36,48 @@ const TABS = [
   { value: 'expirado', label: 'Expirados' },
 ];
 
+interface ProposalLink {
+  id: string;
+  document_id: string;
+  token: string;
+  status: string;
+  viewed_at: string | null;
+  approved_at: string | null;
+  approver_name: string;
+}
+
 const Documents = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState(getDocumentHistory());
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('todos');
+  const [proposalLinks, setProposalLinks] = useState<Record<string, ProposalLink>>({});
+  const [generatingLink, setGeneratingLink] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocumentHistoryFromServer().then(setHistory);
+    loadProposalLinks();
   }, []);
+
+  const loadProposalLinks = async () => {
+    const { data } = await supabase
+      .from('proposal_links')
+      .select('*') as { data: ProposalLink[] | null };
+    if (data) {
+      const map: Record<string, ProposalLink> = {};
+      data.forEach((link) => { map[link.document_id] = link; });
+      setProposalLinks(map);
+    }
+  };
 
   const filtered = useMemo(() => {
     let docs = history;
     if (activeTab !== 'todos') {
-      docs = docs.filter((doc) => (doc as any).status === activeTab || (!((doc as any).status) && activeTab === 'enviado'));
+      docs = docs.filter((doc) => {
+        const s = (doc as any).status || proposalLinks[doc.id]?.status || 'enviado';
+        return s === activeTab;
+      });
     }
     if (!search.trim()) return docs;
     const q = search.toLowerCase();
@@ -57,16 +87,16 @@ const Documents = () => {
         doc.templateName?.toLowerCase().includes(q) ||
         doc.clientName?.toLowerCase().includes(q)
     );
-  }, [history, search, activeTab]);
+  }, [history, search, activeTab, proposalLinks]);
 
   const getStatusCounts = useMemo(() => {
     const counts: Record<string, number> = { todos: history.length, enviado: 0, visualizado: 0, aprovado: 0, expirado: 0 };
     history.forEach((doc) => {
-      const s = (doc as any).status || 'enviado';
+      const s = (doc as any).status || proposalLinks[doc.id]?.status || 'enviado';
       if (counts[s] !== undefined) counts[s]++;
     });
     return counts;
-  }, [history]);
+  }, [history, proposalLinks]);
 
   const handleDelete = () => {
     if (!deleteId) return;
@@ -85,9 +115,59 @@ const Documents = () => {
     toast.info('Documento duplicado - edite e gere novamente');
   };
 
-  const handleResend = (doc: typeof history[0]) => {
-    toast.info('Link reenviado (funcionalidade em breve)');
-  };
+  const handleGenerateLink = useCallback(async (docId: string) => {
+    setGeneratingLink(docId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Você precisa estar logado'); return; }
+
+      // Check if link already exists
+      const existing = proposalLinks[docId];
+      if (existing) {
+        const url = `${window.location.origin}/p/${existing.token}`;
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copiado!');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('proposal_links')
+        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = data as unknown as ProposalLink;
+      setProposalLinks((prev) => ({ ...prev, [docId]: link }));
+
+      const url = `${window.location.origin}/p/${link.token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Link gerado e copiado!');
+
+      // Update document status to 'enviado'
+      await supabase
+        .from('generated_documents')
+        .update({ status: 'enviado' } as any)
+        .eq('id', docId);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao gerar link');
+    } finally {
+      setGeneratingLink(null);
+    }
+  }, [proposalLinks]);
+
+  const handleCopyLink = useCallback(async (docId: string) => {
+    const link = proposalLinks[docId];
+    if (!link) {
+      await handleGenerateLink(docId);
+      return;
+    }
+    const url = `${window.location.origin}/p/${link.token}`;
+    await navigator.clipboard.writeText(url);
+    toast.success('Link copiado!');
+  }, [proposalLinks, handleGenerateLink]);
 
   const handleUpdateStatus = async (docId: string, status: DocStatus) => {
     try {
@@ -114,13 +194,13 @@ const Documents = () => {
     return total ? `R$ ${total}` : '—';
   };
 
-  const docStatus = (doc: any): DocStatus => doc.status || 'enviado';
+  const docStatus = (doc: any): DocStatus => doc.status || proposalLinks[doc.id]?.status || 'enviado';
 
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-foreground md:text-2xl">Documentos</h1>
-        <p className="text-sm text-muted-foreground">Propostas geradas e seu status</p>
+        <p className="text-sm text-muted-foreground">Propostas geradas e seu ciclo de vida</p>
       </div>
 
       <div className="relative mb-4">
@@ -162,7 +242,7 @@ const Documents = () => {
             ) : (
               <div className="space-y-2">
                 {/* Header row - desktop */}
-                <div className="hidden md:grid md:grid-cols-[1fr_1fr_120px_100px_140px] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                <div className="hidden md:grid md:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
                   <span>Cliente</span>
                   <span>Template</span>
                   <span>Valor</span>
@@ -172,6 +252,10 @@ const Documents = () => {
                 {filtered.map((doc) => {
                   const status = docStatus(doc);
                   const config = STATUS_CONFIG[status];
+                  const StatusIcon = config.icon;
+                  const link = proposalLinks[doc.id];
+                  const isGenerating = generatingLink === doc.id;
+
                   return (
                     <div
                       key={doc.id}
@@ -188,6 +272,7 @@ const Documents = () => {
                             <p className="text-xs text-muted-foreground truncate">{doc.templateName}</p>
                           </div>
                           <Badge variant={config.variant} className="ml-2 text-[10px] shrink-0">
+                            <StatusIcon className="mr-1 h-2.5 w-2.5" />
                             {config.label}
                           </Badge>
                         </div>
@@ -195,9 +280,23 @@ const Documents = () => {
                           <span>{getTotal(doc)}</span>
                           <span>{formatDate(doc.generatedAt)}</span>
                         </div>
+                        {/* Tracking info */}
+                        {link && (link.viewed_at || link.approved_at) && (
+                          <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                            {link.viewed_at && <span>👁 Visto {formatDate(link.viewed_at)}</span>}
+                            {link.approved_at && <span>✅ Aprovado {formatDate(link.approved_at)} {link.approver_name && `por ${link.approver_name}`}</span>}
+                          </div>
+                        )}
                         <div className="flex items-center gap-1 pt-1 border-t border-border" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleResend(doc)}>
-                            <Send className="mr-1 h-3 w-3" /> Reenviar
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-xs flex-1"
+                            onClick={() => handleGenerateLink(doc.id)}
+                            disabled={isGenerating}
+                          >
+                            {isGenerating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Link2 className="mr-1 h-3 w-3" />}
+                            {link ? 'Copiar link' : 'Gerar link'}
                           </Button>
                           <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
                             <Copy className="mr-1 h-3 w-3" /> Duplicar
@@ -209,12 +308,33 @@ const Documents = () => {
                       </div>
 
                       {/* Desktop layout */}
-                      <div className="hidden md:grid md:grid-cols-[1fr_1fr_120px_100px_140px] gap-4 items-center">
+                      <div className="hidden md:grid md:grid-cols-[1fr_1fr_100px_100px_180px] gap-4 items-center">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">
                             {doc.clientName || doc.fileName}
                           </p>
-                          <p className="text-xs text-muted-foreground">{formatDate(doc.generatedAt)}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{formatDate(doc.generatedAt)}</span>
+                            {link?.viewed_at && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-primary">👁</span>
+                                </TooltipTrigger>
+                                <TooltipContent>Visualizado em {formatDate(link.viewed_at)}</TooltipContent>
+                              </Tooltip>
+                            )}
+                            {link?.approved_at && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-primary">✅</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Aprovado em {formatDate(link.approved_at)}
+                                  {link.approver_name && ` por ${link.approver_name}`}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">{doc.templateName}</p>
                         <p className="text-sm font-medium text-foreground">{getTotal(doc)}</p>
@@ -223,6 +343,7 @@ const Documents = () => {
                             <DropdownMenuTrigger asChild>
                               <button>
                                 <Badge variant={config.variant} className="text-[10px] cursor-pointer hover:opacity-80">
+                                  <StatusIcon className="mr-1 h-2.5 w-2.5" />
                                   {config.label}
                                 </Badge>
                               </button>
@@ -237,18 +358,44 @@ const Documents = () => {
                           </DropdownMenu>
                         </div>
                         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Abrir" onClick={() => handleOpen(doc)}>
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Reenviar" onClick={() => handleResend(doc)}>
-                            <Send className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Duplicar" onClick={() => handleDuplicate(doc)}>
-                            <Copy className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Excluir" onClick={() => setDeleteId(doc.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleGenerateLink(doc.id)}
+                                disabled={isGenerating}
+                              >
+                                {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{link ? 'Copiar link' : 'Gerar link de proposta'}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpen(doc)}>
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Abrir</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(doc)}>
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Duplicar</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteId(doc.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Excluir</TooltipContent>
+                          </Tooltip>
                         </div>
                       </div>
                     </div>
