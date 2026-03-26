@@ -32,7 +32,7 @@ interface ProposalData {
     generatedAt: string;
   };
   template: {
-    elements: CanvasElement[];
+    elements: unknown;
     settings: { taxRate?: number; showTax?: boolean; backgroundColor?: string } | null;
     canvasWidth: number;
     canvasHeight: number;
@@ -48,6 +48,31 @@ interface ProposalData {
 }
 
 type Step = 'entry' | 'viewing' | 'approved' | 'negotiation-sent' | 'expired';
+
+const normalizeTemplatePages = (layout: unknown): CanvasElement[][] => {
+  if (Array.isArray(layout)) {
+    if (layout.length === 0) return [];
+    if (Array.isArray(layout[0])) {
+      return (layout as unknown[]).filter((page): page is CanvasElement[] => Array.isArray(page));
+    }
+    return [layout as CanvasElement[]];
+  }
+
+  if (layout && typeof layout === 'object') {
+    const parsed = layout as { elements?: unknown; pages?: unknown };
+
+    if (Array.isArray(parsed.pages)) {
+      const pages = parsed.pages.filter((page): page is CanvasElement[] => Array.isArray(page));
+      if (pages.length > 0) return pages;
+    }
+
+    if (Array.isArray(parsed.elements)) {
+      return [parsed.elements as CanvasElement[]];
+    }
+  }
+
+  return [];
+};
 
 const ProposalView = () => {
   const { token } = useParams<{ token: string }>();
@@ -182,7 +207,7 @@ const ProposalView = () => {
   };
 
   const handleDownloadPdf = async () => {
-    if (!proposal?.template?.elements) return;
+    if (!hasTemplate) return;
     setDownloadingPdf(true);
     try {
       // Reuse already-generated blob if available
@@ -195,7 +220,7 @@ const ProposalView = () => {
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
         const bgColor = proposal.template.settings?.backgroundColor;
         const blob = await generateVectorPdf(
-          [proposal.template.elements],
+          templatePages,
           variableValues,
           proposal.document.fileName,
           { backgroundColor: bgColor }
@@ -229,12 +254,11 @@ const ProposalView = () => {
     return result;
   }, [proposal]);
 
-  const templateElements = useMemo(() => {
-    if (!proposal?.template?.elements) return [];
-    return proposal.template.elements as CanvasElement[];
-  }, [proposal]);
+  const templatePages = useMemo(() => {
+    return normalizeTemplatePages(proposal?.template?.elements);
+  }, [proposal?.template?.elements]);
 
-  const hasTemplate = templateElements.length > 0;
+  const hasTemplate = templatePages.some((page) => page.length > 0);
 
   // Generate PDF blob for inline display when step becomes 'viewing'
   useEffect(() => {
@@ -246,7 +270,7 @@ const ProposalView = () => {
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
         const bgColor = proposal?.template?.settings?.backgroundColor;
         const blob = await generateVectorPdf(
-          [templateElements],
+          templatePages,
           variableValues,
           'preview.pdf',
           { backgroundColor: bgColor }
@@ -262,7 +286,7 @@ const ProposalView = () => {
     };
     generate();
     return () => { cancelled = true; };
-  }, [step, hasTemplate, templateElements, variableValues, proposal?.template?.settings?.backgroundColor]);
+  }, [step, hasTemplate, pdfUrl, templatePages, variableValues, proposal?.template?.settings?.backgroundColor]);
 
   // Cleanup PDF URL on unmount
   useEffect(() => {
