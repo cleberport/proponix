@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, FileText, Loader2, AlertCircle, CalendarPlus } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, AlertCircle } from 'lucide-react';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { CanvasElement } from '@/types/template';
 import {
