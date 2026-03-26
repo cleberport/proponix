@@ -7,7 +7,7 @@ import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
@@ -35,6 +35,8 @@ const Generate = () => {
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
   const [lastFileName, setLastFileName] = useState('');
   const [tableRows, setTableRows] = useState<DynamicRow[]>([]);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
@@ -251,7 +253,69 @@ const Generate = () => {
     );
   }, [template, tableRows, hasTable, tableInfo]);
 
-  const visibleElements = visiblePages[0] || [];
+  // Map each variable to the page index where it first appears
+  const fieldToPage = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!template) return map;
+    const pages = getTemplatePages(template);
+    const varPattern = /\{\{(\w+)\}\}/g;
+    pages.forEach((pageEls, pageIdx) => {
+      for (const el of pageEls) {
+        if (el.isVisible === false) continue;
+        if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
+          map[el.variable] = pageIdx;
+        }
+        if ((el.type === 'text' || el.type === 'notes') && el.content) {
+          let match: RegExpExecArray | null;
+          while ((match = varPattern.exec(el.content)) !== null) {
+            if (!(match[1] in map)) map[match[1]] = pageIdx;
+          }
+        }
+      }
+    });
+    return map;
+  }, [template]);
+
+  // Map each variable to the element id on its page for highlighting
+  const fieldToElementId = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (!template) return map;
+    const pages = getTemplatePages(template);
+    for (const pageEls of pages) {
+      for (const el of pageEls) {
+        if (el.isVisible === false) continue;
+        if ((el.type === 'dynamic-field' || el.type === 'price-field') && el.variable && !(el.variable in map)) {
+          map[el.variable] = el.id;
+        }
+      }
+    }
+    return map;
+  }, [template]);
+
+  const totalPages = visiblePages.length;
+  const currentPageElements = visiblePages[activePageIndex] || [];
+
+  // Auto-switch page when a field is focused
+  const handleFieldFocus = useCallback((fieldName: string) => {
+    setFocusedField(fieldName);
+    if (fieldName === 'price') {
+      setPriceFocused(true);
+    }
+    const pageIdx = fieldToPage[fieldName];
+    if (pageIdx !== undefined && pageIdx !== activePageIndex) {
+      setActivePageIndex(pageIdx);
+    }
+  }, [fieldToPage, activePageIndex]);
+
+  const handleFieldBlur = useCallback((fieldName: string) => {
+    setFocusedField(null);
+    if (fieldName === 'price') {
+      handlePriceBlur();
+    }
+  }, []);
+
+  // The element id to highlight in the preview
+  const highlightedElementId = focusedField ? fieldToElementId[focusedField] ?? null : null;
 
   const [priceDisplay, setPriceDisplay] = useState('');
   const [priceFocused, setPriceFocused] = useState(false);
@@ -459,8 +523,8 @@ const Generate = () => {
                         placeholder={getPlaceholder(v)}
                         className="h-12 text-base md:h-10 md:text-sm"
                         inputMode={v === 'price' ? 'numeric' : 'text'}
-                        onFocus={v === 'price' ? () => setPriceFocused(true) : undefined}
-                        onBlur={v === 'price' ? handlePriceBlur : undefined}
+                        onFocus={() => handleFieldFocus(v)}
+                        onBlur={() => handleFieldBlur(v)}
                         list={suggestions.length > 0 ? listId : undefined}
                         autoComplete="off"
                       />
@@ -514,11 +578,68 @@ const Generate = () => {
                 Ocultar Prévia
               </Button>
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 border-b border-border bg-card px-4 py-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === 0} onClick={() => setActivePageIndex((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-foreground">Página {activePageIndex + 1} / {totalPages}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === totalPages - 1} onClick={() => setActivePageIndex((p) => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
             <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-2">
               <div style={{ transform: `scale(${(window.innerWidth - 16) / 595})`, transformOrigin: 'top center', width: 595 }}>
+                <div className="relative">
+                  <CanvasRenderer
+                    ref={canvasRef}
+                    elements={currentPageElements}
+                    selectedId={null}
+                    onSelect={() => {}}
+                    onUpdate={() => {}}
+                    readOnly
+                    variableValues={displayValues}
+                    backgroundColor={template?.settings?.backgroundColor}
+                  />
+                  {highlightedElementId && currentPageElements.find(el => el.id === highlightedElementId) && (() => {
+                    const el = currentPageElements.find(e => e.id === highlightedElementId)!;
+                    return (
+                      <div
+                        className="absolute pointer-events-none rounded-sm transition-all duration-300"
+                        style={{
+                          left: el.x - 3,
+                          top: el.y - 3,
+                          width: el.width + 6,
+                          height: el.height + 6,
+                          boxShadow: '0 0 0 2px hsl(var(--primary) / 0.5), 0 0 12px 2px hsl(var(--primary) / 0.2)',
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+            </main>
+          </div>
+        )}
+        {!isMobile && (
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 border-b border-border bg-card px-4 py-2 shrink-0">
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === 0} onClick={() => setActivePageIndex((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-foreground">Página {activePageIndex + 1} / {totalPages}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === totalPages - 1} onClick={() => setActivePageIndex((p) => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-8">
+              <div className="relative">
                 <CanvasRenderer
                   ref={canvasRef}
-                  elements={visibleElements}
+                  elements={currentPageElements}
                   selectedId={null}
                   onSelect={() => {}}
                   onUpdate={() => {}}
@@ -526,23 +647,24 @@ const Generate = () => {
                   variableValues={displayValues}
                   backgroundColor={template?.settings?.backgroundColor}
                 />
+                {highlightedElementId && currentPageElements.find(el => el.id === highlightedElementId) && (() => {
+                  const el = currentPageElements.find(e => e.id === highlightedElementId)!;
+                  return (
+                    <div
+                      className="absolute pointer-events-none rounded-sm transition-all duration-300"
+                      style={{
+                        left: el.x - 3,
+                        top: el.y - 3,
+                        width: el.width + 6,
+                        height: el.height + 6,
+                        boxShadow: '0 0 0 2px hsl(var(--primary) / 0.5), 0 0 12px 2px hsl(var(--primary) / 0.2)',
+                      }}
+                    />
+                  );
+                })()}
               </div>
             </main>
           </div>
-        )}
-        {!isMobile && (
-          <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-8">
-            <CanvasRenderer
-              ref={canvasRef}
-              elements={visibleElements}
-              selectedId={null}
-              onSelect={() => {}}
-              onUpdate={() => {}}
-              readOnly
-              variableValues={displayValues}
-              backgroundColor={template?.settings?.backgroundColor}
-            />
-          </main>
         )}
       </div>
     </div>
