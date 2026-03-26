@@ -66,6 +66,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   pdfBaseName: string;
   defaultTemplateId: string;
+  proposalValidityDays: number;
 }
 
 export interface GeneratedDocument {
@@ -91,6 +92,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'light',
   pdfBaseName: 'Proposta',
   defaultTemplateId: '',
+  proposalValidityDays: 5,
 };
 
 const toStringArray = (value: unknown): string[] => {
