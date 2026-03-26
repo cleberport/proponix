@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory } from '@/lib/templateStorage';
-import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +54,7 @@ const Documents = () => {
   const [activeTab, setActiveTab] = useState('todos');
   const [proposalLinks, setProposalLinks] = useState<Record<string, ProposalLink>>({});
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
+  const [resendingLink, setResendingLink] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocumentHistoryFromServer().then(setHistory);
@@ -168,6 +169,52 @@ const Documents = () => {
     await navigator.clipboard.writeText(url);
     toast.success('Link copiado!');
   }, [proposalLinks, handleGenerateLink]);
+
+  const handleResendLink = useCallback(async (docId: string) => {
+    setResendingLink(docId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Você precisa estar logado'); return; }
+
+      // Invalidate old link by setting view_count = max_views
+      const existing = proposalLinks[docId];
+      if (existing) {
+        await supabase
+          .from('proposal_links')
+          .update({ view_count: 999, status: 'expirado' } as any)
+          .eq('id', existing.id);
+      }
+
+      // Create new link
+      const { data, error } = await supabase
+        .from('proposal_links')
+        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = data as unknown as ProposalLink;
+      setProposalLinks((prev) => ({ ...prev, [docId]: link }));
+
+      // Reset document status to 'enviado'
+      await supabase
+        .from('generated_documents')
+        .update({ status: 'enviado' } as any)
+        .eq('id', docId);
+
+      setHistory((prev) => prev.map((d) => d.id === docId ? { ...d, status: 'enviado' } as any : d));
+
+      const url = `${window.location.origin}/p/${link.token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Novo link gerado e copiado!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao reenviar link');
+    } finally {
+      setResendingLink(null);
+    }
+  }, [proposalLinks]);
 
   const handleUpdateStatus = async (docId: string, status: DocStatus) => {
     try {
@@ -287,7 +334,7 @@ const Documents = () => {
                             {link.approved_at && <span>✅ Aprovado {formatDate(link.approved_at)} {link.approver_name && `por ${link.approver_name}`}</span>}
                           </div>
                         )}
-                        <div className="flex items-center gap-1 pt-1 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1 pt-1 border-t border-border flex-wrap" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -298,6 +345,18 @@ const Documents = () => {
                             {isGenerating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Link2 className="mr-1 h-3 w-3" />}
                             {link ? 'Copiar link' : 'Gerar link'}
                           </Button>
+                          {link && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs flex-1"
+                              onClick={() => handleResendLink(doc.id)}
+                              disabled={resendingLink === doc.id}
+                            >
+                              {resendingLink === doc.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-1 h-3 w-3" />}
+                              Reenviar
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" className="h-8 text-xs flex-1" onClick={() => handleDuplicate(doc)}>
                             <Copy className="mr-1 h-3 w-3" /> Duplicar
                           </Button>
@@ -372,6 +431,22 @@ const Documents = () => {
                             </TooltipTrigger>
                             <TooltipContent>{link ? 'Copiar link' : 'Gerar link de proposta'}</TooltipContent>
                           </Tooltip>
+                          {link && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleResendLink(doc.id)}
+                                  disabled={resendingLink === doc.id}
+                                >
+                                  {resendingLink === doc.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Reenviar link</TooltipContent>
+                            </Tooltip>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpen(doc)}>
