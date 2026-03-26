@@ -81,6 +81,7 @@ const Documents = () => {
               viewed_at: updated.viewed_at,
               approved_at: updated.approved_at,
               approver_name: updated.approver_name,
+              negotiation_message: updated.negotiation_message,
             },
           }));
           // Also sync local history status
@@ -111,7 +112,7 @@ const Documents = () => {
 
       // Sync generated_documents status from proposal_links
       for (const link of Object.values(map)) {
-        if (['visualizado', 'aprovado'].includes(link.status)) {
+        if (['visualizado', 'aprovado', 'negociacao'].includes(link.status)) {
           setHistory((prev) =>
             prev.map((d) =>
               d.id === link.document_id && (d as any).status !== link.status
