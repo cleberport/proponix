@@ -1,17 +1,15 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+
 import { Card, CardContent } from '@/components/ui/card';
 import {
   CheckCircle, FileText, Loader2, AlertCircle, Eye, Clock,
   MessageSquare, Download, ShieldCheck,
 } from 'lucide-react';
-import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { CanvasElement } from '@/types/template';
-import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProposalData {
@@ -65,6 +63,8 @@ const ProposalView = () => {
   const [step, setStep] = useState<Step>('entry');
   const [markingViewed, setMarkingViewed] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const fetchProposal = useCallback(async (markViewed = false) => {
     try {
@@ -183,21 +183,29 @@ const ProposalView = () => {
     if (!proposal?.template?.elements) return;
     setDownloadingPdf(true);
     try {
-      const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-      const bgColor = proposal.template.settings?.backgroundColor;
-      const blob = await generateVectorPdf(
-        [proposal.template.elements],
-        variableValues,
-        proposal.document.fileName,
-        { backgroundColor: bgColor }
-      );
-      if (blob) {
-        const url = URL.createObjectURL(blob);
+      // Reuse already-generated blob if available
+      if (pdfUrl) {
         const a = document.createElement('a');
-        a.href = url;
+        a.href = pdfUrl;
         a.download = proposal.document.fileName;
         a.click();
-        URL.revokeObjectURL(url);
+      } else {
+        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
+        const bgColor = proposal.template.settings?.backgroundColor;
+        const blob = await generateVectorPdf(
+          [proposal.template.elements],
+          variableValues,
+          proposal.document.fileName,
+          { backgroundColor: bgColor }
+        );
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = proposal.document.fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
       }
     } catch {
       // silent
@@ -226,23 +234,40 @@ const ProposalView = () => {
 
   const hasTemplate = templateElements.length > 0;
 
-  // Responsive scaling for document render
-  const docContainerRef = useRef<HTMLDivElement | null>(null);
-  const [docScale, setDocScale] = useState(1);
-
+  // Generate PDF blob for inline display when step becomes 'viewing'
   useEffect(() => {
-    const node = docContainerRef.current;
-    if (!node || !hasTemplate) return;
-    const cw = proposal?.template?.canvasWidth || 595;
-    const update = () => {
-      const w = node.clientWidth;
-      if (w > 0) setDocScale(Math.min(w / cw, 1));
+    if (step !== 'viewing' || !hasTemplate || pdfUrl) return;
+    let cancelled = false;
+    const generate = async () => {
+      setGeneratingPdf(true);
+      try {
+        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
+        const bgColor = proposal?.template?.settings?.backgroundColor;
+        const blob = await generateVectorPdf(
+          [templateElements],
+          variableValues,
+          'preview.pdf',
+          { backgroundColor: bgColor }
+        );
+        if (blob && !cancelled) {
+          setPdfUrl(URL.createObjectURL(blob));
+        }
+      } catch (e) {
+        console.error('PDF generation failed', e);
+      } finally {
+        if (!cancelled) setGeneratingPdf(false);
+      }
     };
-    update();
-    const obs = new ResizeObserver(update);
-    obs.observe(node);
-    return () => obs.disconnect();
-  }, [hasTemplate, proposal?.template?.canvasWidth]);
+    generate();
+    return () => { cancelled = true; };
+  }, [step, hasTemplate, templateElements, variableValues, proposal?.template?.settings?.backgroundColor]);
+
+  // Cleanup PDF URL on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('pt-BR', {
@@ -302,11 +327,8 @@ const ProposalView = () => {
     );
   }
 
-  const { document: doc, company, template } = proposal;
+  const { document: doc, company } = proposal;
   const total = getTotal(doc.values);
-  const canvasW = template?.canvasWidth || 595;
-  const canvasH = template?.canvasHeight || 842;
-  const bgColor = template?.settings?.backgroundColor || '#ffffff';
 
   // ──── STEP: ENTRY SCREEN ────
   if (step === 'entry') {
@@ -499,35 +521,22 @@ const ProposalView = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {hasTemplate ? (
+            {hasTemplate && pdfUrl ? (
               <div className="mb-6">
-                <div
-                  ref={docContainerRef}
-                  className="relative mx-auto w-full overflow-hidden rounded-lg shadow-lg bg-white"
-                  style={{
-                    maxWidth: canvasW,
-                    aspectRatio: `${canvasW} / ${canvasH}`,
-                  }}
-                >
-                  <div
-                    className="absolute inset-0 origin-top-left"
-                    style={{
-                      width: canvasW,
-                      height: canvasH,
-                      transform: `scale(${docScale})`,
-                    }}
-                  >
-                    <CanvasRenderer
-                      elements={templateElements}
-                      selectedId={null}
-                      onSelect={() => {}}
-                      onUpdate={() => {}}
-                      readOnly
-                      variableValues={variableValues}
-                      showGrid={false}
-                      backgroundColor={bgColor}
-                    />
-                  </div>
+                <div className="mx-auto overflow-hidden rounded-lg shadow-lg" style={{ maxWidth: 800 }}>
+                  <iframe
+                    src={`${pdfUrl}#toolbar=0&navpanes=0`}
+                    className="w-full border-0"
+                    style={{ height: 'calc(100vh - 200px)', minHeight: 500 }}
+                    title="Proposta"
+                  />
+                </div>
+              </div>
+            ) : hasTemplate && generatingPdf ? (
+              <div className="mb-6 flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-3" />
+                  <p className="text-sm text-muted-foreground">Carregando documento...</p>
                 </div>
               </div>
             ) : (
