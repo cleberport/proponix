@@ -55,7 +55,14 @@ const ProposalView = () => {
         { headers: { 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro');
+      if (!res.ok) {
+        if (res.status === 403 && data.error === 'blocked') {
+          setBlocked(true);
+          setBlockedMessage(data.message || 'Este orçamento já foi visualizado e não está mais disponível.');
+          return;
+        }
+        throw new Error(data.error || 'Erro');
+      }
       setProposal(data.proposal);
       if (data.proposal.status === 'aprovado') setApproved(true);
     } catch (err: any) {
