@@ -578,11 +578,68 @@ const Generate = () => {
                 Ocultar Prévia
               </Button>
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 border-b border-border bg-card px-4 py-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === 0} onClick={() => setActivePageIndex((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-foreground">Página {activePageIndex + 1} / {totalPages}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === totalPages - 1} onClick={() => setActivePageIndex((p) => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
             <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-2">
               <div style={{ transform: `scale(${(window.innerWidth - 16) / 595})`, transformOrigin: 'top center', width: 595 }}>
+                <div className="relative">
+                  <CanvasRenderer
+                    ref={canvasRef}
+                    elements={currentPageElements}
+                    selectedId={null}
+                    onSelect={() => {}}
+                    onUpdate={() => {}}
+                    readOnly
+                    variableValues={displayValues}
+                    backgroundColor={template?.settings?.backgroundColor}
+                  />
+                  {highlightedElementId && currentPageElements.find(el => el.id === highlightedElementId) && (() => {
+                    const el = currentPageElements.find(e => e.id === highlightedElementId)!;
+                    return (
+                      <div
+                        className="absolute pointer-events-none rounded-sm transition-all duration-300"
+                        style={{
+                          left: el.x - 3,
+                          top: el.y - 3,
+                          width: el.width + 6,
+                          height: el.height + 6,
+                          boxShadow: '0 0 0 2px hsl(var(--primary) / 0.5), 0 0 12px 2px hsl(var(--primary) / 0.2)',
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+            </main>
+          </div>
+        )}
+        {!isMobile && (
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 border-b border-border bg-card px-4 py-2 shrink-0">
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === 0} onClick={() => setActivePageIndex((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium text-foreground">Página {activePageIndex + 1} / {totalPages}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={activePageIndex === totalPages - 1} onClick={() => setActivePageIndex((p) => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-8">
+              <div className="relative">
                 <CanvasRenderer
                   ref={canvasRef}
-                  elements={visibleElements}
+                  elements={currentPageElements}
                   selectedId={null}
                   onSelect={() => {}}
                   onUpdate={() => {}}
@@ -590,23 +647,24 @@ const Generate = () => {
                   variableValues={displayValues}
                   backgroundColor={template?.settings?.backgroundColor}
                 />
+                {highlightedElementId && currentPageElements.find(el => el.id === highlightedElementId) && (() => {
+                  const el = currentPageElements.find(e => e.id === highlightedElementId)!;
+                  return (
+                    <div
+                      className="absolute pointer-events-none rounded-sm transition-all duration-300"
+                      style={{
+                        left: el.x - 3,
+                        top: el.y - 3,
+                        width: el.width + 6,
+                        height: el.height + 6,
+                        boxShadow: '0 0 0 2px hsl(var(--primary) / 0.5), 0 0 12px 2px hsl(var(--primary) / 0.2)',
+                      }}
+                    />
+                  );
+                })()}
               </div>
             </main>
           </div>
-        )}
-        {!isMobile && (
-          <main className="flex flex-1 items-start justify-center overflow-auto bg-background p-8">
-            <CanvasRenderer
-              ref={canvasRef}
-              elements={visibleElements}
-              selectedId={null}
-              onSelect={() => {}}
-              onUpdate={() => {}}
-              readOnly
-              variableValues={displayValues}
-              backgroundColor={template?.settings?.backgroundColor}
-            />
-          </main>
         )}
       </div>
     </div>
