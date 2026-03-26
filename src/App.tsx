@@ -32,6 +32,7 @@ const Import = lazy(() => import("./pages/Import"));
 const Emails = lazy(() => import("./pages/Emails"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Billing = lazy(() => import("./pages/Billing"));
+const ProposalView = lazy(() => import("./pages/ProposalView"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -123,6 +124,7 @@ const App = () => {
                 {/* Public */}
                 <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
                 <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
+                <Route path="/p/:token" element={<ProposalView />} />
                 <Route path="/pricing" element={<Pricing />} />
 
                 {/* Protected */}
