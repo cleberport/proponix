@@ -130,6 +130,11 @@ const ProposalView = () => {
     });
   };
 
+  const getTotal = (values: Record<string, any>) => {
+    const total = values?.total || values?.subtotal || '';
+    return total ? `R$ ${total}` : null;
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
