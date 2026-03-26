@@ -14,37 +14,36 @@ export function hasTourBeenSeen() {
 }
 
 interface TourStep {
-  target: string; // data-tour attribute value
+  target: string;
   title: string;
   description: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 const steps: TourStep[] = [
   {
     target: 'tour-dashboard-header',
     title: 'Dashboard',
-    description: 'Aqui você vê e gerencia todos os seus templates de proposta. Crie, edite, duplique e gere PDFs rapidamente.',
+    description: 'Aqui você vê e gerencia todos os seus templates de proposta.',
   },
   {
     target: 'tour-template-cards',
     title: 'Seus Templates',
-    description: 'Cada card é um template. Clique em "Editar" para personalizar ou "Gerar" para criar uma proposta PDF.',
+    description: 'Cada card é um template. Toque para editar ou gerar uma proposta.',
   },
   {
     target: 'tour-new-template',
     title: 'Novo Template',
-    description: 'Crie um template do zero com o editor visual. Adicione textos, imagens, tabelas e campos dinâmicos.',
+    description: 'Crie um template do zero com o editor visual.',
   },
   {
     target: 'tour-starter-templates',
     title: 'Modelos Prontos',
-    description: 'Use nossos modelos prontos como ponto de partida. Edite e personalize como quiser.',
+    description: 'Use nossos modelos prontos como ponto de partida.',
   },
   {
     target: 'tour-theme-toggle',
     title: 'Tema',
-    description: 'Alterne entre modo claro e escuro conforme sua preferência.',
+    description: 'Alterne entre modo claro e escuro.',
   },
 ];
 
@@ -59,80 +58,69 @@ function getElRect(attr: string): Rect | null {
   const el = document.querySelector(`[data-tour="${attr}"]`);
   if (!el) return null;
   const r = el.getBoundingClientRect();
+  if (r.width === 0 && r.height === 0) return null;
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-function computeTooltipPos(rect: Rect, isMobile: boolean) {
-  const pad = 12;
-  const tooltipW = isMobile ? window.innerWidth - 32 : 340;
-  const tooltipH = 180;
-
-  // Check if there's space below
-  const spaceBelow = window.innerHeight - (rect.top + rect.height + pad);
-  const spaceAbove = rect.top - pad;
-
-  let top: number;
-  let left: number;
-
-  if (spaceBelow >= tooltipH || spaceBelow >= spaceAbove) {
-    top = rect.top + rect.height + pad;
-  } else {
-    top = rect.top - tooltipH - pad;
-  }
-
-  if (isMobile) {
-    left = 16;
-  } else {
-    left = Math.max(16, Math.min(rect.left, window.innerWidth - tooltipW - 16));
-  }
-
-  // Clamp top
-  top = Math.max(16, Math.min(top, window.innerHeight - tooltipH - 16));
-
-  return { top, left, width: tooltipW };
+/** Filter steps to only those whose target element exists in the DOM */
+function getAvailableSteps(): TourStep[] {
+  return steps.filter(s => {
+    const el = document.querySelector(`[data-tour="${s.target}"]`);
+    return el && el.getBoundingClientRect().width > 0;
+  });
 }
 
 export default function OnboardingTour() {
   const [show, setShow] = useState(false);
-  const [step, setStep] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [availableSteps, setAvailableSteps] = useState<TourStep[]>([]);
   const [rect, setRect] = useState<Rect | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const rafRef = useRef<number>(0);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     const seen = localStorage.getItem(TOUR_SEEN_KEY);
     if (!seen) {
-      const t = setTimeout(() => setShow(true), 800);
+      const t = setTimeout(() => {
+        const available = getAvailableSteps();
+        if (available.length > 0) {
+          setAvailableSteps(available);
+          setShow(true);
+        }
+      }, 800);
       return () => clearTimeout(t);
     }
   }, []);
 
-  // Listen for custom event to restart tour
   useEffect(() => {
     const handler = () => {
-      setStep(0);
-      setShow(true);
+      const available = getAvailableSteps();
+      if (available.length > 0) {
+        setAvailableSteps(available);
+        setStepIndex(0);
+        setCompleted(false);
+        setShow(true);
+      }
     };
     window.addEventListener('freelox-restart-tour', handler);
     return () => window.removeEventListener('freelox-restart-tour', handler);
   }, []);
 
   const updateRect = useCallback(() => {
-    if (!show) return;
-    const r = getElRect(steps[step].target);
+    if (!show || completed || availableSteps.length === 0) return;
+    const current = availableSteps[stepIndex];
+    if (!current) return;
+    const r = getElRect(current.target);
     setRect(r);
     setIsMobile(window.innerWidth < 768);
-  }, [show, step]);
+  }, [show, stepIndex, completed, availableSteps]);
 
   useEffect(() => {
     updateRect();
     const onResize = () => updateRect();
     window.addEventListener('resize', onResize);
     window.addEventListener('scroll', onResize, true);
-
-    // Poll for element appearing (lazy loaded content)
     const interval = setInterval(updateRect, 300);
-
     return () => {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onResize, true);
@@ -142,21 +130,22 @@ export default function OnboardingTour() {
 
   const dismiss = useCallback(() => {
     localStorage.setItem(TOUR_SEEN_KEY, 'true');
-    setStep(0);
+    setStepIndex(0);
+    setCompleted(false);
     setShow(false);
   }, []);
 
   const next = useCallback(() => {
-    if (step < steps.length - 1) {
-      setStep(s => s + 1);
+    if (stepIndex < availableSteps.length - 1) {
+      setStepIndex(s => s + 1);
     } else {
-      setStep(-1);
+      setCompleted(true);
     }
-  }, [step]);
+  }, [stepIndex, availableSteps.length]);
 
   const prev = useCallback(() => {
-    if (step > 0) setStep(s => s - 1);
-  }, [step]);
+    if (stepIndex > 0) setStepIndex(s => s - 1);
+  }, [stepIndex]);
 
   useEffect(() => {
     if (!show) return;
@@ -172,7 +161,7 @@ export default function OnboardingTour() {
   if (!show) return null;
 
   // Completion screen
-  if (step === -1) {
+  if (completed) {
     return (
       <AnimatePresence>
         <motion.div
@@ -180,7 +169,6 @@ export default function OnboardingTour() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={dismiss}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -216,14 +204,47 @@ export default function OnboardingTour() {
     );
   }
 
-  const currentStep = steps[step];
-  const spotPad = 8;
+  if (availableSteps.length === 0) return null;
 
-  const tooltipPos = rect ? computeTooltipPos(rect, isMobile) : null;
+  const currentStep = availableSteps[stepIndex];
+  const spotPad = 8;
+  const totalSteps = availableSteps.length;
+
+  // Compute tooltip position
+  let tooltipStyle: React.CSSProperties;
+  const tooltipW = isMobile ? window.innerWidth - 32 : 340;
+
+  if (rect) {
+    const pad = 12;
+    const tooltipH = 160;
+    const spaceBelow = window.innerHeight - (rect.top + rect.height + pad);
+    const spaceAbove = rect.top - pad;
+
+    let top: number;
+    if (spaceBelow >= tooltipH || spaceBelow >= spaceAbove) {
+      top = rect.top + rect.height + pad;
+    } else {
+      top = rect.top - tooltipH - pad;
+    }
+
+    const left = isMobile ? 16 : Math.max(16, Math.min(rect.left, window.innerWidth - tooltipW - 16));
+    top = Math.max(16, Math.min(top, window.innerHeight - tooltipH - 16));
+
+    tooltipStyle = { top, left, width: tooltipW, position: 'absolute' };
+  } else {
+    // Centered fallback when element isn't measurable
+    tooltipStyle = {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: tooltipW,
+      position: 'absolute',
+    };
+  }
 
   return (
     <div className="fixed inset-0 z-[200]">
-      {/* Dark overlay with spotlight cutout via SVG */}
+      {/* Dark overlay with spotlight cutout */}
       <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
         <defs>
           <mask id="spotlight-mask">
@@ -250,14 +271,14 @@ export default function OnboardingTour() {
         />
       </svg>
 
-      {/* Glow ring around target */}
+      {/* Glow ring */}
       {rect && (
         <motion.div
-          key={`glow-${step}`}
+          key={`glow-${stepIndex}`}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35 }}
-          className="absolute rounded-xl ring-2 ring-primary/60 shadow-[0_0_30px_rgba(var(--primary),0.3)]"
+          className="absolute rounded-xl ring-2 ring-primary/60"
           style={{
             top: rect.top - spotPad,
             left: rect.left - spotPad,
@@ -269,76 +290,68 @@ export default function OnboardingTour() {
       )}
 
       {/* Tooltip */}
-      {tooltipPos && (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`tooltip-${step}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-            className="absolute z-[201] rounded-xl border border-border bg-card shadow-2xl"
-            style={{
-              top: tooltipPos.top,
-              left: tooltipPos.left,
-              width: tooltipPos.width,
-            }}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`tooltip-${stepIndex}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.25 }}
+          className="z-[201] rounded-xl border border-border bg-card shadow-2xl"
+          style={tooltipStyle}
+        >
+          <button
+            onClick={dismiss}
+            className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            {/* Close button */}
-            <button
-              onClick={dismiss}
-              className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            <X className="h-3.5 w-3.5" />
+          </button>
 
-            <div className="p-4 pb-2">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">{currentStep.title}</h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {currentStep.description}
-              </p>
+          <div className="p-4 pb-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
+              <h3 className="font-semibold text-sm text-foreground">{currentStep.title}</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {currentStep.description}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <div className="flex gap-1">
+              {availableSteps.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === stepIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/25'
+                  }`}
+                />
+              ))}
             </div>
 
-            <div className="flex items-center justify-between border-t border-border px-4 py-3">
-              {/* Step indicators */}
-              <div className="flex gap-1">
-                {steps.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === step ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/25'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={dismiss}
-                  className="h-7 px-2 text-[11px] text-muted-foreground"
-                >
-                  Pular
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={dismiss}
+                className="h-7 px-2 text-[11px] text-muted-foreground"
+              >
+                Pular
+              </Button>
+              {stepIndex > 0 && (
+                <Button variant="outline" size="sm" onClick={prev} className="h-7 px-2 text-[11px]">
+                  <ArrowLeft className="mr-0.5 h-3 w-3" />
+                  Voltar
                 </Button>
-                {step > 0 && (
-                  <Button variant="outline" size="sm" onClick={prev} className="h-7 px-2 text-[11px]">
-                    <ArrowLeft className="mr-0.5 h-3 w-3" />
-                    Voltar
-                  </Button>
-                )}
-                <Button size="sm" onClick={next} className="h-7 px-3 text-[11px] font-semibold">
-                  {step === steps.length - 1 ? 'Finalizar' : 'Próximo'}
-                  {step < steps.length - 1 && <ArrowRight className="ml-0.5 h-3 w-3" />}
-                </Button>
-              </div>
+              )}
+              <Button size="sm" onClick={next} className="h-7 px-3 text-[11px] font-semibold">
+                {stepIndex === totalSteps - 1 ? 'Finalizar' : 'Próximo'}
+                {stepIndex < totalSteps - 1 && <ArrowRight className="ml-0.5 h-3 w-3" />}
+              </Button>
             </div>
-          </motion.div>
-        </AnimatePresence>
-      )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
