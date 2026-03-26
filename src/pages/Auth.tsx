@@ -62,7 +62,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-neutral-900">
+    <div className="flex min-h-screen flex-col bg-white text-neutral-900" data-theme="light" style={{ colorScheme: 'light' }}>
       <div className="flex items-center gap-3 p-4">
         <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
           <ArrowLeft className="h-4 w-4" />
