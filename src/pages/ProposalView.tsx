@@ -63,6 +63,8 @@ const ProposalView = () => {
   const [step, setStep] = useState<Step>('entry');
   const [markingViewed, setMarkingViewed] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const fetchProposal = useCallback(async (markViewed = false) => {
     try {
