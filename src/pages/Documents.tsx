@@ -119,7 +119,6 @@ const Documents = () => {
         }
       }
     }
-    }
   };
 
   const filtered = useMemo(() => {
