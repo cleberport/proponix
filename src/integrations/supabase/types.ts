@@ -81,6 +81,7 @@ export type Database = {
           file_name: string
           generated_at: string
           id: string
+          status: string
           template_id: string
           template_name: string
           updated_at: string
@@ -93,6 +94,7 @@ export type Database = {
           file_name: string
           generated_at?: string
           id?: string
+          status?: string
           template_id: string
           template_name?: string
           updated_at?: string
@@ -105,6 +107,7 @@ export type Database = {
           file_name?: string
           generated_at?: string
           id?: string
+          status?: string
           template_id?: string
           template_name?: string
           updated_at?: string
