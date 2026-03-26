@@ -219,7 +219,30 @@ const ProposalView = () => {
     return result;
   }, [proposal]);
 
-  const hasTemplate = proposal?.template?.elements && proposal.template.elements.length > 0;
+  const templateElements = useMemo(() => {
+    if (!proposal?.template?.elements) return [];
+    return proposal.template.elements as CanvasElement[];
+  }, [proposal]);
+
+  const hasTemplate = templateElements.length > 0;
+
+  // Responsive scaling for document render
+  const docContainerRef = useRef<HTMLDivElement | null>(null);
+  const [docScale, setDocScale] = useState(1);
+
+  useEffect(() => {
+    const node = docContainerRef.current;
+    if (!node || !hasTemplate) return;
+    const cw = proposal?.template?.canvasWidth || 595;
+    const update = () => {
+      const w = node.clientWidth;
+      if (w > 0) setDocScale(Math.min(w / cw, 1));
+    };
+    update();
+    const obs = new ResizeObserver(update);
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [hasTemplate, proposal?.template?.canvasWidth]);
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('pt-BR', {
