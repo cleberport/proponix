@@ -170,6 +170,52 @@ const Documents = () => {
     toast.success('Link copiado!');
   }, [proposalLinks, handleGenerateLink]);
 
+  const handleResendLink = useCallback(async (docId: string) => {
+    setResendingLink(docId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Você precisa estar logado'); return; }
+
+      // Invalidate old link by setting view_count = max_views
+      const existing = proposalLinks[docId];
+      if (existing) {
+        await supabase
+          .from('proposal_links')
+          .update({ view_count: 999, status: 'expirado' } as any)
+          .eq('id', existing.id);
+      }
+
+      // Create new link
+      const { data, error } = await supabase
+        .from('proposal_links')
+        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = data as unknown as ProposalLink;
+      setProposalLinks((prev) => ({ ...prev, [docId]: link }));
+
+      // Reset document status to 'enviado'
+      await supabase
+        .from('generated_documents')
+        .update({ status: 'enviado' } as any)
+        .eq('id', docId);
+
+      setHistory((prev) => prev.map((d) => d.id === docId ? { ...d, status: 'enviado' } as any : d));
+
+      const url = `${window.location.origin}/p/${link.token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Novo link gerado e copiado!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao reenviar link');
+    } finally {
+      setResendingLink(null);
+    }
+  }, [proposalLinks]);
+
   const handleUpdateStatus = async (docId: string, status: DocStatus) => {
     try {
       const { error } = await supabase
