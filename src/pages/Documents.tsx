@@ -687,12 +687,6 @@ const Documents = () => {
                 )}
               </div>
 
-              {/* Link preview */}
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 min-w-0">
-                <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground truncate flex-1">{resendModal.url}</span>
-              </div>
-
               {/* WhatsApp primary */}
               <Button
                 className="w-full h-11 sm:h-12 rounded-xl gap-2 px-3 font-semibold text-xs sm:text-sm whitespace-nowrap"
