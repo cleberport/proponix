@@ -451,7 +451,70 @@ const Generate = () => {
     }
   };
 
-  if (loadingTemplate) {
+  const handleSendByLink = useCallback(async () => {
+    if (!template) return;
+    setSendingLink(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Você precisa estar logado'); return; }
+
+      const fileName = generatePdfFileName();
+      const docId = crypto.randomUUID();
+
+      // Save document to history
+      saveAllInputs(userInputs);
+      addDocumentToHistory({
+        id: docId,
+        templateId: template.id,
+        templateName: template.name,
+        clientName: userInputs.client_name || '',
+        fileName,
+        generatedAt: new Date().toISOString(),
+        values: { ...userInputs },
+      });
+
+      // Generate proposal link
+      const { data, error } = await supabase
+        .from('proposal_links')
+        .insert({ user_id: session.user.id, document_id: docId } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = data as any;
+      const url = `${window.location.origin}/p/${link.token}`;
+      setGeneratedLink(url);
+      setLinkCopied(false);
+      setLinkModalOpen(true);
+
+      // Update status
+      await supabase
+        .from('generated_documents')
+        .update({ status: 'enviado' } as any)
+        .eq('id', docId);
+
+      toast.success('Link gerado com sucesso!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao gerar link');
+    } finally {
+      setSendingLink(false);
+    }
+  }, [template, userInputs]);
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(generatedLink);
+    setLinkCopied(true);
+    toast.success('Link copiado!');
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(`Olá! Segue o orçamento para sua análise: ${generatedLink}`);
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
