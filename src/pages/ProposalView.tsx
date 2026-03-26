@@ -354,6 +354,29 @@ const ProposalView = () => {
                 {formatDate(proposal.approvedAt)}
               </p>
             )}
+
+            {/* Calendar Integration */}
+            <div className="mt-5">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <CalendarPlus className="h-4 w-4" />
+                    Adicionar ao calendário
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center">
+                  <DropdownMenuItem onClick={handleGoogleCalendar}>
+                    Google Calendar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleAppleCalendar}>
+                    Apple Calendar (.ics)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleOutlookCalendar}>
+                    Outlook
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         ) : showApproveForm ? (
           <div className="rounded-xl border border-border bg-card p-6">
