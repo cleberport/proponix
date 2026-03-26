@@ -50,7 +50,7 @@ interface ProposalData {
   } | null;
 }
 
-type Step = 'entry' | 'viewing' | 'approved' | 'negotiation-sent' | 'expired';
+type Step = 'entry' | 'viewing' | 'decision' | 'approved' | 'negotiation-sent' | 'expired';
 
 const normalizeTemplatePages = (layout: unknown): CanvasElement[][] => {
   if (Array.isArray(layout)) {
