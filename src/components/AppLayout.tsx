@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Search, Bell, User, Settings, LogOut, Eye, CheckCircle, MessageSquare, Clock } from 'lucide-react';
+import { Search, Bell, User, Settings, LogOut, Eye, CheckCircle, MessageSquare, Clock, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -139,9 +139,10 @@ function TopBar() {
         {/* Profile dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 ml-1 rounded-lg px-2 py-1 hover:bg-muted/50 transition-colors outline-none">
+            <button className="flex items-center gap-1.5 ml-1 rounded-lg px-2 py-1 hover:bg-muted/50 transition-colors outline-none">
               <AvatarDisplay avatarUrl={avatarUrl} initials={initials} />
               <span className="text-sm font-medium text-foreground hidden md:block">{profileName || 'Usuário'}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
