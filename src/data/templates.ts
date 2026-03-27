@@ -100,16 +100,20 @@ const minimalElements: CanvasElement[] = [
   // Description text block
   el({ type: 'text', x: 40, y: 358, width: 515, height: 80, content: 'Inclui planejamento estratégico, execução completa do projeto, acompanhamento de entregas e revisões ilimitadas durante o período contratado. Suporte dedicado com atendimento prioritário.', fontSize: 12, fontWeight: '400', color: '#52525B' }),
 
-  // Large price highlight — centered hero element
+  // Price input
   el({ type: 'divider', x: 40, y: 460, width: 515, height: 1, content: '', color: '#E4E4E7' }),
 
-  el({ type: 'text', x: 40, y: 490, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#A1A1AA', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 478, width: 515, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#A1A1AA' }),
+  el({ type: 'price-field', x: 40, y: 494, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '500', color: '#18181B', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 516, width: 515, height: 50, content: '', variable: 'total', fontWeight: '300', fontSize: 42, color: '#18181B', alignment: 'center', fieldCategory: 'calculated' }),
+  // Total highlight — centered hero element
+  el({ type: 'text', x: 40, y: 536, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#A1A1AA', alignment: 'center' }),
+
+  el({ type: 'total-calculation', x: 40, y: 556, width: 515, height: 50, content: '', variable: 'total', fontWeight: '300', fontSize: 42, color: '#18181B', alignment: 'center', fieldCategory: 'calculated' }),
 
   // Subtotal + tax — small underneath
-  el({ type: 'price-field', x: 180, y: 576, width: 120, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A1A1AA', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 576, width: 120, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#A1A1AA', alignment: 'left', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 180, y: 616, width: 120, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A1A1AA', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 616, width: 120, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#A1A1AA', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 610, width: 515, height: 1, content: '', color: '#E4E4E7' }),
 
