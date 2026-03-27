@@ -581,8 +581,12 @@ const ProposalView = () => {
   const PAD = 16;
   const availW = Math.max(containerSize.w - PAD * 2, 1);
   const availH = Math.max(containerSize.h - PAD * 2, 1);
+  const pageCount = templatePages.length;
+  // For single page, fit to viewport; for multi-page, scale by width and allow scrolling
   const docScale = containerSize.w > 0 && containerSize.h > 0
-    ? Math.min(availW / CANVAS_W, availH / CANVAS_H, 1)
+    ? pageCount > 1
+      ? Math.min(availW / CANVAS_W, 1)
+      : Math.min(availW / CANVAS_W, availH / CANVAS_H, 1)
     : 0;
 
   // Detect if header bg is dark to adapt logo contrast
