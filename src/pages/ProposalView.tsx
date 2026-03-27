@@ -683,6 +683,7 @@ const ProposalView = () => {
                   />
                 </div>
               </div>
+              </div>
             ))}
           </motion.div>
         ) : !hasTemplate ? (
