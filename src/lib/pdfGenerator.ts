@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { CanvasElement } from '@/types/template';
-import { resolveTextColor, parseColor } from '@/lib/colorContrast';
+import { resolveTextColor, parseColor, isDark } from '@/lib/colorContrast';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
@@ -314,20 +314,35 @@ function renderPageElements(
             let drawY = y;
 
             if (imgAR > boxAR) {
-              // Image wider → fit to width, center vertically
               drawW = w;
               drawH = w / imgAR;
               drawY = y + (h - drawH) / 2;
             } else {
-              // Image taller → fit to height, center horizontally
               drawH = h;
               drawW = h * imgAR;
               drawX = x + (w - drawW) / 2;
             }
 
             try {
-              const format = img.src?.includes('image/png') || img.src?.includes('.png') ? 'PNG' : 'JPEG';
-              pdf.addImage(img, format, drawX, drawY, drawW, drawH);
+              // If dark background, invert logo via canvas
+              const darkBg = isDark(bgColor);
+              if (darkBg) {
+                const canvas = document.createElement('canvas');
+                canvas.width = natW;
+                canvas.height = natH;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.filter = 'brightness(0) invert(1)';
+                  ctx.drawImage(img, 0, 0, natW, natH);
+                  const invertedUrl = canvas.toDataURL('image/png');
+                  pdf.addImage(invertedUrl, 'PNG', drawX, drawY, drawW, drawH);
+                } else {
+                  pdf.addImage(img, 'PNG', drawX, drawY, drawW, drawH);
+                }
+              } else {
+                const format = img.src?.includes('image/png') || img.src?.includes('.png') ? 'PNG' : 'JPEG';
+                pdf.addImage(img, format, drawX, drawY, drawW, drawH);
+              }
             } catch (e) {
               console.error('[pdfGen] Falha ao desenhar logo:', e);
             }
