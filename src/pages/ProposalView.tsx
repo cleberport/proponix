@@ -638,7 +638,7 @@ const ProposalView = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="shrink-0"
+            className={`shrink-0 ${templatePages.length <= 1 ? 'my-auto' : 'pt-4 pb-4'}`}
           >
             {templatePages.length > 1 && (
               <div className="flex items-center justify-center gap-2 mb-3 text-xs text-muted-foreground">
