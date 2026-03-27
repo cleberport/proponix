@@ -134,7 +134,7 @@ const App = () => {
                 <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/emails" element={<ProtectedRoute session={session}><AppLayout><Emails /></AppLayout></ProtectedRoute>} />
+                <Route path="/emails" element={<ProtectedRoute session={session}><Navigate to="/admin" replace /></ProtectedRoute>} />
                 <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
                 <Route path="/billing" element={<ProtectedRoute session={session}><Navigate to="/settings?tab=billing" replace /></ProtectedRoute>} />

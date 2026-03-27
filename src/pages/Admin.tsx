@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -32,8 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye } from 'lucide-react';
+import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import AdminEmailsSection from '@/components/admin/AdminEmailsSection';
 
 interface Profile {
   id: string;
@@ -76,15 +78,9 @@ const AdminPage = () => {
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, trial: 0, expired: 0 });
   const [search, setSearch] = useState('');
   const [loadingData, setLoadingData] = useState(true);
-
-  // Edit modal
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [editForm, setEditForm] = useState({ full_name: '', email: '', status: '', trial_end: '' });
-
-  // View modal
   const [viewProfile, setViewProfile] = useState<Profile | null>(null);
-
-  // Delete modal
   const [deleteProfile, setDeleteProfile] = useState<Profile | null>(null);
 
   const fetchData = async () => {
@@ -94,7 +90,6 @@ const AdminPage = () => {
         supabase.rpc('admin_get_all_profiles'),
         supabase.rpc('admin_get_stats'),
       ]);
-
       if (profilesRes.data) setProfiles(profilesRes.data as Profile[]);
       if (statsRes.data) setStats(statsRes.data as unknown as Stats);
     } catch {
@@ -179,102 +174,121 @@ const AdminPage = () => {
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-foreground md:text-2xl">Painel Admin</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gerenciamento de usuários e contas</p>
+        <p className="text-sm text-muted-foreground mt-1">Gerenciamento de usuários e sistema</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        {statCards.map((s) => (
-          <div key={s.label} className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <s.icon className={`h-4 w-4 ${s.color}`} />
-              <span className="text-xs text-muted-foreground">{s.label}</span>
-            </div>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList className="mb-5 w-full grid grid-cols-2">
+          <TabsTrigger value="users" className="gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            Usuários
+          </TabsTrigger>
+          <TabsTrigger value="emails" className="gap-1.5">
+            <Mail className="h-3.5 w-3.5" />
+            E-mails
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users">
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            {statCards.map((s) => (
+              <div key={s.label} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <s.icon className={`h-4 w-4 ${s.color}`} />
+                  <span className="text-xs text-muted-foreground">{s.label}</span>
+                </div>
+                <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Search */}
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
-          />
-        </div>
-      </div>
+          {/* Search */}
+          <div className="mb-4">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+          </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Início Trial</TableHead>
-                <TableHead className="hidden md:table-cell">Fim Trial</TableHead>
-                <TableHead className="hidden lg:table-cell">Criado em</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loadingData ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                    Carregando...
-                  </TableCell>
-                </TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                    Nenhum usuário encontrado
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.full_name || '—'}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{p.email}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[p.status] || ''}`}>
-                        {statusLabels[p.status] || p.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                      {formatDate(p.trial_start)}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                      {formatDate(p.trial_end)}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                      {formatDate(p.created_at)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewProfile(p)}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteProfile(p)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {/* Table */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Início Trial</TableHead>
+                    <TableHead className="hidden md:table-cell">Fim Trial</TableHead>
+                    <TableHead className="hidden lg:table-cell">Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                </TableHeader>
+                <TableBody>
+                  {loadingData ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                        Carregando...
+                      </TableCell>
+                    </TableRow>
+                  ) : filtered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                        Nenhum usuário encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filtered.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-medium">{p.full_name || '—'}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{p.email}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[p.status] || ''}`}>
+                            {statusLabels[p.status] || p.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                          {formatDate(p.trial_start)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                          {formatDate(p.trial_end)}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                          {formatDate(p.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewProfile(p)}>
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteProfile(p)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="emails">
+          <AdminEmailsSection />
+        </TabsContent>
+      </Tabs>
 
       {/* View dialog */}
       <Dialog open={!!viewProfile} onOpenChange={() => setViewProfile(null)}>
