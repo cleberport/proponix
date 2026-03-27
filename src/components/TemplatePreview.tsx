@@ -60,7 +60,7 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
       }
       return el;
     });
-  }, [template, isStarterTemplate]);
+  }, [template, isStarterTemplate, settings.logoUrl, settings.logoAspectRatio]);
   const resolvedValues = useMemo(() => resolveAllValues(template, {}), [template]);
 
   useEffect(() => {
