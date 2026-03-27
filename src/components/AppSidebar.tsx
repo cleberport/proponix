@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail, Shield } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,7 +44,7 @@ export function AppSidebar() {
   };
 
   const allItems = isAdmin
-    ? [...items, { title: 'E-mails', url: '/emails', icon: Mail }, { title: 'Admin', url: '/admin', icon: Shield }]
+    ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
     : items;
 
   return (
