@@ -102,7 +102,19 @@ const Editor = () => {
       setBaseCategory(existing.category || 'Custom');
       setBaseDescription(existing.description || 'Template personalizado');
       setTemplateName(existing.name || 'Template sem título');
-      setPages(getTemplatePages(existing));
+      const loadedPages = getTemplatePages(existing);
+      // Auto-inject settings logo into empty logo elements
+      const settingsLogo = appSettings.logoUrl;
+      if (settingsLogo) {
+        for (const page of loadedPages) {
+          for (const el of page) {
+            if (el.type === 'logo' && !el.imageUrl) {
+              el.imageUrl = settingsLogo;
+            }
+          }
+        }
+      }
+      setPages(loadedPages);
       setCurrentPage(0);
       setVariables(existing.variables?.length ? existing.variables : [...DEFAULT_VARIABLES]);
       setDefaultValues(existing.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
