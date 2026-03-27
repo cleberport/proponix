@@ -103,31 +103,37 @@ const Editor = () => {
       setBaseDescription(existing.description || 'Template personalizado');
       setTemplateName(existing.name || 'Template sem título');
       const loadedPages = getTemplatePages(existing);
-      // Auto-inject settings logo into empty logo elements, respecting aspect ratio
-      const s = getSettings();
-      if (s.logoUrl) {
+      const isStarterTemplate = existing.id?.startsWith('template-');
+
+      if (isStarterTemplate) {
+        // Starter templates follow global logo settings, but without mutating shared template objects.
+        const s = getSettings();
         const ar = s.logoAspectRatio || 1;
-        for (const page of loadedPages) {
-          for (const el of page) {
-            if (el.type === 'logo') {
-              el.imageUrl = s.logoUrl;
-              el.objectFit = 'contain';
-              // Fit logo inside bounding box – never exceed original element bounds
-              const origW = el.width;
-              const origH = el.height;
-              let fitW = origW;
-              let fitH = Math.round(fitW / ar);
-              if (fitH > origH) {
-                fitH = origH;
-                fitW = Math.round(fitH * ar);
-              }
-              el.width = fitW;
-              el.height = fitH;
+        const starterPages = loadedPages.map((page) =>
+          page.map((el) => {
+            if (el.type !== 'logo') return { ...el };
+
+            const origW = el.width;
+            const origH = el.height;
+
+            if (!s.logoUrl) {
+              return { ...el, imageUrl: undefined, objectFit: 'contain' as const, width: origW, height: origH };
             }
-          }
-        }
+
+            let fitW = origW;
+            let fitH = Math.round(fitW / ar);
+            if (fitH > origH) {
+              fitH = origH;
+              fitW = Math.round(fitH * ar);
+            }
+
+            return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
+          })
+        );
+        setPages(starterPages);
+      } else {
+        setPages(loadedPages);
       }
-      setPages(loadedPages);
       setCurrentPage(0);
       setVariables(existing.variables?.length ? existing.variables : [...DEFAULT_VARIABLES]);
       setDefaultValues(existing.defaultValues || { ...DEFAULT_TEMPLATE_VALUES });
