@@ -27,6 +27,8 @@ interface ProposalData {
   negotiationMessage: string | null;
   viewCount: number;
   lastViewedAt: string | null;
+  senderUserId?: string;
+  documentId?: string;
   document: {
     clientName: string;
     templateName: string;
@@ -169,7 +171,8 @@ const ProposalView = () => {
         return () => subscription.unsubscribe();
       }
       // Don't track if the viewer is the sender
-      if (session.user.id !== proposal.document?.userId) {
+      // Don't track if the viewer is the sender
+      if (session.user.id !== proposal.senderUserId) {
         await saveReceivedProposal(session.user.id, proposal);
       }
     };
@@ -182,8 +185,8 @@ const ProposalView = () => {
         {
           user_id: userId,
           proposal_link_id: p.id,
-          document_id: p.document?.documentId || p.id,
-          sender_user_id: p.document?.userId || '',
+          document_id: p.documentId || p.id,
+          sender_user_id: p.senderUserId || '',
           client_name: p.document?.clientName || '',
           template_name: p.document?.templateName || '',
           status: p.status,
