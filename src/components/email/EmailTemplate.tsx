@@ -2,58 +2,66 @@ import { CSSProperties } from 'react';
 
 export interface EmailTemplateProps {
   title: string;
+  greeting?: string;
   body: string[];
   ctaText?: string;
   ctaUrl?: string;
-  footerExtra?: string;
+  footerText?: string;
 }
 
 const styles: Record<string, CSSProperties> = {
   wrapper: {
-    backgroundColor: '#f4f4f5',
+    backgroundColor: '#ffffff',
     padding: '40px 16px',
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     minHeight: '100%',
+    color: '#111111',
   },
   container: {
-    maxWidth: 600,
+    maxWidth: 480,
     margin: '0 auto',
     backgroundColor: '#ffffff',
     borderRadius: 12,
+    border: '1px solid #e5e5e5',
     overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
   },
   header: {
-    padding: '32px 40px 24px',
-    borderBottom: '1px solid #f0f0f0',
+    padding: '32px 32px 0',
     textAlign: 'center' as const,
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 700,
     color: '#e6296a',
     letterSpacing: '-0.02em',
     margin: 0,
   },
   content: {
-    padding: '32px 40px',
+    padding: '28px 32px 32px',
+  },
+  greeting: {
+    fontSize: 17,
+    fontWeight: 600,
+    color: '#111111',
+    margin: '0 0 16px',
+    lineHeight: 1.4,
   },
   title: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: '#0a0a0b',
-    margin: '0 0 20px',
-    lineHeight: 1.3,
+    fontSize: 15,
+    fontWeight: 400,
+    color: '#333333',
+    lineHeight: 1.6,
+    margin: '0 0 12px',
   },
   text: {
     fontSize: 15,
-    color: '#52525b',
-    lineHeight: 1.65,
-    margin: '0 0 16px',
+    color: '#444444',
+    lineHeight: 1.6,
+    margin: '0 0 12px',
   },
   ctaWrapper: {
     textAlign: 'center' as const,
-    padding: '8px 0 16px',
+    padding: '12px 0 8px',
   },
   cta: {
     display: 'inline-block',
@@ -66,26 +74,32 @@ const styles: Record<string, CSSProperties> = {
     textDecoration: 'none',
     letterSpacing: '0.01em',
   },
+  divider: {
+    height: 1,
+    backgroundColor: '#eeeeee',
+    border: 'none',
+    margin: '0',
+  },
   footer: {
-    padding: '24px 40px',
-    borderTop: '1px solid #f0f0f0',
+    padding: '20px 32px',
     textAlign: 'center' as const,
+    backgroundColor: '#fafafa',
   },
   footerText: {
     fontSize: 12,
-    color: '#a1a1aa',
+    color: '#999999',
     margin: '0 0 4px',
     lineHeight: 1.5,
   },
   footerBrand: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 600,
-    color: '#d4d4d8',
-    margin: 0,
+    color: '#cccccc',
+    margin: '8px 0 0',
   },
 };
 
-const EmailTemplate = ({ title, body, ctaText, ctaUrl, footerExtra }: EmailTemplateProps) => (
+const EmailTemplate = ({ title, greeting, body, ctaText, ctaUrl, footerText }: EmailTemplateProps) => (
   <div style={styles.wrapper}>
     <div style={styles.container}>
       <div style={styles.header}>
@@ -93,7 +107,8 @@ const EmailTemplate = ({ title, body, ctaText, ctaUrl, footerExtra }: EmailTempl
       </div>
 
       <div style={styles.content}>
-        <h1 style={styles.title}>{title}</h1>
+        {greeting && <p style={styles.greeting}>{greeting}</p>}
+        <p style={styles.title}>{title}</p>
         {body.map((paragraph, i) => (
           <p key={i} style={styles.text}>{paragraph}</p>
         ))}
@@ -104,9 +119,10 @@ const EmailTemplate = ({ title, body, ctaText, ctaUrl, footerExtra }: EmailTempl
         )}
       </div>
 
+      <hr style={styles.divider} />
+
       <div style={styles.footer}>
-        {footerExtra && <p style={styles.footerText}>{footerExtra}</p>}
-        <p style={styles.footerText}>Se precisar de ajuda, entre em contato com nosso suporte.</p>
+        {footerText && <p style={styles.footerText}>{footerText}</p>}
         <p style={styles.footerBrand}>© {new Date().getFullYear()} Freelox</p>
       </div>
     </div>
