@@ -293,6 +293,14 @@ const ProposalView = () => {
       });
     }
 
+    // Format currency fields (same as Generate page)
+    const currencyFields = ['price', 'subtotal', 'tax', 'total'];
+    for (const f of currencyFields) {
+      if (result[f] && !isNaN(parseFloat(result[f]))) {
+        result[f] = formatCurrency(result[f]);
+      }
+    }
+
     if (proposal.company?.logoUrl) {
       result['__logo_url__'] = proposal.company.logoUrl;
     }
