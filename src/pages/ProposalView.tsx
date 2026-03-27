@@ -13,7 +13,7 @@ import { CanvasElement, Template } from '@/types/template';
 import { starterTemplates } from '@/data/templates';
 import { motion, AnimatePresence } from 'framer-motion';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
-import { resolveAllValues } from '@/lib/calculations';
+import { resolveAllValues, formatCurrency } from '@/lib/calculations';
 
 interface ProposalData {
   id: string;
@@ -291,6 +291,14 @@ const ProposalView = () => {
       Object.entries(resolved).forEach(([k, v]) => {
         if (!result[k] || result[k] === '') result[k] = v;
       });
+    }
+
+    // Format currency fields (same as Generate page)
+    const currencyFields = ['price', 'subtotal', 'tax', 'total'];
+    for (const f of currencyFields) {
+      if (result[f] && !isNaN(parseFloat(result[f]))) {
+        result[f] = formatCurrency(result[f]);
+      }
     }
 
     if (proposal.company?.logoUrl) {
