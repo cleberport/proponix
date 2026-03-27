@@ -129,7 +129,7 @@ const Generate = () => {
           const pages = getTemplatePages(fetchedTemplate);
           for (const page of pages) {
             for (const el of page) {
-              if (el.type === 'logo' && !el.imageUrl) {
+              if (el.type === 'logo') {
                 el.imageUrl = s.logoUrl;
                 el.objectFit = 'contain';
                 // Fit logo inside bounding box – never exceed original element bounds
