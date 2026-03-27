@@ -103,15 +103,18 @@ const Generate = () => {
       const fetchedTemplate = await getTemplateById(id);
       if (!active) return;
 
-      // Auto-inject settings logo into empty logo elements
+      // Auto-inject settings logo into empty logo elements, respecting aspect ratio
       if (fetchedTemplate) {
-        const settingsLogo = getSettings().logoUrl;
-        if (settingsLogo) {
+        const s = getSettings();
+        if (s.logoUrl) {
+          const ar = s.logoAspectRatio || 1;
           const pages = getTemplatePages(fetchedTemplate);
           for (const page of pages) {
             for (const el of page) {
               if (el.type === 'logo' && !el.imageUrl) {
-                el.imageUrl = settingsLogo;
+                el.imageUrl = s.logoUrl;
+                el.objectFit = 'contain';
+                el.height = Math.round(el.width / ar);
               }
             }
           }

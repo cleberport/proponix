@@ -490,16 +490,17 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             cursor: el.locked ? 'not-allowed' : (isFraming ? 'grab' : (readOnly ? 'default' : 'grab')),
           };
 
+          const isLogo = el.type === 'logo';
           const imgInnerStyle: React.CSSProperties = {
             filter: filterStr,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: `${scale * 100}%`,
-            height: `${scale * 100}%`,
-            objectFit: 'cover',
+            position: isLogo ? 'relative' as const : 'absolute' as const,
+            top: isLogo ? undefined : 0,
+            left: isLogo ? undefined : 0,
+            width: isLogo ? '100%' : `${scale * 100}%`,
+            height: isLogo ? '100%' : `${scale * 100}%`,
+            objectFit: isLogo ? 'contain' : 'cover',
             objectPosition: 'center',
-            transform: `translate(${offsetX}px, ${offsetY}px)`,
+            transform: isLogo ? undefined : `translate(${offsetX}px, ${offsetY}px)`,
             pointerEvents: 'none',
           };
 

@@ -20,10 +20,15 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
 
   const firstPageElements = useMemo(() => {
     const page = getTemplatePages(template)[0] ?? [];
-    // Inject settings logo into empty logo elements for preview
-    const logoUrl = getSettings().logoUrl;
-    if (logoUrl) {
-      return page.map(el => el.type === 'logo' && !el.imageUrl ? { ...el, imageUrl: logoUrl } : el);
+    const s = getSettings();
+    if (s.logoUrl) {
+      const ar = s.logoAspectRatio || 1;
+      return page.map(el => {
+        if (el.type === 'logo' && !el.imageUrl) {
+          return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, height: Math.round(el.width / ar) };
+        }
+        return el;
+      });
     }
     return page;
   }, [template]);
