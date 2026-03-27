@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates, saveSettings } from '@/lib/templateStorage';
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Sparkles, Zap, Trash2, Sun, Moon, LayoutDashboard, FolderOpen } from 'lucide-react';
+import { Plus, Sparkles, Zap, Trash2, LayoutDashboard, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -21,7 +21,6 @@ const Dashboard = () => {
   const [loadingSaved, setLoadingSaved] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => (getSettings().theme as 'light' | 'dark') || 'light');
   const settings = getSettings();
 
   const refreshSaved = useCallback(async () => {
@@ -122,21 +121,6 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div data-tour="tour-theme-toggle">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={() => {
-                const newTheme = theme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-                saveSettings({ ...getSettings(), theme: newTheme });
-                document.documentElement.classList.toggle('dark', newTheme === 'light');
-              }}
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-          </div>
           <Button
             variant="outline"
             onClick={() => navigate('/import')}
