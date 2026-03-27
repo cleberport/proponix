@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, Clock, LogOut, FileUp, Shield } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,9 +18,9 @@ import {
 import { Button } from '@/components/ui/button';
 
 const items = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Importar', url: '/import', icon: FileUp },
-  { title: 'Documentos', url: '/documents', icon: Clock },
+  { title: 'Templates', url: '/dashboard', icon: LayoutGrid },
+  { title: 'Documentos', url: '/documents', icon: FileText },
+  { title: 'Recebidos', url: '/recebidos', icon: Inbox },
 ];
 
 export function AppSidebar() {
