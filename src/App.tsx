@@ -10,7 +10,7 @@ import {
   loadDocumentHistoryFromServer,
   loadSettingsFromServer,
   setAuthUserIdHint,
-  clearSettingsCache,
+  clearAllUserCache,
 } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
@@ -75,19 +75,23 @@ const App = () => {
 
   useEffect(() => {
     let isMounted = true;
+    let previousUserId: string | null = null;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
-      // Clear cached settings when user signs out or changes
-      if (!nextSession || nextSession.user?.id !== session?.user?.id) {
-        clearSettingsCache();
+      const nextUserId = nextSession?.user?.id ?? null;
+      // Clear ALL cached data when user signs out or switches account
+      if (previousUserId && nextUserId !== previousUserId) {
+        clearAllUserCache();
       }
+      previousUserId = nextUserId;
       setSession(nextSession);
-      setAuthUserIdHint(nextSession?.user?.id ?? null);
+      setAuthUserIdHint(nextUserId);
     });
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (!isMounted) return;
+      previousUserId = initialSession?.user?.id ?? null;
       setSession(initialSession);
       setAuthUserIdHint(initialSession?.user?.id ?? null);
       setLoading(false);
