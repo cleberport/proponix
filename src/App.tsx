@@ -76,12 +76,13 @@ const App = () => {
   useEffect(() => {
     let isMounted = true;
     let previousUserId: string | null = null;
+    let initialResolved = false;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
       const nextUserId = nextSession?.user?.id ?? null;
       // Clear ALL cached data when user signs out or switches account
-      if (previousUserId && nextUserId !== previousUserId) {
+      if (initialResolved && nextUserId !== previousUserId) {
         clearAllUserCache();
       }
       previousUserId = nextUserId;
@@ -91,9 +92,15 @@ const App = () => {
 
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (!isMounted) return;
-      previousUserId = initialSession?.user?.id ?? null;
+      const initialUserId = initialSession?.user?.id ?? null;
+      // On first load, clear cache if no session (prevents stale data from previous user)
+      if (!initialUserId) {
+        clearAllUserCache();
+      }
+      previousUserId = initialUserId;
+      initialResolved = true;
       setSession(initialSession);
-      setAuthUserIdHint(initialSession?.user?.id ?? null);
+      setAuthUserIdHint(initialUserId);
       setLoading(false);
     });
 
