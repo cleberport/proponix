@@ -38,7 +38,7 @@ export default function AdminEmailsSection() {
       body: t.props.body.join('\n\n'),
       ctaText: t.props.ctaText || '',
       ctaUrl: t.props.ctaUrl || '',
-      footerExtra: t.props.footerExtra || '',
+      footerText: t.props.footerText || '',
     });
   };
 
@@ -54,7 +54,7 @@ export default function AdminEmailsSection() {
                 body: editForm.body.split('\n\n').filter(Boolean),
                 ctaText: editForm.ctaText || undefined,
                 ctaUrl: editForm.ctaUrl || undefined,
-                footerExtra: editForm.footerExtra || undefined,
+                footerText: editForm.footerText || undefined,
               },
             }
           : t
@@ -233,8 +233,8 @@ export default function AdminEmailsSection() {
             <div>
               <Label className="text-xs text-muted-foreground">Nota de rodapé (opcional)</Label>
               <Input
-                value={editForm.footerExtra}
-                onChange={(e) => setEditForm({ ...editForm, footerExtra: e.target.value })}
+                value={editForm.footerText}
+                onChange={(e) => setEditForm({ ...editForm, footerText: e.target.value })}
                 className="mt-1 h-10"
               />
             </div>
