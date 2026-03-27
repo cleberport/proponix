@@ -9,7 +9,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -22,7 +21,6 @@ const items = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Importar', url: '/import', icon: FileUp },
   { title: 'Documentos', url: '/documents', icon: Clock },
-  
   { title: 'Perfil', url: '/profile', icon: User },
   { title: 'Configurações', url: '/settings', icon: Settings },
 ];
@@ -50,17 +48,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarContent>
+        {/* Logo area with professional spacing */}
+        <div className={`flex items-center gap-2.5 px-4 pt-6 pb-6 ${collapsed ? 'justify-center px-2' : ''}`}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ff2e5f]">
+            <FileText className="h-4 w-4 text-white" />
+          </div>
+          {!collapsed && (
+            <span className="text-xl font-bold tracking-tight text-foreground">Freelox</span>
+          )}
+        </div>
+
         <SidebarGroup>
-          <SidebarGroupLabel>
-            {!collapsed && (
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
-                  <FileText className="h-3.5 w-3.5 text-primary-foreground" />
-                </div>
-                <span className="text-xs font-semibold"><span className="text-xs font-semibold">Freelox</span></span>
-              </div>
-            )}
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {allItems.map((item) => (
