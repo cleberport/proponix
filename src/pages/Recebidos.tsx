@@ -67,9 +67,12 @@ const Recebidos = () => {
   }, []);
 
   const loadProposals = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); return; }
     const { data } = await supabase
       .from('received_proposals')
       .select('*')
+      .eq('user_id', user.id)
       .order('received_at', { ascending: false }) as { data: ReceivedProposal[] | null };
     if (data) setProposals(data);
     setLoading(false);
