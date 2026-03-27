@@ -640,18 +640,29 @@ const ProposalView = () => {
             transition={{ duration: 0.4 }}
             className="shrink-0"
           >
+            {templatePages.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mb-3 text-xs text-muted-foreground">
+                <FileText className="w-3.5 h-3.5" />
+                <span>{templatePages.length} páginas</span>
+              </div>
+            )}
             {templatePages.map((pageElements, pageIdx) => (
-              <div
-                key={pageIdx}
-                className="mx-auto overflow-hidden"
-                style={{
-                  width: CANVAS_W * docScale,
-                  height: CANVAS_H * docScale,
-                  marginBottom: pageIdx < templatePages.length - 1 ? 12 * docScale : 0,
-                  borderRadius: 8 * docScale,
-                  boxShadow: '0 4px 24px -4px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
-                }}
-              >
+              <div key={pageIdx}>
+                {pageIdx > 0 && templatePages.length > 1 && (
+                  <div className="flex items-center justify-center py-2 text-xs text-muted-foreground/60">
+                    <span>{pageIdx + 1} / {templatePages.length}</span>
+                  </div>
+                )}
+                <div
+                  className="mx-auto overflow-hidden"
+                  style={{
+                    width: CANVAS_W * docScale,
+                    height: CANVAS_H * docScale,
+                    marginBottom: pageIdx < templatePages.length - 1 ? 4 : 0,
+                    borderRadius: 8 * docScale,
+                    boxShadow: '0 4px 24px -4px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
+                  }}
+                >
                 <div
                   style={{
                     width: CANVAS_W,
@@ -671,6 +682,7 @@ const ProposalView = () => {
                     backgroundColor={bgColor}
                   />
                 </div>
+              </div>
               </div>
             ))}
           </motion.div>
