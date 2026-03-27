@@ -104,7 +104,7 @@ const Editor = () => {
       setTemplateName(existing.name || 'Template sem título');
       const loadedPages = getTemplatePages(existing);
       // Auto-inject settings logo into empty logo elements
-      const settingsLogo = appSettings.logoUrl;
+      const settingsLogo = getSettings().logoUrl;
       if (settingsLogo) {
         for (const page of loadedPages) {
           for (const el of page) {
