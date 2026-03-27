@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Search, Bell, User, Settings, LogOut, Eye, CheckCircle, MessageSquare, Clock, ChevronDown } from 'lucide-react';
+import { Search, Bell, User, Settings, LogOut, Eye, CheckCircle, MessageSquare, Clock, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useNotifications, AppNotification } from '@/hooks/useNotifications';
+import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -36,6 +37,7 @@ function TopBar() {
   const [profileName, setProfileName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -80,6 +82,10 @@ function TopBar() {
       </div>
 
       <div className="flex items-center gap-1.5">
+        {/* Theme toggle */}
+        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme}>
+          {theme === 'dark' ? <Sun className="h-4 w-4 text-muted-foreground" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
+        </Button>
         {/* Notifications */}
         <Popover>
           <PopoverTrigger asChild>
