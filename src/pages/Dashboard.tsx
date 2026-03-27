@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { getStarterTemplates, getSavedTemplates, deleteTemplate, duplicateTemplate, getSettings, hideStarterTemplate, hideAllStarterTemplates, saveSettings } from '@/lib/templateStorage';
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Sparkles, Zap, Trash2, Sun, Moon } from 'lucide-react';
+import { Plus, Sparkles, Zap, Trash2, Sun, Moon, LayoutDashboard, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -111,10 +111,15 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      <div className="mb-6 flex items-center justify-between" data-tour="tour-dashboard-header">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground md:text-2xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
+      <div className="mb-8 flex items-center justify-between" data-tour="tour-dashboard-header">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <LayoutDashboard className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">Dashboard</h1>
+            <p className="text-sm text-muted-foreground hidden sm:block">Crie e gerencie seus templates de proposta</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div data-tour="tour-theme-toggle">
@@ -150,7 +155,10 @@ const Dashboard = () => {
 
       {saved.length > 0 && (
         <section className="mb-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-3 md:p-4" data-tour="tour-template-cards">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">Seus Templates</h2>
+          <div className="mb-3 flex items-center gap-2">
+            <FolderOpen className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-primary">Seus Templates</h2>
+          </div>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:gap-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
             {saved.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
