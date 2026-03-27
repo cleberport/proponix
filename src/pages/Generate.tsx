@@ -150,6 +150,7 @@ const Generate = () => {
         const pages = getTemplatePages(fetchedTemplate);
         const calcFields = new Set(Object.keys(fetchedTemplate.calculatedFields || {}));
         const excluded = new Set([...calcFields, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+        excluded.add('tax_rate');
 
         // Check if template has a table - if so, exclude price from manual inputs
         let templateHasTable = false;
@@ -241,6 +242,7 @@ const Generate = () => {
   const calculatedFieldNames = Object.keys(template?.calculatedFields || {});
   const excludedFields = useMemo(() => {
     const base = new Set([...calculatedFieldNames, 'subtotal', 'tax', 'total', 'data_de_hoje']);
+    base.add('tax_rate');
     if (hasTable) base.add('price');
     return base;
   }, [calculatedFieldNames, hasTable]);
