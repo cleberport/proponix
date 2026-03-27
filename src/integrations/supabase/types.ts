@@ -218,11 +218,16 @@ export type Database = {
           created_at: string
           document_id: string
           id: string
+          last_action: string
+          last_action_at: string | null
           proposal_link_id: string
           received_at: string
+          sender_company: string
+          sender_name: string
           sender_user_id: string
           status: string
           template_name: string
+          total_value: string
           updated_at: string
           user_id: string
         }
@@ -231,11 +236,16 @@ export type Database = {
           created_at?: string
           document_id: string
           id?: string
+          last_action?: string
+          last_action_at?: string | null
           proposal_link_id: string
           received_at?: string
+          sender_company?: string
+          sender_name?: string
           sender_user_id: string
           status?: string
           template_name?: string
+          total_value?: string
           updated_at?: string
           user_id: string
         }
@@ -244,11 +254,16 @@ export type Database = {
           created_at?: string
           document_id?: string
           id?: string
+          last_action?: string
+          last_action_at?: string | null
           proposal_link_id?: string
           received_at?: string
+          sender_company?: string
+          sender_name?: string
           sender_user_id?: string
           status?: string
           template_name?: string
+          total_value?: string
           updated_at?: string
           user_id?: string
         }
