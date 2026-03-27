@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useState, useRef, useEffect } from 'react';
 import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
-import { resolveTextColor } from '@/lib/colorContrast';
+import { resolveTextColor, isDark } from '@/lib/colorContrast';
 
 interface Props {
   elements: CanvasElement[];
@@ -490,17 +490,24 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             cursor: el.locked ? 'not-allowed' : (isFraming ? 'grab' : (readOnly ? 'default' : 'grab')),
           };
 
-          const isLogo = el.type === 'logo';
+          const isLogoEl = el.type === 'logo';
+          // Auto-invert logo on dark backgrounds
+          const logoDarkBg = isLogoEl && isDark(backgroundColor);
+          const logoFilter = logoDarkBg ? 'brightness(0) invert(1)' : undefined;
+          const combinedFilter = isLogoEl
+            ? logoFilter
+            : filterStr;
+
           const imgInnerStyle: React.CSSProperties = {
-            filter: filterStr,
-            position: isLogo ? 'relative' as const : 'absolute' as const,
-            top: isLogo ? undefined : 0,
-            left: isLogo ? undefined : 0,
-            width: isLogo ? '100%' : `${scale * 100}%`,
-            height: isLogo ? '100%' : `${scale * 100}%`,
-            objectFit: isLogo ? 'contain' : 'cover',
+            filter: combinedFilter,
+            position: isLogoEl ? 'relative' as const : 'absolute' as const,
+            top: isLogoEl ? undefined : 0,
+            left: isLogoEl ? undefined : 0,
+            width: isLogoEl ? '100%' : `${scale * 100}%`,
+            height: isLogoEl ? '100%' : `${scale * 100}%`,
+            objectFit: isLogoEl ? 'contain' : 'cover',
             objectPosition: 'center',
-            transform: isLogo ? undefined : `translate(${offsetX}px, ${offsetY}px)`,
+            transform: isLogoEl ? undefined : `translate(${offsetX}px, ${offsetY}px)`,
             pointerEvents: 'none',
           };
 
