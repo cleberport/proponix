@@ -556,7 +556,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 />
               ) : el.type === 'logo' ? (
                 <div className="group/logo relative flex items-center justify-center h-full" title="Adicione seu logo em Configurações → Empresa → Logo">
-                  <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: resolveTextColor(backgroundColor) === '#ffffff' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)' }}>SEU LOGO AQUI</span>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: isDark(backgroundColor) ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)' }}>SEU LOGO AQUI</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-1 py-4">
