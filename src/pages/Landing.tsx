@@ -425,17 +425,48 @@ const Landing = () => {
           <motion.div className="text-center mb-14" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
             <SectionLabel>Preços</SectionLabel>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Simples e direto</h2>
+
+            {/* Toggle */}
+            <div className="mt-8 inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
+              <button
+                onClick={() => setYearly(false)}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${!yearly ? 'bg-primary text-white shadow-lg' : 'text-white/50 hover:text-white/70'}`}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setYearly(true)}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-2 ${yearly ? 'bg-primary text-white shadow-lg' : 'text-white/50 hover:text-white/70'}`}
+              >
+                Anual
+                <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 transition-all duration-300 ${yearly ? 'bg-white/20 text-white' : 'bg-primary/20 text-primary'}`}>
+                  Economize 2 meses
+                </span>
+              </button>
+            </div>
           </motion.div>
 
           <motion.div
-            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 md:p-10 backdrop-blur"
+            className={`rounded-2xl border p-8 md:p-10 backdrop-blur transition-colors duration-300 ${yearly ? 'border-primary/30 bg-primary/[0.04]' : 'border-white/[0.08] bg-white/[0.03]'}`}
             initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}
           >
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl md:text-5xl font-bold text-white">R$19</span>
-              <span className="text-white/40 text-lg">/mês</span>
-            </div>
-            <p className="mt-2 text-sm text-white/40">ou R$197/ano</p>
+            <motion.div
+              key={yearly ? 'yearly' : 'monthly'}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-white">{yearly ? 'R$197' : 'R$19'}</span>
+                <span className="text-white/40 text-lg">{yearly ? '/ano' : '/mês'}</span>
+              </div>
+              {yearly && (
+                <p className="mt-2 text-sm text-primary/70 font-medium">R$16/mês — economia de 2 meses</p>
+              )}
+              {!yearly && (
+                <p className="mt-2 text-sm text-white/40">ou R$197/ano e economize 2 meses</p>
+              )}
+            </motion.div>
 
             <ul className="mt-8 space-y-4">
               {[
