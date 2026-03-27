@@ -100,16 +100,20 @@ const minimalElements: CanvasElement[] = [
   // Description text block
   el({ type: 'text', x: 40, y: 358, width: 515, height: 80, content: 'Inclui planejamento estratégico, execução completa do projeto, acompanhamento de entregas e revisões ilimitadas durante o período contratado. Suporte dedicado com atendimento prioritário.', fontSize: 12, fontWeight: '400', color: '#52525B' }),
 
-  // Large price highlight — centered hero element
+  // Price input
   el({ type: 'divider', x: 40, y: 460, width: 515, height: 1, content: '', color: '#E4E4E7' }),
 
-  el({ type: 'text', x: 40, y: 490, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#A1A1AA', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 478, width: 515, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#A1A1AA' }),
+  el({ type: 'price-field', x: 40, y: 494, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '500', color: '#18181B', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 516, width: 515, height: 50, content: '', variable: 'total', fontWeight: '300', fontSize: 42, color: '#18181B', alignment: 'center', fieldCategory: 'calculated' }),
+  // Total highlight — centered hero element
+  el({ type: 'text', x: 40, y: 536, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#A1A1AA', alignment: 'center' }),
+
+  el({ type: 'total-calculation', x: 40, y: 556, width: 515, height: 50, content: '', variable: 'total', fontWeight: '300', fontSize: 42, color: '#18181B', alignment: 'center', fieldCategory: 'calculated' }),
 
   // Subtotal + tax — small underneath
-  el({ type: 'price-field', x: 180, y: 576, width: 120, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A1A1AA', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 576, width: 120, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#A1A1AA', alignment: 'left', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 180, y: 616, width: 120, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A1A1AA', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 616, width: 120, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#A1A1AA', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 610, width: 515, height: 1, content: '', color: '#E4E4E7' }),
 
@@ -162,15 +166,19 @@ const darkElements: CanvasElement[] = [
   // Description
   el({ type: 'text', x: 40, y: 368, width: 515, height: 80, content: 'Desenvolvimento completo do projeto conforme especificações acordadas. Inclui todas as etapas de planejamento, execução e acompanhamento. Suporte técnico durante todo o período de execução.', fontSize: 12, color: '#9CA3AF' }),
 
-  // Price section — gold highlight
+  // Price input
   el({ type: 'divider', x: 40, y: 472, width: 515, height: 1, content: '', color: '#374151' }),
 
-  el({ type: 'text', x: 40, y: 498, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#D4AF37', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 490, width: 200, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#D4AF37' }),
+  el({ type: 'price-field', x: 40, y: 506, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '400', color: '#F3F4F6', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 522, width: 515, height: 48, content: '', variable: 'total', fontWeight: '300', fontSize: 40, color: '#D4AF37', alignment: 'center', fieldCategory: 'calculated' }),
+  // Total highlight
+  el({ type: 'text', x: 40, y: 546, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#D4AF37', alignment: 'center' }),
 
-  el({ type: 'price-field', x: 160, y: 580, width: 140, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#6B7280', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 580, width: 140, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#6B7280', alignment: 'left', fieldCategory: 'calculated' }),
+  el({ type: 'total-calculation', x: 40, y: 568, width: 515, height: 48, content: '', variable: 'total', fontWeight: '300', fontSize: 40, color: '#D4AF37', alignment: 'center', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 160, y: 626, width: 140, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#6B7280', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 626, width: 140, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#6B7280', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 614, width: 515, height: 1, content: '', color: '#374151' }),
 
@@ -226,14 +234,18 @@ const colorfulElements: CanvasElement[] = [
 
   el({ type: 'text', x: 40, y: 380, width: 515, height: 80, content: 'Criação completa de identidade visual, estratégia de marca e materiais de comunicação. Entregas em alta qualidade com revisões ilimitadas durante cada fase do projeto. Suporte criativo contínuo.', fontSize: 12, color: '#475569' }),
 
-  // Price — big, bold, colored
+  // Price input
   el({ type: 'divider', x: 40, y: 480, width: 515, height: 3, content: '', color: '#7C3AED' }),
 
-  el({ type: 'text', x: 40, y: 504, width: 200, height: 14, content: '● INVESTIMENTO', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
+  el({ type: 'text', x: 40, y: 500, width: 200, height: 14, content: '● VALOR', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
+  el({ type: 'price-field', x: 40, y: 518, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '600', color: '#1E1B4B', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 530, width: 515, height: 48, content: '', variable: 'total', fontWeight: '900', fontSize: 42, color: '#1E1B4B', alignment: 'left', fieldCategory: 'calculated' }),
+  // Total
+  el({ type: 'text', x: 40, y: 556, width: 200, height: 14, content: '● INVESTIMENTO', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
 
-  el({ type: 'price-field', x: 40, y: 586, width: 160, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A78BFA', fieldCategory: 'calculated' }),
+  el({ type: 'total-calculation', x: 40, y: 576, width: 515, height: 48, content: '', variable: 'total', fontWeight: '900', fontSize: 42, color: '#1E1B4B', alignment: 'left', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 40, y: 632, width: 160, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A78BFA', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 618, width: 515, height: 2, content: '', color: '#EDE9FE' }),
 
@@ -283,13 +295,17 @@ const gradientElements: CanvasElement[] = [
   // Description
   el({ type: 'text', x: 60, y: 386, width: 475, height: 80, content: 'Solução completa para seu projeto, incluindo análise de requisitos, desenvolvimento, testes e implantação. Acompanhamento contínuo durante toda a execução com relatórios de progresso semanais.', fontSize: 12, color: '#475569', alignment: 'center' }),
 
-  // Price — centered hero
+  // Price input
   el({ type: 'divider', x: 60, y: 486, width: 475, height: 1, content: '', color: '#E0F2FE' }),
 
-  el({ type: 'total-calculation', x: 40, y: 510, width: 515, height: 50, content: '', variable: 'total', fontWeight: '600', fontSize: 40, color: '#0EA5E9', alignment: 'center', fieldCategory: 'calculated' }),
+  el({ type: 'text', x: 40, y: 504, width: 515, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#0EA5E9', alignment: 'center' }),
+  el({ type: 'price-field', x: 168, y: 520, width: 260, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '500', color: '#0F172A', alignment: 'center', fieldCategory: 'input' }),
 
-  el({ type: 'price-field', x: 140, y: 570, width: 150, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#94A3B8', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 570, width: 150, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#94A3B8', alignment: 'left', fieldCategory: 'calculated' }),
+  // Total
+  el({ type: 'total-calculation', x: 40, y: 560, width: 515, height: 50, content: '', variable: 'total', fontWeight: '600', fontSize: 40, color: '#0EA5E9', alignment: 'center', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 140, y: 620, width: 150, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#94A3B8', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 620, width: 150, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#94A3B8', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 60, y: 604, width: 475, height: 1, content: '', color: '#E0F2FE' }),
 
@@ -346,6 +362,10 @@ const corporateElements: CanvasElement[] = [
   // Section: Values
   el({ type: 'text', x: 40, y: 418, width: 200, height: 16, content: 'VALORES', fontSize: 10, fontWeight: '700', color: '#1E3A5F' }),
 
+  // Price input
+  el({ type: 'text', x: 40, y: 444, width: 80, height: 12, content: 'Valor', fontSize: 9, fontWeight: '500', color: '#64748B' }),
+  el({ type: 'price-field', x: 40, y: 458, width: 250, height: 22, content: '', variable: 'price', fontSize: 14, fontWeight: '500', color: '#0F172A', fieldCategory: 'input' }),
+
   // Price breakdown — right aligned in a clean block
   el({ type: 'price-field', x: 340, y: 448, width: 215, height: 22, content: 'Subtotal:', variable: 'subtotal', fontSize: 13, color: '#475569', fieldCategory: 'calculated' }),
   el({ type: 'price-field', x: 340, y: 476, width: 215, height: 22, content: 'Impostos (5%):', variable: 'tax', fontSize: 13, color: '#475569', fieldCategory: 'calculated' }),
@@ -376,7 +396,7 @@ const corporateElements: CanvasElement[] = [
 export const starterTemplates: Template[] = [
   makeTemplate('template-minimal', 'Minimal', 'Geral', 'Layout limpo com preço em destaque centralizado, tipografia leve e espaçamento generoso.', minimalElements, allVars, {
     defaultValues: { tax_rate: '0.10' },
-    inputFields: ['client_name', 'event_name', 'location', 'event_date'],
+    inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
     color: '#71717A',
@@ -384,7 +404,7 @@ export const starterTemplates: Template[] = [
 
   makeTemplate('template-dark', 'Dark', 'Premium', 'Fundo escuro com detalhes dourados e tipografia elegante. Para projetos sofisticados.', darkElements, allVars, {
     defaultValues: { tax_rate: '0.05' },
-    inputFields: ['client_name', 'event_name', 'location', 'event_date'],
+    inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true, backgroundColor: '#111827' },
     color: '#D4AF37',
@@ -392,7 +412,7 @@ export const starterTemplates: Template[] = [
 
   makeTemplate('template-colorful', 'Criativo', 'Agência', 'Design ousado com cores vibrantes, tipografia expressiva e layout assimétrico.', colorfulElements, allVars, {
     defaultValues: { tax_rate: '0' },
-    inputFields: ['client_name', 'event_name', 'location', 'event_date'],
+    inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0, showTax: false },
     color: '#7C3AED',
@@ -400,7 +420,7 @@ export const starterTemplates: Template[] = [
 
   makeTemplate('template-gradient', 'Elegante', 'Tecnologia', 'Layout centralizado e limpo com tons de azul. Ideal para empresas de tecnologia e serviços digitais.', gradientElements, allVars, {
     defaultValues: { tax_rate: '0.10' },
-    inputFields: ['client_name', 'event_name', 'location', 'event_date'],
+    inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.10, showTax: true },
     color: '#0EA5E9',
@@ -408,7 +428,7 @@ export const starterTemplates: Template[] = [
 
   makeTemplate('template-corporate', 'Corporativo', 'Corporativo', 'Template profissional com seções estruturadas, área de assinatura e diagramação formal.', corporateElements, allVars, {
     defaultValues: { tax_rate: '0.05' },
-    inputFields: ['client_name', 'event_name', 'location', 'event_date'],
+    inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
     settings: { taxRate: 0.05, showTax: true },
     color: '#1E3A5F',
