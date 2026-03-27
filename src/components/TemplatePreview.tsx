@@ -24,7 +24,7 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
     if (s.logoUrl) {
       const ar = s.logoAspectRatio || 1;
       return page.map(el => {
-        if (el.type === 'logo' && !el.imageUrl) {
+        if (el.type === 'logo') {
           const origW = el.width;
           const origH = el.height;
           let fitW = origW;
