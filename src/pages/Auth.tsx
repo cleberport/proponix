@@ -62,30 +62,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col light" style={{
-      colorScheme: 'light',
-      ['--background' as any]: '0 0% 100%',
-      ['--foreground' as any]: '240 10% 4%',
-      ['--card' as any]: '0 0% 100%',
-      ['--card-foreground' as any]: '240 10% 4%',
-      ['--popover' as any]: '0 0% 100%',
-      ['--popover-foreground' as any]: '240 10% 4%',
-      ['--border' as any]: '240 6% 90%',
-      ['--input' as any]: '240 6% 90%',
-      ['--ring' as any]: '346 100% 59%',
-      ['--primary' as any]: '346 100% 59%',
-      ['--primary-foreground' as any]: '0 0% 100%',
-      ['--muted' as any]: '240 5% 96%',
-      ['--muted-foreground' as any]: '240 4% 46%',
-      ['--accent' as any]: '240 5% 96%',
-      ['--accent-foreground' as any]: '240 6% 10%',
-      ['--secondary' as any]: '240 5% 96%',
-      ['--secondary-foreground' as any]: '240 6% 10%',
-      backgroundColor: 'hsl(0 0% 100%)',
-      color: 'hsl(240 10% 4%)',
-    }}>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <div className="flex items-center gap-3 p-4">
-        <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
+        <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Voltar
         </button>
@@ -94,11 +73,11 @@ const Auth = () => {
       <div className="flex flex-1 items-center justify-center px-4 pb-16">
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <h1 className="text-2xl font-bold">{isLogin ? 'Entrar' : 'Criar conta'}</h1>
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {isLogin ? 'Acesse sua conta Freelox' : 'Comece a criar propostas profissionais'}
             </p>
           </div>
@@ -124,18 +103,18 @@ const Auth = () => {
           </div>
 
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-neutral-200" />
-            <span className="text-xs text-neutral-400">ou</span>
-            <div className="h-px flex-1 bg-neutral-200" />
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou</span>
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Email form */}
           <form onSubmit={handleEmailAuth} className="space-y-4">
             {!isLogin && (
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-sm text-neutral-500">Nome</Label>
+                <Label htmlFor="name" className="text-sm text-muted-foreground">Nome</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="name"
                     value={name}
@@ -147,9 +126,9 @@ const Auth = () => {
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-sm text-neutral-500">E-mail</Label>
+              <Label htmlFor="email" className="text-sm text-muted-foreground">E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -162,9 +141,9 @@ const Auth = () => {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-sm text-neutral-500">Senha</Label>
+              <Label htmlFor="password" className="text-sm text-muted-foreground">Senha</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
@@ -182,7 +161,7 @@ const Auth = () => {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-neutral-500">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             {isLogin ? 'Não tem conta?' : 'Já tem conta?'}{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}

@@ -126,7 +126,7 @@ const Dashboard = () => {
                 const newTheme = theme === 'dark' ? 'light' : 'dark';
                 setTheme(newTheme);
                 saveSettings({ ...getSettings(), theme: newTheme });
-                document.documentElement.classList.toggle('dark', newTheme === 'dark');
+                document.documentElement.classList.toggle('dark', newTheme === 'light');
               }}
             >
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

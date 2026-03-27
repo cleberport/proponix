@@ -64,9 +64,9 @@ const SettingsPage = () => {
   };
 
   const toggleTheme = () => {
-    const newTheme = settings.theme === 'light' ? 'dark' : 'light';
+    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
     update({ theme: newTheme });
-    if (newTheme === 'dark') document.documentElement.classList.add('dark');
+    if (newTheme === 'light') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
     saveSettings({ ...settings, theme: newTheme });
   };
