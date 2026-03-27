@@ -33,6 +33,7 @@ const Emails = lazy(() => import("./pages/Emails"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Billing = lazy(() => import("./pages/Billing"));
 const ProposalView = lazy(() => import("./pages/ProposalView"));
+const Recebidos = lazy(() => import("./pages/Recebidos"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -136,6 +137,7 @@ const App = () => {
                 <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/emails" element={<ProtectedRoute session={session}><Navigate to="/admin" replace /></ProtectedRoute>} />
                 <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
+                <Route path="/recebidos" element={<ProtectedRoute session={session}><AppLayout><Recebidos /></AppLayout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
                 <Route path="/billing" element={<ProtectedRoute session={session}><Navigate to="/settings?tab=billing" replace /></ProtectedRoute>} />
                 <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
