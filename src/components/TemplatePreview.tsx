@@ -18,13 +18,18 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
   const canvasWidth = template.canvasWidth || 595;
   const canvasHeight = template.canvasHeight || 842;
 
+  const isStarterTemplate = !template.id || template.id.startsWith('template-');
+
   const firstPageElements = useMemo(() => {
     const page = getTemplatePages(template)[0] ?? [];
+    // Only inject/clear settings logo on starter templates
+    if (!isStarterTemplate) return page;
+
     const s = getSettings();
-    if (s.logoUrl) {
-      const ar = s.logoAspectRatio || 1;
-      return page.map(el => {
-        if (el.type === 'logo') {
+    const ar = s.logoAspectRatio || 1;
+    return page.map(el => {
+      if (el.type === 'logo') {
+        if (s.logoUrl) {
           const origW = el.width;
           const origH = el.height;
           let fitW = origW;
@@ -35,11 +40,12 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
           }
           return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
         }
-        return el;
-      });
-    }
-    return page;
-  }, [template]);
+        // No logo in settings → clear any old logo so placeholder shows
+        return { ...el, imageUrl: undefined };
+      }
+      return el;
+    });
+  }, [template, isStarterTemplate]);
   const resolvedValues = useMemo(() => resolveAllValues(template, {}), [template]);
 
   useEffect(() => {
