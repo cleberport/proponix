@@ -20,6 +20,24 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 
+const FORMULA_VAR_REGEX = /[a-zA-Z_][a-zA-Z0-9_]*/g;
+const SAFE_FORMULA_TOKENS = new Set(['Math', 'min', 'max', 'round', 'floor', 'ceil', 'abs', 'pow']);
+
+const extractFormulaDependencies = (calculatedFields: Record<string, string>): string[] => {
+  const calculatedNames = new Set(Object.keys(calculatedFields));
+  const deps = new Set<string>();
+
+  for (const formula of Object.values(calculatedFields)) {
+    const tokens = formula.match(FORMULA_VAR_REGEX) || [];
+    for (const token of tokens) {
+      if (SAFE_FORMULA_TOKENS.has(token)) continue;
+      if (!calculatedNames.has(token)) deps.add(token);
+    }
+  }
+
+  return [...deps];
+};
+
 const Generate = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -164,6 +182,9 @@ const Generate = () => {
           }
         }
 
+        // Also collect source vars used by calculated formulas (e.g. "price")
+        extractFormulaDependencies(fetchedTemplate.calculatedFields || {}).forEach((v) => usedVars.add(v));
+
         // Only initialize inputs for variables actually used in the canvas
         (fetchedTemplate.inputFields || []).forEach((field) => {
           if (!excluded.has(field) && usedVars.has(field)) init[field] = '';
@@ -210,6 +231,10 @@ const Generate = () => {
         }
       }
     }
+
+    // Include vars referenced only in formulas (backward compatibility for older templates)
+    vars.push(...extractFormulaDependencies(template.calculatedFields || {}));
+
     return vars;
   }, [template]);
 
@@ -221,17 +246,19 @@ const Generate = () => {
   }, [calculatedFieldNames, hasTable]);
 
   const inputFields = useMemo(() => {
-    // Only show input fields that are actually used by dynamic elements in the template
-    const dynamicSet = new Set(allDynamicVars);
-    const baseFields = (template?.inputFields || []).filter((f) => !excludedFields.has(f) && dynamicSet.has(f));
-    const seen = new Set(baseFields);
-    const merged = [...baseFields];
-    for (const v of allDynamicVars) {
-      if (!seen.has(v) && !excludedFields.has(v)) {
-        merged.push(v);
-        seen.add(v);
-      }
-    }
+    const seen = new Set<string>();
+    const merged: string[] = [];
+
+    const addField = (field: string) => {
+      if (seen.has(field) || excludedFields.has(field)) return;
+      seen.add(field);
+      merged.push(field);
+    };
+
+    // Keep explicit template inputs and complement with vars found in canvas/formulas
+    (template?.inputFields || []).forEach(addField);
+    allDynamicVars.forEach(addField);
+
     return merged;
   }, [template, allDynamicVars, excludedFields]);
 
