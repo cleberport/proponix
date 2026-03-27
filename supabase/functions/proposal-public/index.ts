@@ -79,11 +79,11 @@ Deno.serve(async (req) => {
       }
 
       // Fetch template elements
-      let templateData: { elements: unknown; settings: unknown; canvas_width: number; canvas_height: number } | null = null;
+      let templateData: { elements: unknown; settings: unknown; canvas_width: number; canvas_height: number; calculated_fields: unknown; default_values: unknown; input_fields: unknown; variables: unknown } | null = null;
       if (doc.template_id) {
         const { data: tmpl } = await supabase
           .from("custom_templates")
-          .select("elements, settings, canvas_width, canvas_height")
+          .select("elements, settings, canvas_width, canvas_height, calculated_fields, default_values, input_fields, variables")
           .eq("id", doc.template_id)
           .maybeSingle();
         if (tmpl) templateData = tmpl;
