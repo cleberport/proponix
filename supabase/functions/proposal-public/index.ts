@@ -145,6 +145,8 @@ Deno.serve(async (req) => {
                 settings: templateData.settings,
                 canvasWidth: templateData.canvas_width,
                 canvasHeight: templateData.canvas_height,
+                calculatedFields: templateData.calculated_fields,
+                defaultValues: templateData.default_values,
               }
             : null,
           company: settings
