@@ -44,7 +44,7 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
     const ar = settings.logoAspectRatio || 1;
     return page.map(el => {
       if (el.type === 'logo') {
-        if (s.logoUrl) {
+        if (settings.logoUrl) {
           const origW = el.width;
           const origH = el.height;
           let fitW = origW;
@@ -53,7 +53,7 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
             fitH = origH;
             fitW = Math.round(fitH * ar);
           }
-          return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
+          return { ...el, imageUrl: settings.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
         }
         // No logo in settings → clear any old logo so placeholder shows
         return { ...el, imageUrl: undefined };
