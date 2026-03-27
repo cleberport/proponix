@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -151,6 +152,49 @@ const ProposalView = () => {
     if (!token) return;
     fetchProposal(false);
   }, [token, fetchProposal]);
+
+  // Track as received for logged-in users
+  useEffect(() => {
+    if (!proposal) return;
+    const trackReceived = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        // Listen for future login
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+          if (sess && proposal) {
+            saveReceivedProposal(sess.user.id, proposal);
+            subscription.unsubscribe();
+          }
+        });
+        return () => subscription.unsubscribe();
+      }
+      // Don't track if the viewer is the sender
+      if (session.user.id !== proposal.document?.userId) {
+        await saveReceivedProposal(session.user.id, proposal);
+      }
+    };
+    trackReceived();
+  }, [proposal]);
+
+  const saveReceivedProposal = async (userId: string, p: ProposalData) => {
+    try {
+      await supabase.from('received_proposals').upsert(
+        {
+          user_id: userId,
+          proposal_link_id: p.id,
+          document_id: p.document?.documentId || p.id,
+          sender_user_id: p.document?.userId || '',
+          client_name: p.document?.clientName || '',
+          template_name: p.document?.templateName || '',
+          status: p.status,
+          received_at: new Date().toISOString(),
+        } as any,
+        { onConflict: 'user_id,proposal_link_id' }
+      );
+    } catch (err) {
+      console.error('Error tracking received proposal:', err);
+    }
+  };
 
   // Measure container for document scaling
   useEffect(() => {
