@@ -1,19 +1,20 @@
-import { LayoutGrid, FileText, Inbox, Settings, LogOut } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTheme } from '@/hooks/useTheme';
 
 const items = [
   { label: 'Templates', path: '/dashboard', icon: LayoutGrid },
   { label: 'Documentos', path: '/documents', icon: FileText },
   { label: 'Recebidos', path: '/recebidos', icon: Inbox },
-  { label: 'Config', path: '/settings', icon: Settings },
 ];
 
 export default function MobileNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -40,6 +41,13 @@ export default function MobileNav() {
             </button>
           );
         })}
+        <button
+          onClick={toggleTheme}
+          className="flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[11px] font-medium text-muted-foreground transition-colors"
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <span>Tema</span>
+        </button>
         <button
           onClick={handleLogout}
           className="flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-destructive"
