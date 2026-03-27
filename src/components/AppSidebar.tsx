@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Shield } from 'lucide-react';
+import { LayoutDashboard, FileText, Clock, LogOut, FileUp, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,8 +21,6 @@ const items = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Importar', url: '/import', icon: FileUp },
   { title: 'Documentos', url: '/documents', icon: Clock },
-  { title: 'Perfil', url: '/profile', icon: User },
-  { title: 'Configurações', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -48,7 +46,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarContent>
-        {/* Logo area with professional spacing */}
+        {/* Logo */}
         <div className={`flex items-center gap-2.5 px-4 pt-6 pb-6 ${collapsed ? 'justify-center px-2' : ''}`}>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ff2e5f]">
             <FileText className="h-4 w-4 text-white" />
