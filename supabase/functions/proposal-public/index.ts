@@ -13,6 +13,12 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+// Sanitize string input: trim, limit length, strip control characters
+function sanitizeString(value: unknown, maxLength = 500): string {
+  if (typeof value !== "string") return "";
+  return value.trim().replace(/[\x00-\x1F\x7F]/g, "").slice(0, maxLength);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,13 +33,14 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const token = url.searchParams.get("token");
 
-    if (!token || token.length < 10) {
+    // ── Token validation ──
+    if (!token || typeof token !== "string" || token.length < 10 || token.length > 100 || !/^[a-f0-9]+$/i.test(token)) {
       return jsonResponse({ error: "Token inválido" }, 400);
     }
 
     const viewerIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("cf-connecting-ip") || "unknown";
-    const viewerDevice = req.headers.get("user-agent") || "unknown";
+    const viewerDevice = (req.headers.get("user-agent") || "unknown").slice(0, 500);
 
     // ──── GET: fetch proposal ────
     if (req.method === "GET") {
@@ -51,7 +58,6 @@ Deno.serve(async (req) => {
 
       // Check expiration
       if (link.expires_at && new Date(link.expires_at) < new Date() && link.status !== "aprovado") {
-        // Auto-expire
         if (link.status !== "expirado") {
           await supabase.from("proposal_links").update({ status: "expirado" }).eq("id", link.id);
           await supabase.from("generated_documents").update({ status: "expirado" }).eq("id", link.document_id);
@@ -78,6 +84,12 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Documento não encontrado" }, 404);
       }
 
+      // ── Ownership validation: document must belong to the link owner ──
+      if (doc.user_id !== link.user_id) {
+        console.error("Ownership mismatch: doc.user_id !== link.user_id");
+        return jsonResponse({ error: "Acesso negado" }, 403);
+      }
+
       // Fetch template elements
       let templateData: { elements: unknown; settings: unknown; canvas_width: number; canvas_height: number; calculated_fields: unknown; default_values: unknown; input_fields: unknown; variables: unknown } | null = null;
       if (doc.template_id) {
@@ -85,6 +97,7 @@ Deno.serve(async (req) => {
           .from("custom_templates")
           .select("elements, settings, canvas_width, canvas_height, calculated_fields, default_values, input_fields, variables")
           .eq("id", doc.template_id)
+          .eq("user_id", link.user_id) // ── Enforce ownership ──
           .maybeSingle();
         if (tmpl) templateData = tmpl;
       }
@@ -103,7 +116,7 @@ Deno.serve(async (req) => {
         if (link.status === "enviado") {
           updateData.status = "visualizado";
           updateData.viewed_at = now;
-          await supabase.from("generated_documents").update({ status: "visualizado" }).eq("id", link.document_id);
+          await supabase.from("generated_documents").update({ status: "visualizado" }).eq("id", link.document_id).eq("user_id", link.user_id);
           link.status = "visualizado";
           link.viewed_at = now;
         }
@@ -168,11 +181,15 @@ Deno.serve(async (req) => {
     // ──── POST: approve or negotiate ────
     if (req.method === "POST") {
       const body = await req.json();
-      const action = body.action || "approve";
+      const action = sanitizeString(body.action, 20) || "approve";
+
+      if (!["approve", "negotiate"].includes(action)) {
+        return jsonResponse({ error: "Ação inválida" }, 400);
+      }
 
       const { data: link, error: linkErr } = await supabase
         .from("proposal_links")
-        .select("id, document_id, status, view_count, max_views, expires_at")
+        .select("id, document_id, user_id, status, view_count, max_views, expires_at")
         .eq("token", token)
         .maybeSingle();
 
@@ -191,24 +208,22 @@ Deno.serve(async (req) => {
 
       // ── NEGOTIATE ──
       if (action === "negotiate") {
-        const message = (body.message || "").trim();
+        const message = sanitizeString(body.message, 1000);
         if (!message) return jsonResponse({ error: "Mensagem é obrigatória" }, 400);
-        if (message.length > 1000) return jsonResponse({ error: "Mensagem muito longa" }, 400);
 
         await supabase.from("proposal_links").update({
           status: "negociacao",
           negotiation_message: message,
         }).eq("id", link.id);
 
-        await supabase.from("generated_documents").update({ status: "negociacao" }).eq("id", link.document_id);
+        await supabase.from("generated_documents").update({ status: "negociacao" }).eq("id", link.document_id).eq("user_id", link.user_id);
 
         return jsonResponse({ success: true, status: "negociacao" });
       }
 
       // ── APPROVE ──
-      const approverName = (body.approverName || "").trim();
+      const approverName = sanitizeString(body.approverName, 200);
       if (!approverName) return jsonResponse({ error: "Nome é obrigatório" }, 400);
-      if (approverName.length > 200) return jsonResponse({ error: "Nome muito longo" }, 400);
 
       const now = new Date().toISOString();
       await supabase.from("proposal_links").update({
@@ -218,7 +233,7 @@ Deno.serve(async (req) => {
         viewed_at: link.status === "enviado" ? now : undefined,
       }).eq("id", link.id);
 
-      await supabase.from("generated_documents").update({ status: "aprovado" }).eq("id", link.document_id);
+      await supabase.from("generated_documents").update({ status: "aprovado" }).eq("id", link.document_id).eq("user_id", link.user_id);
 
       return jsonResponse({ success: true, approvedAt: now });
     }
