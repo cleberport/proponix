@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight, Check, Upload, Sparkles, Pencil, FileOutput,
-  Zap, LayoutTemplate, ChevronDown, X,
+  Zap, ChevronDown, X,
   Download, MessageCircle, Link2, Eye, RefreshCw, ThumbsUp,
 } from 'lucide-react';
 import '@fontsource/space-grotesk/400.css';
