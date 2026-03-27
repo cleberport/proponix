@@ -10,6 +10,7 @@ import {
   loadDocumentHistoryFromServer,
   loadSettingsFromServer,
   setAuthUserIdHint,
+  clearSettingsCache,
 } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
@@ -77,6 +78,10 @@ const App = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
+      // Clear cached settings when user signs out or changes
+      if (!nextSession || nextSession.user?.id !== session?.user?.id) {
+        clearSettingsCache();
+      }
       setSession(nextSession);
       setAuthUserIdHint(nextSession?.user?.id ?? null);
     });
