@@ -109,7 +109,7 @@ const Editor = () => {
         const ar = s.logoAspectRatio || 1;
         for (const page of loadedPages) {
           for (const el of page) {
-            if (el.type === 'logo' && !el.imageUrl) {
+            if (el.type === 'logo') {
               el.imageUrl = s.logoUrl;
               el.objectFit = 'contain';
               // Fit logo inside bounding box – never exceed original element bounds
