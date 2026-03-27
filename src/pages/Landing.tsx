@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight, Check, Upload, Sparkles, Pencil, FileOutput,
-  Zap, LayoutTemplate, ChevronDown, X,
+  Zap, ChevronDown, X,
   Download, MessageCircle, Link2, Eye, RefreshCw, ThumbsUp,
 } from 'lucide-react';
 import '@fontsource/space-grotesk/400.css';
@@ -11,6 +11,10 @@ import '@fontsource/space-grotesk/500.css';
 import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
 import { useState } from 'react';
+
+import heroMockup from '@/assets/mockup-hero.jpg';
+import editorMockup from '@/assets/mockup-editor.jpg';
+import generateMockup from '@/assets/mockup-generate.jpg';
 
 /* ── animation helpers ── */
 const fade = {
@@ -163,46 +167,13 @@ const Landing = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.7 }}
           >
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 md:p-8 backdrop-blur">
-              <div className="grid grid-cols-3 gap-3 md:gap-5">
-                {/* Step 1: Upload */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative w-full aspect-[3/4] rounded-xl border border-dashed border-white/20 bg-white/[0.04] flex flex-col items-center justify-center gap-2 p-3">
-                    <Upload className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-                    <span className="text-[10px] md:text-xs text-white/40 text-center">Suba seu PDF</span>
-                  </div>
-                  <span className="text-[10px] md:text-xs font-medium text-white/50">1. Upload</span>
-                </div>
-                {/* Step 2: Edit */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative w-full aspect-[3/4] rounded-xl border border-white/[0.08] bg-white overflow-hidden p-2 md:p-3">
-                    <div className="h-2 w-12 rounded bg-gray-200 mb-1.5" />
-                    <div className="h-1.5 w-full rounded bg-gray-100 mb-1" />
-                    <div className="h-1.5 w-3/4 rounded bg-gray-100 mb-2" />
-                    <div className="h-4 md:h-6 w-full rounded bg-primary/10 border border-primary/30 flex items-center justify-center">
-                      <Pencil className="h-2.5 w-2.5 md:h-3 md:w-3 text-primary" />
-                    </div>
-                    <div className="mt-1.5 h-1.5 w-full rounded bg-gray-100" />
-                    <div className="mt-1 h-1.5 w-2/3 rounded bg-gray-100" />
-                  </div>
-                  <span className="text-[10px] md:text-xs font-medium text-white/50">2. Edite</span>
-                </div>
-                {/* Step 3: Generate */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative w-full aspect-[3/4] rounded-xl border border-white/[0.08] bg-white overflow-hidden p-2 md:p-3">
-                    <div className="h-2 w-10 rounded bg-gray-300 mb-1.5" />
-                    <div className="h-1.5 w-full rounded bg-gray-200 mb-1" />
-                    <div className="h-1.5 w-5/6 rounded bg-gray-200 mb-1" />
-                    <div className="h-1.5 w-full rounded bg-gray-200 mb-1" />
-                    <div className="h-1.5 w-2/3 rounded bg-gray-200 mb-2" />
-                    <div className="mt-auto h-3 w-full rounded bg-primary/20 flex items-center justify-center">
-                      <span className="text-[6px] md:text-[8px] font-bold text-primary">PDF</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] md:text-xs font-medium text-white/50">3. Gere</span>
-                </div>
-              </div>
-            </div>
+            <img
+              src={heroMockup}
+              alt="Freelox — Dashboard com templates de orçamento"
+              width={1920}
+              height={1080}
+              className="rounded-2xl border border-white/[0.08] shadow-2xl shadow-primary/10"
+            />
           </motion.div>
         </div>
       </section>
@@ -383,13 +354,30 @@ const Landing = () => {
             <p className="mt-4 text-white/50 max-w-lg mx-auto">
               Se preferir, use templates prontos e personalize do seu jeito.
             </p>
-            <div className="mt-10 grid grid-cols-3 gap-4 max-w-md mx-auto">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="aspect-[3/4] rounded-xl border border-white/[0.08] bg-white/[0.04] flex items-center justify-center">
-                  <LayoutTemplate className="h-8 w-8 text-white/20" />
-                </div>
-              ))}
-            </div>
+            <motion.div
+              className="mt-10 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto"
+              initial="hidden" whileInView="show" viewport={{ once: true }}
+              transition={{ staggerChildren: 0.15 }}
+            >
+              <motion.img
+                variants={fade}
+                src={editorMockup}
+                alt="Freelox — Editor de templates"
+                width={1920}
+                height={1080}
+                loading="lazy"
+                className="rounded-xl border border-white/[0.08] shadow-xl"
+              />
+              <motion.img
+                variants={fade}
+                src={generateMockup}
+                alt="Freelox — Geração de PDF"
+                width={1920}
+                height={1080}
+                loading="lazy"
+                className="rounded-xl border border-white/[0.08] shadow-xl"
+              />
+            </motion.div>
           </motion.div>
         </div>
       </section>
