@@ -137,6 +137,14 @@ const Dashboard = () => {
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/import')}
+            className="hidden md:inline-flex h-9 px-3"
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            Importar com IA
+          </Button>
           <div data-tour="tour-new-template">
             <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
               <Plus className="h-4 w-4 md:mr-1.5" />
