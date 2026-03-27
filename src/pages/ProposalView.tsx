@@ -268,7 +268,22 @@ const ProposalView = () => {
       result[k] = String(v ?? '');
     });
 
-    // If we have a full template object, use resolveAllValues for calculated fields
+    // Try resolving calculated fields from the custom template (API data)
+    const apiCalc = proposal.template?.calculatedFields;
+    const apiDefaults = proposal.template?.defaultValues;
+    if (apiCalc && Object.keys(apiCalc).length > 0) {
+      // Build a pseudo-template for resolveAllValues
+      const pseudoTemplate = {
+        calculatedFields: apiCalc,
+        defaultValues: apiDefaults || {},
+      } as Template;
+      const resolved = resolveAllValues(pseudoTemplate, result);
+      Object.entries(resolved).forEach(([k, v]) => {
+        if (!result[k] || result[k] === '') result[k] = v;
+      });
+    }
+
+    // Fallback: try starter templates
     const templateId = proposal.document?.templateId;
     const starter = templateId ? starterTemplates.find(t => t.id === templateId) : null;
     if (starter) {
