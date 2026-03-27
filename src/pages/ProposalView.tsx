@@ -39,6 +39,8 @@ interface ProposalData {
     settings: { taxRate?: number; showTax?: boolean; backgroundColor?: string } | null;
     canvasWidth: number;
     canvasHeight: number;
+    calculatedFields?: Record<string, string>;
+    defaultValues?: Record<string, string>;
   } | null;
   company: {
     name: string;
