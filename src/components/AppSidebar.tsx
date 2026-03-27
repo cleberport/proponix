@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail, Shield, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileText, User, Settings, Clock, LogOut, FileUp, Mail, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +23,6 @@ const items = [
   { title: 'Importar', url: '/import', icon: FileUp },
   { title: 'Documentos', url: '/documents', icon: Clock },
   
-  { title: 'Faturamento', url: '/billing', icon: CreditCard },
   { title: 'Perfil', url: '/profile', icon: User },
   { title: 'Configurações', url: '/settings', icon: Settings },
 ];
