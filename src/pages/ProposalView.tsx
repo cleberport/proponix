@@ -630,7 +630,7 @@ const ProposalView = () => {
       {/* Document area — fills remaining space, centers doc */}
       <div
         ref={docContainerRef}
-        className="flex-1 min-h-0 flex items-center justify-center overflow-auto"
+        className="flex-1 min-h-0 flex justify-center overflow-auto"
         style={{ padding: PAD }}
       >
         {hasTemplate && docScale > 0 ? (
