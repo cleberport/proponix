@@ -299,6 +299,42 @@ function renderPageElements(
         const img = imageMap.get(el.id);
         if (img) {
           const h = scaleH(el.height);
+          const isLogo = el.type === 'logo';
+
+          // For logos: fit inside bounding box (contain), never crop
+          if (isLogo) {
+            const natW = img.naturalWidth || img.width;
+            const natH = img.naturalHeight || img.height;
+            const imgAR = natW / natH;
+            const boxAR = w / h;
+
+            let drawW = w;
+            let drawH = h;
+            let drawX = x;
+            let drawY = y;
+
+            if (imgAR > boxAR) {
+              // Image wider → fit to width, center vertically
+              drawW = w;
+              drawH = w / imgAR;
+              drawY = y + (h - drawH) / 2;
+            } else {
+              // Image taller → fit to height, center horizontally
+              drawH = h;
+              drawW = h * imgAR;
+              drawX = x + (w - drawW) / 2;
+            }
+
+            try {
+              const format = img.src?.includes('image/png') || img.src?.includes('.png') ? 'PNG' : 'JPEG';
+              pdf.addImage(img, format, drawX, drawY, drawW, drawH);
+            } catch (e) {
+              console.error('[pdfGen] Falha ao desenhar logo:', e);
+            }
+            break;
+          }
+
+          // Regular images: existing cover/crop logic
           const scale = el.imageScale || 1;
           const offsetX = el.imageOffsetX || 0;
           const offsetY = el.imageOffsetY || 0;
@@ -345,7 +381,6 @@ function renderPageElements(
             const rad = (el.rotation * Math.PI) / 180;
             const cos = Math.cos(rad);
             const sin = Math.sin(rad);
-            // Apply rotation transform matrix around center
             (pdf as any).internal.write(
               `${cos.toFixed(6)} ${sin.toFixed(6)} ${(-sin).toFixed(6)} ${cos.toFixed(6)} ${cx.toFixed(2)} ${(PDF_H - cy).toFixed(2)} cm`
             );
