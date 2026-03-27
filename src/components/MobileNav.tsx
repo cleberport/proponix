@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, Settings, LogOut, FileUp, Mail, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, FileUp } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +8,6 @@ const items = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Importar', path: '/import', icon: FileUp },
   { label: 'Docs', path: '/documents', icon: FileText },
-  { label: 'Plano', path: '/billing', icon: CreditCard },
   { label: 'Config', path: '/settings', icon: Settings },
 ];
 
