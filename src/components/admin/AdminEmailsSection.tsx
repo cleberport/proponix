@@ -27,7 +27,7 @@ export default function AdminEmailsSection() {
 
   // Edit state
   const [editTemplate, setEditTemplate] = useState<EmailTemplateDefinition | null>(null);
-  const [editForm, setEditForm] = useState({ title: '', body: '', ctaText: '', ctaUrl: '', footerExtra: '' });
+  const [editForm, setEditForm] = useState({ title: '', body: '', ctaText: '', ctaUrl: '', footerText: '' });
 
   const current = templates.find((t) => t.id === selectedId)!;
 
