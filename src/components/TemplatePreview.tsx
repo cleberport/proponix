@@ -25,7 +25,15 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
       const ar = s.logoAspectRatio || 1;
       return page.map(el => {
         if (el.type === 'logo' && !el.imageUrl) {
-          return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, height: Math.round(el.width / ar) };
+          const origW = el.width;
+          const origH = el.height;
+          let fitW = origW;
+          let fitH = Math.round(fitW / ar);
+          if (fitH > origH) {
+            fitH = origH;
+            fitW = Math.round(fitH * ar);
+          }
+          return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
         }
         return el;
       });

@@ -132,7 +132,17 @@ const Generate = () => {
               if (el.type === 'logo' && !el.imageUrl) {
                 el.imageUrl = s.logoUrl;
                 el.objectFit = 'contain';
-                el.height = Math.round(el.width / ar);
+                // Fit logo inside bounding box – never exceed original element bounds
+                const origW = el.width;
+                const origH = el.height;
+                let fitW = origW;
+                let fitH = Math.round(fitW / ar);
+                if (fitH > origH) {
+                  fitH = origH;
+                  fitW = Math.round(fitH * ar);
+                }
+                el.width = fitW;
+                el.height = fitH;
               }
             }
           }
