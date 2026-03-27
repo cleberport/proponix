@@ -166,15 +166,19 @@ const darkElements: CanvasElement[] = [
   // Description
   el({ type: 'text', x: 40, y: 368, width: 515, height: 80, content: 'Desenvolvimento completo do projeto conforme especificações acordadas. Inclui todas as etapas de planejamento, execução e acompanhamento. Suporte técnico durante todo o período de execução.', fontSize: 12, color: '#9CA3AF' }),
 
-  // Price section — gold highlight
+  // Price input
   el({ type: 'divider', x: 40, y: 472, width: 515, height: 1, content: '', color: '#374151' }),
 
-  el({ type: 'text', x: 40, y: 498, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#D4AF37', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 490, width: 200, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#D4AF37' }),
+  el({ type: 'price-field', x: 40, y: 506, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '400', color: '#F3F4F6', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 522, width: 515, height: 48, content: '', variable: 'total', fontWeight: '300', fontSize: 40, color: '#D4AF37', alignment: 'center', fieldCategory: 'calculated' }),
+  // Total highlight
+  el({ type: 'text', x: 40, y: 546, width: 515, height: 14, content: 'INVESTIMENTO', fontSize: 9, fontWeight: '600', color: '#D4AF37', alignment: 'center' }),
 
-  el({ type: 'price-field', x: 160, y: 580, width: 140, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#6B7280', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 580, width: 140, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#6B7280', alignment: 'left', fieldCategory: 'calculated' }),
+  el({ type: 'total-calculation', x: 40, y: 568, width: 515, height: 48, content: '', variable: 'total', fontWeight: '300', fontSize: 40, color: '#D4AF37', alignment: 'center', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 160, y: 626, width: 140, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#6B7280', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 626, width: 140, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#6B7280', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 614, width: 515, height: 1, content: '', color: '#374151' }),
 
@@ -230,14 +234,18 @@ const colorfulElements: CanvasElement[] = [
 
   el({ type: 'text', x: 40, y: 380, width: 515, height: 80, content: 'Criação completa de identidade visual, estratégia de marca e materiais de comunicação. Entregas em alta qualidade com revisões ilimitadas durante cada fase do projeto. Suporte criativo contínuo.', fontSize: 12, color: '#475569' }),
 
-  // Price — big, bold, colored
+  // Price input
   el({ type: 'divider', x: 40, y: 480, width: 515, height: 3, content: '', color: '#7C3AED' }),
 
-  el({ type: 'text', x: 40, y: 504, width: 200, height: 14, content: '● INVESTIMENTO', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
+  el({ type: 'text', x: 40, y: 500, width: 200, height: 14, content: '● VALOR', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
+  el({ type: 'price-field', x: 40, y: 518, width: 250, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '600', color: '#1E1B4B', fieldCategory: 'input' }),
 
-  el({ type: 'total-calculation', x: 40, y: 530, width: 515, height: 48, content: '', variable: 'total', fontWeight: '900', fontSize: 42, color: '#1E1B4B', alignment: 'left', fieldCategory: 'calculated' }),
+  // Total
+  el({ type: 'text', x: 40, y: 556, width: 200, height: 14, content: '● INVESTIMENTO', fontSize: 10, fontWeight: '800', color: '#7C3AED' }),
 
-  el({ type: 'price-field', x: 40, y: 586, width: 160, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A78BFA', fieldCategory: 'calculated' }),
+  el({ type: 'total-calculation', x: 40, y: 576, width: 515, height: 48, content: '', variable: 'total', fontWeight: '900', fontSize: 42, color: '#1E1B4B', alignment: 'left', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 40, y: 632, width: 160, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#A78BFA', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 40, y: 618, width: 515, height: 2, content: '', color: '#EDE9FE' }),
 
@@ -287,13 +295,17 @@ const gradientElements: CanvasElement[] = [
   // Description
   el({ type: 'text', x: 60, y: 386, width: 475, height: 80, content: 'Solução completa para seu projeto, incluindo análise de requisitos, desenvolvimento, testes e implantação. Acompanhamento contínuo durante toda a execução com relatórios de progresso semanais.', fontSize: 12, color: '#475569', alignment: 'center' }),
 
-  // Price — centered hero
+  // Price input
   el({ type: 'divider', x: 60, y: 486, width: 475, height: 1, content: '', color: '#E0F2FE' }),
 
-  el({ type: 'total-calculation', x: 40, y: 510, width: 515, height: 50, content: '', variable: 'total', fontWeight: '600', fontSize: 40, color: '#0EA5E9', alignment: 'center', fieldCategory: 'calculated' }),
+  el({ type: 'text', x: 40, y: 504, width: 515, height: 14, content: 'VALOR', fontSize: 9, fontWeight: '600', color: '#0EA5E9', alignment: 'center' }),
+  el({ type: 'price-field', x: 168, y: 520, width: 260, height: 24, content: '', variable: 'price', fontSize: 16, fontWeight: '500', color: '#0F172A', alignment: 'center', fieldCategory: 'input' }),
 
-  el({ type: 'price-field', x: 140, y: 570, width: 150, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#94A3B8', alignment: 'right', fieldCategory: 'calculated' }),
-  el({ type: 'price-field', x: 310, y: 570, width: 150, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#94A3B8', alignment: 'left', fieldCategory: 'calculated' }),
+  // Total
+  el({ type: 'total-calculation', x: 40, y: 560, width: 515, height: 50, content: '', variable: 'total', fontWeight: '600', fontSize: 40, color: '#0EA5E9', alignment: 'center', fieldCategory: 'calculated' }),
+
+  el({ type: 'price-field', x: 140, y: 620, width: 150, height: 18, content: 'Subtotal:', variable: 'subtotal', fontSize: 10, color: '#94A3B8', alignment: 'right', fieldCategory: 'calculated' }),
+  el({ type: 'price-field', x: 310, y: 620, width: 150, height: 18, content: 'Impostos:', variable: 'tax', fontSize: 10, color: '#94A3B8', alignment: 'left', fieldCategory: 'calculated' }),
 
   el({ type: 'divider', x: 60, y: 604, width: 475, height: 1, content: '', color: '#E0F2FE' }),
 
@@ -349,6 +361,10 @@ const corporateElements: CanvasElement[] = [
 
   // Section: Values
   el({ type: 'text', x: 40, y: 418, width: 200, height: 16, content: 'VALORES', fontSize: 10, fontWeight: '700', color: '#1E3A5F' }),
+
+  // Price input
+  el({ type: 'text', x: 40, y: 444, width: 80, height: 12, content: 'Valor', fontSize: 9, fontWeight: '500', color: '#64748B' }),
+  el({ type: 'price-field', x: 40, y: 458, width: 250, height: 22, content: '', variable: 'price', fontSize: 14, fontWeight: '500', color: '#0F172A', fieldCategory: 'input' }),
 
   // Price breakdown — right aligned in a clean block
   el({ type: 'price-field', x: 340, y: 448, width: 215, height: 22, content: 'Subtotal:', variable: 'subtotal', fontSize: 13, color: '#475569', fieldCategory: 'calculated' }),
