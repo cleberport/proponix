@@ -181,6 +181,21 @@ const ProposalView = () => {
 
   const saveReceivedProposal = async (userId: string, p: ProposalData) => {
     try {
+      // Extract total value from document values
+      const vals = p.document?.values as Record<string, any> || {};
+      let totalValue = '';
+      const totalKeys = ['total', 'valor_total', 'preco_total', 'subtotal', 'valor', 'price', 'preco'];
+      for (const key of totalKeys) {
+        const v = vals[key];
+        if (v !== undefined && v !== null && v !== '') {
+          const num = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d,.-]/g, '').replace(',', '.'));
+          if (!isNaN(num) && num > 0) {
+            totalValue = num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            break;
+          }
+        }
+      }
+
       await supabase.from('received_proposals').upsert(
         {
           user_id: userId,
@@ -189,7 +204,12 @@ const ProposalView = () => {
           sender_user_id: p.senderUserId || '',
           client_name: p.document?.clientName || '',
           template_name: p.document?.templateName || '',
+          sender_name: p.company?.name || '',
+          sender_company: p.company?.name || '',
+          total_value: totalValue,
           status: p.status,
+          last_action: p.status === 'visualizado' ? 'Visualizado' : p.status === 'aprovado' ? 'Aprovado' : p.status === 'negociacao' ? 'Negociação' : 'Recebido',
+          last_action_at: new Date().toISOString(),
           received_at: new Date().toISOString(),
         } as any,
         { onConflict: 'user_id,proposal_link_id' }
