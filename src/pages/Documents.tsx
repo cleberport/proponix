@@ -101,9 +101,12 @@ const Documents = () => {
   }, []);
 
   const loadProposalLinks = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     const { data } = await supabase
       .from('proposal_links')
-      .select('*') as { data: ProposalLink[] | null };
+      .select('*')
+      .eq('user_id', user.id) as { data: ProposalLink[] | null };
     if (data) {
       const map: Record<string, ProposalLink> = {};
       data.sort((a, b) => (a as any).created_at > (b as any).created_at ? 1 : -1);
