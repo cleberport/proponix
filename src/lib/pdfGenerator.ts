@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { CanvasElement } from '@/types/template';
-import { resolveTextColor, parseColor } from '@/lib/colorContrast';
+import { resolveTextColor, parseColor, isDark } from '@/lib/colorContrast';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
