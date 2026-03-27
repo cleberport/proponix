@@ -1,13 +1,13 @@
-import { LayoutDashboard, FileText, Settings, LogOut, FileUp } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, Settings, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const items = [
-  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Importar', path: '/import', icon: FileUp },
-  { label: 'Docs', path: '/documents', icon: FileText },
+  { label: 'Templates', path: '/dashboard', icon: LayoutGrid },
+  { label: 'Documentos', path: '/documents', icon: FileText },
+  { label: 'Recebidos', path: '/recebidos', icon: Inbox },
   { label: 'Config', path: '/settings', icon: Settings },
 ];
 
