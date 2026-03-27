@@ -493,6 +493,8 @@ export function getSettings(): AppSettings {
 
 export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  // Notify TemplatePreview components to re-read settings
+  window.dispatchEvent(new Event('settings-updated'));
   // Fire-and-forget sync to server
   void syncSettingsToServer(settings);
 }
