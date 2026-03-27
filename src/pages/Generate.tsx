@@ -103,6 +103,20 @@ const Generate = () => {
       const fetchedTemplate = await getTemplateById(id);
       if (!active) return;
 
+      // Auto-inject settings logo into empty logo elements
+      if (fetchedTemplate) {
+        const settingsLogo = getSettings().logoUrl;
+        if (settingsLogo) {
+          const pages = getTemplatePages(fetchedTemplate);
+          for (const page of pages) {
+            for (const el of page) {
+              if (el.type === 'logo' && !el.imageUrl) {
+                el.imageUrl = settingsLogo;
+              }
+            }
+          }
+        }
+      }
       setTemplate(fetchedTemplate || null);
       setLoadingTemplate(false);
 

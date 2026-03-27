@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { resolveAllValues } from '@/lib/calculations';
 import { Template, getTemplatePages } from '@/types/template';
+import { getSettings } from '@/lib/templateStorage';
 
 interface Props {
   template: Template;
@@ -17,7 +18,15 @@ const TemplatePreview = ({ template, className = '' }: Props) => {
   const canvasWidth = template.canvasWidth || 595;
   const canvasHeight = template.canvasHeight || 842;
 
-  const firstPageElements = useMemo(() => getTemplatePages(template)[0] ?? [], [template]);
+  const firstPageElements = useMemo(() => {
+    const page = getTemplatePages(template)[0] ?? [];
+    // Inject settings logo into empty logo elements for preview
+    const logoUrl = getSettings().logoUrl;
+    if (logoUrl) {
+      return page.map(el => el.type === 'logo' && !el.imageUrl ? { ...el, imageUrl: logoUrl } : el);
+    }
+    return page;
+  }, [template]);
   const resolvedValues = useMemo(() => resolveAllValues(template, {}), [template]);
 
   useEffect(() => {
