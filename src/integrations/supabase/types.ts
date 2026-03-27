@@ -212,6 +212,48 @@ export type Database = {
         }
         Relationships: []
       }
+      received_proposals: {
+        Row: {
+          client_name: string
+          created_at: string
+          document_id: string
+          id: string
+          proposal_link_id: string
+          received_at: string
+          sender_user_id: string
+          status: string
+          template_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_name?: string
+          created_at?: string
+          document_id: string
+          id?: string
+          proposal_link_id: string
+          received_at?: string
+          sender_user_id: string
+          status?: string
+          template_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          proposal_link_id?: string
+          received_at?: string
+          sender_user_id?: string
+          status?: string
+          template_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

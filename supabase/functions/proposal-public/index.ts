@@ -131,6 +131,8 @@ Deno.serve(async (req) => {
           maxViews: maxViews,
           expiresAt: link.expires_at,
           negotiationMessage: link.negotiation_message,
+          senderUserId: link.user_id,
+          documentId: doc.id,
           document: {
             clientName: doc.client_name,
             templateName: doc.template_name,
