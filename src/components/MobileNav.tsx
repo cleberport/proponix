@@ -22,7 +22,7 @@ export default function MobileNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/90 backdrop-blur-xl safe-area-bottom md:hidden">
       <div className="flex items-stretch justify-around">
         {items.map((item) => {
           const active = pathname === item.path;
