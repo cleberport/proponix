@@ -45,7 +45,7 @@ const queryClient = new QueryClient();
 const ThemeInit = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const settings = getSettings();
-    if (settings.theme === 'dark') {
+    if (settings.theme === 'light') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
