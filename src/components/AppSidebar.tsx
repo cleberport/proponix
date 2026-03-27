@@ -30,7 +30,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
-  const { isAdmin } = useAdminCheck();
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
   const { theme, toggleTheme } = useTheme();
 
   const isActive = (path: string) => currentPath === path;
@@ -41,7 +41,7 @@ export function AppSidebar() {
     navigate('/');
   };
 
-  const allItems = isAdmin
+  const allItems = (!adminLoading && isAdmin)
     ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
     : items;
 
