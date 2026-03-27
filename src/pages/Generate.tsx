@@ -118,36 +118,44 @@ const Generate = () => {
       }
 
       setLoadingTemplate(true);
-      const fetchedTemplate = await getTemplateById(id);
+      const fetchedTemplateRaw = await getTemplateById(id);
       if (!active) return;
 
-      // Auto-inject settings logo into empty logo elements, respecting aspect ratio
-      if (fetchedTemplate) {
+      let fetchedTemplate = fetchedTemplateRaw;
+
+      // Starter templates follow global logo settings, without mutating shared objects.
+      if (fetchedTemplateRaw?.id?.startsWith('template-')) {
         const s = getSettings();
-        if (s.logoUrl) {
-          const ar = s.logoAspectRatio || 1;
-          const pages = getTemplatePages(fetchedTemplate);
-          for (const page of pages) {
-            for (const el of page) {
-              if (el.type === 'logo') {
-                el.imageUrl = s.logoUrl;
-                el.objectFit = 'contain';
-                // Fit logo inside bounding box – never exceed original element bounds
-                const origW = el.width;
-                const origH = el.height;
-                let fitW = origW;
-                let fitH = Math.round(fitW / ar);
-                if (fitH > origH) {
-                  fitH = origH;
-                  fitW = Math.round(fitH * ar);
-                }
-                el.width = fitW;
-                el.height = fitH;
-              }
+        const ar = s.logoAspectRatio || 1;
+        const pages = getTemplatePages(fetchedTemplateRaw).map((page) =>
+          page.map((el) => {
+            if (el.type !== 'logo') return { ...el };
+
+            const origW = el.width;
+            const origH = el.height;
+
+            if (!s.logoUrl) {
+              return { ...el, imageUrl: undefined, objectFit: 'contain' as const, width: origW, height: origH };
             }
-          }
-        }
+
+            let fitW = origW;
+            let fitH = Math.round(fitW / ar);
+            if (fitH > origH) {
+              fitH = origH;
+              fitW = Math.round(fitH * ar);
+            }
+
+            return { ...el, imageUrl: s.logoUrl, objectFit: 'contain' as const, width: fitW, height: fitH };
+          })
+        );
+
+        fetchedTemplate = {
+          ...fetchedTemplateRaw,
+          elements: pages[0] || [],
+          pages,
+        };
       }
+
       setTemplate(fetchedTemplate || null);
       setLoadingTemplate(false);
 
