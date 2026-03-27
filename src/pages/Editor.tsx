@@ -103,13 +103,17 @@ const Editor = () => {
       setBaseDescription(existing.description || 'Template personalizado');
       setTemplateName(existing.name || 'Template sem título');
       const loadedPages = getTemplatePages(existing);
-      // Auto-inject settings logo into empty logo elements
-      const settingsLogo = getSettings().logoUrl;
-      if (settingsLogo) {
+      // Auto-inject settings logo into empty logo elements, respecting aspect ratio
+      const s = getSettings();
+      if (s.logoUrl) {
+        const ar = s.logoAspectRatio || 1;
         for (const page of loadedPages) {
           for (const el of page) {
             if (el.type === 'logo' && !el.imageUrl) {
-              el.imageUrl = settingsLogo;
+              el.imageUrl = s.logoUrl;
+              el.objectFit = 'contain';
+              // Adjust height to match logo proportions within element width
+              el.height = Math.round(el.width / ar);
             }
           }
         }
