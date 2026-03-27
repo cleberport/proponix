@@ -486,6 +486,10 @@ const mergeIntoCache = (template: SavedTemplate) => {
   setCachedSavedTemplates(sortByUpdatedAtDesc(all));
 };
 
+export function clearSettingsCache(): void {
+  localStorage.removeItem(SETTINGS_KEY);
+}
+
 export function getSettings(): AppSettings {
   const raw = localStorage.getItem(SETTINGS_KEY);
   return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
