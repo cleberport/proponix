@@ -494,6 +494,8 @@ export function clearAllUserCache(): void {
   localStorage.removeItem(HIDDEN_STARTERS_KEY);
   localStorage.removeItem(LEGACY_TEMPLATE_ID_MAP_KEY);
   localStorage.removeItem(PENDING_TEMPLATE_SYNC_KEY);
+  localStorage.removeItem('budget-input-history');
+  localStorage.removeItem('onboarding-tour-completed');
 }
 
 export function clearSettingsCache(): void {
