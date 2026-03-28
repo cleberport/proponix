@@ -486,6 +486,9 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
 
                   {/* Actions */}
                   <div className="flex items-center gap-0 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); setEditingRowId(row.id); }}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); moveRow(row.id, -1); }} disabled={ri === 0}>
                       <ChevronUp className="h-3 w-3" />
                     </Button>
