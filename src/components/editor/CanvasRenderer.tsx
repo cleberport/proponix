@@ -659,7 +659,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={{ ...style, height: el.height, overflow: 'hidden' }}
-              className={`rounded border border-gray-400 ${selectedClass} ${hoverClass}`}
+              className={`rounded ${selectedClass} ${hoverClass}`}
+              style={{ ...style, height: el.height, overflow: 'hidden', border: `1px solid ${el.tableBorderColor || '#9CA3AF'}` }}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
@@ -673,7 +674,10 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 )}
                 <tbody>
                   {(el.rows || []).map((row, ri) => (
-                    <tr key={ri} style={ri === 0 ? { backgroundColor: 'hsl(240 5% 88%)', fontWeight: 600 } : undefined}>
+                    <tr key={ri} style={{
+                      backgroundColor: ri === 0 ? (el.tableHeaderBg || '#DCDFE4') : (el.tableRowBg || 'transparent'),
+                      fontWeight: ri === 0 ? 600 : undefined,
+                    }}>
                       {row.cells.map((rawCell, ci) => {
                         const cell = typeof rawCell === 'object' && rawCell !== null ? (rawCell as any).content ?? '' : String(rawCell ?? '');
                         return (
@@ -681,8 +685,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                           key={ci}
                           className="px-2 py-1.5"
                           style={{
-                            borderBottom: '1px solid hsl(240 5% 82%)',
-                            borderRight: ci < row.cells.length - 1 ? '1px solid hsl(240 5% 82%)' : 'none',
+                            borderBottom: `1px solid ${el.tableBorderColor || '#C8CCD4'}`,
+                            borderRight: ci < row.cells.length - 1 ? `1px solid ${el.tableBorderColor || '#C8CCD4'}` : 'none',
                             color: resolveTextColor(el.color, backgroundColor),
                           }}
                         >
