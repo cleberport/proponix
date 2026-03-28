@@ -218,6 +218,14 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [setElements]);
 
+  const getNextServiceIndex = useCallback(() => {
+    const allEls = pages.flat();
+    const usedIndices = allEls.filter(e => e.type === 'service').map(e => e.serviceIndex ?? 0);
+    let idx = 0;
+    while (usedIndices.includes(idx)) idx++;
+    return idx;
+  }, [pages]);
+
   const addElement = useCallback((type: ElementType) => {
     if (type === 'table') return; // handled by addTableElement
     const appSettings = getSettings();
@@ -226,8 +234,8 @@ const Editor = () => {
       type,
       x: 40 + Math.random() * 100,
       y: 40 + Math.random() * 200,
-      width: type === 'divider' ? 515 : 200,
-      height: type === 'divider' ? 2 : type === 'notes' ? 80 : 30,
+      width: type === 'divider' ? 515 : type === 'service' ? 300 : 200,
+      height: type === 'divider' ? 2 : type === 'notes' ? 80 : type === 'service' ? 80 : 30,
       content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? '' : type === 'total-calculation' ? 'Total:' : '',
       variable: type === 'dynamic-field' ? 'client_name' : type === 'price-field' ? 'price' : type === 'total-calculation' ? 'total' : undefined,
       fontSize: 14, fontWeight: '400', fontFamily: 'Space Grotesk', color: '#0F172A', alignment: 'left',
@@ -235,6 +243,7 @@ const Editor = () => {
       objectFit: type === 'logo' || type === 'image' ? 'contain' : undefined,
       isVisible: true,
       fieldCategory: type === 'dynamic-field' ? 'input' : type === 'price-field' || type === 'total-calculation' ? 'calculated' : 'default',
+      serviceIndex: type === 'service' ? getNextServiceIndex() : undefined,
     };
     if (type === 'logo') {
       newEl.width = 150;
@@ -475,6 +484,7 @@ const Editor = () => {
     Type: LucideIcons.Type, Variable: LucideIcons.Variable, Image: LucideIcons.Image,
     Stamp: LucideIcons.Stamp, Minus: LucideIcons.Minus, Table: LucideIcons.Table,
     DollarSign: LucideIcons.DollarSign, Calculator: LucideIcons.Calculator, StickyNote: LucideIcons.StickyNote,
+    Package: LucideIcons.Package,
   };
 
   const elementLabels: Record<string, string> = {

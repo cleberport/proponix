@@ -7,7 +7,7 @@ import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Link2, Copy, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Link2, Copy, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
@@ -16,6 +16,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import DateRangePicker from '@/components/generate/DateRangePicker';
 import { saveAllInputs, getInputHistory } from '@/lib/inputHistory';
 import { supabase } from '@/integrations/supabase/client';
+import ServiceSelector from '@/components/services/ServiceSelector';
+import { Service } from '@/hooks/useServices';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -66,6 +68,12 @@ const Generate = () => {
   const [generatedLink, setGeneratedLink] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Service blocks state: map serviceIndex → selected service
+  const [selectedServices, setSelectedServices] = useState<Record<number, Service | null>>({});
+
+  // Extra dynamically added service blocks
+  const [extraServiceIndices, setExtraServiceIndices] = useState<number[]>([]);
+
   // Find table element info from template
   const tableInfo = useMemo(() => {
     if (!template) return null;
@@ -81,6 +89,30 @@ const Generate = () => {
   }, [template]);
 
   const hasTable = !!tableInfo;
+
+  // Detect service blocks in the template
+  const templateServiceIndices = useMemo(() => {
+    if (!template) return [];
+    const pages = getTemplatePages(template);
+    const indices: number[] = [];
+    for (const page of pages) {
+      for (const el of page) {
+        if (el.type === 'service') {
+          const idx = el.serviceIndex ?? 0;
+          if (!indices.includes(idx)) indices.push(idx);
+        }
+      }
+    }
+    return indices.sort((a, b) => a - b);
+  }, [template]);
+
+  // All service indices = template ones + dynamically added extras
+  const allServiceIndices = useMemo(() => {
+    const all = [...templateServiceIndices, ...extraServiceIndices];
+    return [...new Set(all)].sort((a, b) => a - b);
+  }, [templateServiceIndices, extraServiceIndices]);
+
+  const hasServices = allServiceIndices.length > 0;
 
   // Keep preview closed on mobile and open on desktop
   useEffect(() => {
@@ -300,25 +332,33 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
+    // Inject service data
+    for (const idx of allServiceIndices) {
+      const svc = selectedServices[idx];
+      if (svc) {
+        display[`service_${idx}_name`] = svc.name;
+        display[`service_${idx}_description`] = svc.description;
+        display[`service_${idx}_price`] = formatCurrency(svc.price.toString());
+        display[`service_${idx}_notes`] = svc.notes;
+      }
+    }
     return display;
-  }, [resolvedValues]);
+  }, [resolvedValues, selectedServices, allServiceIndices]);
 
-  // Build pages with dynamic table rows injected
+  // Build pages with dynamic table rows + extra service blocks injected
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
     const templatePages = getTemplatePages(template);
-    return templatePages.map((pageEls) =>
+    const result = templatePages.map((pageEls) =>
       pageEls
         .filter((el) => el.isVisible !== false)
         .map((el) => {
           if (el.type === 'table' && hasTable && tableInfo) {
-            // Replace table rows with dynamic rows (keep headers)
             const dataRows = tableRows.filter((r) => r.cells.some((c) => c.trim()));
             const allRows = [
               { cells: tableInfo.headers },
               ...(dataRows.length > 0 ? dataRows : [{ cells: tableInfo.headers.map(() => '') }]),
             ];
-            // Auto-adjust height based on row count
             const rowHeight = 28;
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
@@ -326,7 +366,38 @@ const Generate = () => {
           return el;
         })
     );
-  }, [template, tableRows, hasTable, tableInfo]);
+
+    // Add extra service blocks at the end of the last page
+    if (extraServiceIndices.length > 0 && result.length > 0) {
+      const lastPage = result[result.length - 1];
+      // Find the last service element to position extras below
+      const lastServiceEl = [...lastPage].reverse().find(e => e.type === 'service');
+      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height + 10 : 600;
+      const baseEl = lastServiceEl || lastPage[0];
+
+      extraServiceIndices.forEach((idx, i) => {
+        if (templateServiceIndices.includes(idx)) return; // already in template
+        result[result.length - 1] = [...result[result.length - 1], {
+          id: `extra-service-${idx}`,
+          type: 'service' as const,
+          x: baseEl?.x ?? 40,
+          y: baseY + i * 90,
+          width: baseEl?.width ?? 300,
+          height: 80,
+          content: '',
+          fontSize: baseEl?.fontSize ?? 14,
+          fontWeight: '400',
+          fontFamily: baseEl?.fontFamily ?? 'Space Grotesk',
+          color: baseEl?.color ?? '#0F172A',
+          alignment: 'left' as const,
+          isVisible: true,
+          serviceIndex: idx,
+        }];
+      });
+    }
+
+    return result;
+  }, [template, tableRows, hasTable, tableInfo, extraServiceIndices, templateServiceIndices]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
@@ -728,6 +799,32 @@ const Generate = () => {
                 onFocus={() => handleFieldFocus('__table__')}
                 onBlur={() => handleFieldBlur('__table__')}
               />
+            )}
+
+            {hasServices && (
+              <div className="flex flex-col gap-3 pt-2 border-t border-border mt-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Serviços</Label>
+                {allServiceIndices.map((idx) => (
+                  <ServiceSelector
+                    key={idx}
+                    label={`Serviço ${idx + 1}`}
+                    selectedServiceId={selectedServices[idx]?.id || ''}
+                    onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
+                  />
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-1.5"
+                  onClick={() => {
+                    const maxIdx = allServiceIndices.length > 0 ? Math.max(...allServiceIndices) : -1;
+                    setExtraServiceIndices(prev => [...prev, maxIdx + 1]);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Adicionar serviço
+                </Button>
+              </div>
             )}
           </div>
 
