@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
   Type, Hash, DollarSign, Calendar, CheckSquare, List, FunctionSquare, Pencil,
-  ZoomIn, ZoomOut,
+  ZoomIn, ZoomOut, Eye, EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
