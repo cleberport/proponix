@@ -78,6 +78,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   const [editColName, setEditColName] = useState('');
   const [zoom, setZoom] = useState(100);
   const [hideValues, setHideValues] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Column resize state
