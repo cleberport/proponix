@@ -7,7 +7,8 @@ export type ElementType =
   | 'table'
   | 'price-field'
   | 'total-calculation'
-  | 'notes';
+  | 'notes'
+  | 'service';
 
 export type FieldCategory = 'default' | 'input' | 'calculated';
 
@@ -64,6 +65,10 @@ export interface CanvasElement {
   defaultValue?: string;
   isVisible?: boolean;
   formula?: string;
+
+  // Service block
+  serviceId?: string; // links to selected service at generation time
+  serviceIndex?: number; // distinguishes multiple service blocks (0, 1, 2...)
 }
 
 export interface TableRow {
@@ -149,4 +154,5 @@ export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }
   { type: 'price-field', label: 'Campo de Preço', icon: 'DollarSign' },
   { type: 'total-calculation', label: 'Total', icon: 'Calculator' },
   { type: 'notes', label: 'Observações', icon: 'StickyNote' },
+  { type: 'service', label: 'Serviço', icon: 'Package' },
 ];
