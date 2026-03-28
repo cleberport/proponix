@@ -363,34 +363,24 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 gap-4">
-        <h2 className="text-lg font-semibold text-foreground truncate">{table.name}</h2>
-        <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 border-b border-border/50 gap-2">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground truncate">{table.name}</h2>
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground hidden sm:inline">{rows.length} linhas · {columns.length} colunas</span>
-          {/* Hide values toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setHideValues(!hideValues)}
-            title={hideValues ? 'Mostrar valores' : 'Ocultar valores'}
-          >
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setHideValues(!hideValues)} title={hideValues ? 'Mostrar valores' : 'Ocultar valores'}>
             {hideValues ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
           </Button>
-          {/* Zoom control */}
-          <div className="flex items-center gap-1.5">
-            <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
-            <Slider
-              value={[zoom]}
-              onValueChange={([v]) => setZoom(v)}
-              min={60}
-              max={150}
-              step={5}
-              className="w-20"
-            />
-            <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground w-8 text-center">{zoom}%</span>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center gap-1.5">
+              <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
+              <Slider value={[zoom]} onValueChange={([v]) => setZoom(v)} min={60} max={150} step={5} className="w-20" />
+              <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground w-8 text-center">{zoom}%</span>
+            </div>
+          )}
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAddCol(true)} title="Nova coluna">
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
