@@ -245,7 +245,52 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
       return <span className="font-medium tabular-nums">{hideValues ? '•••••' : formatBRL(result)}</span>;
     }
 
-    if (isEditing) {
+    if (col.type === 'date') {
+      const parseDate = (v: any): Date | undefined => {
+        if (!v) return undefined;
+        const str = String(v);
+        // Try dd/MM/yyyy
+        const parsed = parse(str, 'dd/MM/yyyy', new Date());
+        if (isValid(parsed)) return parsed;
+        // Try ISO
+        const iso = new Date(str);
+        if (isValid(iso)) return iso;
+        return undefined;
+      };
+      const dateVal = parseDate(value);
+      const setDate = (d: Date | undefined) => {
+        const formatted = d ? format(d, 'dd/MM/yyyy') : '';
+        const newRows = rows.map(r =>
+          r.id === row.id ? { ...r, cells: { ...r.cells, [col.id]: formatted } } : r
+        );
+        onUpdate({ rows: newRows });
+      };
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="w-full text-left px-1 py-0.5 rounded min-h-[28px] flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+              {dateVal ? (
+                <span className="text-sm">{format(dateVal, 'dd/MM/yyyy')}</span>
+              ) : (
+                <span className="text-muted-foreground text-xs">Selecionar...</span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateVal}
+              onSelect={setDate}
+              locale={ptBR}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
       return (
         <Input
           ref={inputRef}
