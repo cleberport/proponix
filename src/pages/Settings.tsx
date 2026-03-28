@@ -7,16 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle, Clock, CreditCard, Settings as SettingsIcon } from 'lucide-react';
+import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle, Clock, CreditCard, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { resetTour } from '@/components/OnboardingTour';
 import { toast } from 'sonner';
 import BillingSection from '@/components/settings/BillingSection';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
   const [savedTemplates, setSavedTemplates] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const defaultTab = searchParams.get('tab') === 'billing' ? 'billing' : 'general';
@@ -231,6 +233,21 @@ const SettingsPage = () => {
                 toast.success('Tour reiniciado! Volte ao Dashboard para ver.');
               }}>
                 <HelpCircle className="mr-1.5 h-3.5 w-3.5" /> Rever Tour de Introdução
+              </Button>
+            </section>
+
+            {/* Logout */}
+            <section className="space-y-3 pt-4 border-t border-border/50">
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  toast.success('Você saiu da conta');
+                  navigate('/');
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Sair da conta
               </Button>
             </section>
           </div>
