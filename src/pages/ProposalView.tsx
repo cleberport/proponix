@@ -179,6 +179,13 @@ const ProposalView = () => {
     trackReceived();
   }, [proposal]);
 
+  // Auto-reveal action buttons after 3s when viewing
+  useEffect(() => {
+    if (step !== 'viewing') return;
+    const timer = setTimeout(() => setStep('decision'), 3000);
+    return () => clearTimeout(timer);
+  }, [step]);
+
   const saveReceivedProposal = async (userId: string, p: ProposalData) => {
     try {
       // Extract total value from document values
