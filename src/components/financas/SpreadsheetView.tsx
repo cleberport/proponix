@@ -290,7 +290,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
         </Popover>
       );
     }
-
+    if (isEditing) {
       return (
         <Input
           ref={inputRef}
