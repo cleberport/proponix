@@ -130,6 +130,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.preventDefault();
         onSelect(el.id);
         if (editingImageId !== el.id) setEditingImageId(null);
+        if (editingTextId !== el.id) setEditingTextId(null);
         startPos.current = { x: e.clientX, y: e.clientY, elX: el.x, elY: el.y, elW: el.width, elH: el.height };
         if (mode === 'drag') setDragging(el.id);
         else setResizing(el.id);
