@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
   Type, Hash, DollarSign, Calendar as CalendarIcon, CheckSquare, List, FunctionSquare, Pencil,
@@ -55,6 +56,7 @@ interface Props {
 }
 
 export default function SpreadsheetView({ table, onUpdate }: Props) {
+  const isMobile = useIsMobile();
   const { columns, rows } = table;
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -361,180 +363,221 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 gap-4">
-        <h2 className="text-lg font-semibold text-foreground truncate">{table.name}</h2>
-        <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 border-b border-border/50 gap-2">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground truncate">{table.name}</h2>
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground hidden sm:inline">{rows.length} linhas · {columns.length} colunas</span>
-          {/* Hide values toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setHideValues(!hideValues)}
-            title={hideValues ? 'Mostrar valores' : 'Ocultar valores'}
-          >
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setHideValues(!hideValues)} title={hideValues ? 'Mostrar valores' : 'Ocultar valores'}>
             {hideValues ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
           </Button>
-          {/* Zoom control */}
-          <div className="flex items-center gap-1.5">
-            <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
-            <Slider
-              value={[zoom]}
-              onValueChange={([v]) => setZoom(v)}
-              min={60}
-              max={150}
-              step={5}
-              className="w-20"
-            />
-            <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground w-8 text-center">{zoom}%</span>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center gap-1.5">
+              <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
+              <Slider value={[zoom]} onValueChange={([v]) => setZoom(v)} min={60} max={150} step={5} className="w-20" />
+              <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground w-8 text-center">{zoom}%</span>
+            </div>
+          )}
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAddCol(true)} title="Nova coluna">
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
-      {/* Spreadsheet */}
-      <div className="flex-1 overflow-auto">
-        <div className="min-w-full inline-block" style={{ fontSize: `${zoom}%` }}>
-          <table className="w-max border-collapse" style={{ tableLayout: 'fixed' }}>
-            <colgroup>
-              <col style={{ width: 72 }} />
-              {columns.map(col => (
-                <col key={col.id} style={{ width: col.width || DEFAULT_COL_WIDTH }} />
-              ))}
-              <col style={{ width: 40 }} />
-            </colgroup>
-            <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
-              <tr>
-                <th className="px-2 py-2 text-center text-xs font-medium text-muted-foreground border-b border-r border-border/50">#</th>
-                {columns.map((col, ci) => {
-                  const TypeIcon = Icon(col.type);
-                  return (
-                    <th key={col.id} className="relative px-2 py-2 text-left text-xs font-medium text-muted-foreground border-b border-r border-border/50">
-                      <div className="flex items-center gap-1.5 overflow-hidden">
-                        <TypeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {editingColId === col.id ? (
-                          <Input
-                            autoFocus value={editColName}
-                            onChange={e => setEditColName(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') commitRenameCol(); if (e.key === 'Escape') setEditingColId(null); }}
-                            onBlur={commitRenameCol}
-                            className="h-5 text-xs py-0 border-0 shadow-none bg-transparent"
-                            style={{ fontSize: 'inherit' }}
-                          />
-                        ) : (
-                          <span className="truncate">{col.name}</span>
-                        )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto shrink-0 opacity-60 hover:opacity-100">
-                              <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-48">
-                            <DropdownMenuItem onClick={() => startRenameCol(col.id, col.name)}>
-                              <Pencil className="h-3.5 w-3.5 mr-2" /> Renomear
-                            </DropdownMenuItem>
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger>
-                                <TypeIcon className="h-3.5 w-3.5 mr-2" /> Tipo: {TYPE_LABELS[col.type]}
-                              </DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent>
-                                {(Object.keys(TYPE_LABELS) as FinanceColumnType[]).map(t => (
-                                  <DropdownMenuItem key={t} onClick={() => changeColumnType(col.id, t)}>
-                                    {TYPE_LABELS[t]}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSeparator />
-                            {ci > 0 && (
-                              <DropdownMenuItem onClick={() => moveColumn(col.id, -1)}>
-                                <ArrowLeft className="h-3.5 w-3.5 mr-2" /> Mover esquerda
-                              </DropdownMenuItem>
-                            )}
-                            {ci < columns.length - 1 && (
-                              <DropdownMenuItem onClick={() => moveColumn(col.id, 1)}>
-                                <ArrowRight className="h-3.5 w-3.5 mr-2" /> Mover direita
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive" onClick={() => deleteColumn(col.id)}>
-                              <Trash2 className="h-3.5 w-3.5 mr-2" /> Excluir coluna
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      {/* Resize handle */}
-                      <div
-                        className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/30 active:bg-primary/50 transition-colors"
-                        onMouseDown={e => onResizeStart(e, col.id)}
-                      />
-                    </th>
-                  );
-                })}
-                <th className="px-1 py-2 border-b border-border/50">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAddCol(true)}>
-                    <Plus className="h-3.5 w-3.5" />
+      {/* Mobile: Card layout */}
+      {isMobile ? (
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+          {rows.map((row, ri) => (
+            <div key={row.id} className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">#{ri + 1}</span>
+                <div className="flex items-center gap-0.5">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveRow(row.id, -1)} disabled={ri === 0}>
+                    <ChevronUp className="h-3 w-3" />
                   </Button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, ri) => (
-                <tr key={row.id} className="group hover:bg-muted/30 transition-colors">
-                  <td className="px-2 py-1 text-center text-xs text-muted-foreground border-r border-border/30">
-                    <div className="flex items-center justify-center gap-0">
-                      <span className="group-hover:hidden">{ri + 1}</span>
-                      <div className="hidden group-hover:flex items-center gap-0">
-                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, -1)} disabled={ri === 0}>
-                          <ChevronUp className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, 1)} disabled={ri === rows.length - 1}>
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteRow(row.id)}>
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </td>
-                  {columns.map(col => (
-                    <td key={col.id} className="px-1 py-0.5 border-r border-border/30 border-b border-border/20">
-                      {renderCell(row, col)}
-                    </td>
-                  ))}
-                  <td className="border-b border-border/20" />
-                </tr>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveRow(row.id, 1)} disabled={ri === rows.length - 1}>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteRow(row.id)}>
+                    <Trash2 className="h-3 w-3 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+              {columns.map(col => (
+                <div key={col.id} className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{col.name}</span>
+                  <div className="text-sm">{renderCell(row, col)}</div>
+                </div>
               ))}
-            </tbody>
-            {rows.length > 0 && (
-              <tfoot>
-                <tr className="bg-muted/40 border-t border-border/50">
-                  <td className="px-2 py-2 text-xs font-medium text-muted-foreground text-center border-r border-border/30">Σ</td>
-                  {columns.map(col => {
-                    const sum = getColumnSum(col);
-                    return (
-                      <td key={col.id} className="px-2 py-2 font-semibold tabular-nums border-r border-border/30">
-                        {sum !== null ? (
-                          hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))
-                        ) : ''}
-                      </td>
-                    );
-                  })}
-                  <td />
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
+            </div>
+          ))}
 
-        {/* Add row */}
-        <div className="px-4 py-2 border-t border-border/30">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={addRow}>
+          {/* Summary card */}
+          {rows.length > 0 && columns.some(c => getColumnSum(c) !== null) && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+              <span className="text-xs font-semibold text-primary">Σ Totais</span>
+              {columns.map(col => {
+                const sum = getColumnSum(col);
+                if (sum === null) return null;
+                return (
+                  <div key={col.id} className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{col.name}</span>
+                    <span className="text-sm font-semibold tabular-nums">
+                      {hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={addRow}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Nova linha
           </Button>
         </div>
-      </div>
+      ) : (
+        /* Desktop: Table layout */
+        <div className="flex-1 overflow-auto">
+          <div className="min-w-full inline-block" style={{ fontSize: `${zoom}%` }}>
+            <table className="w-max border-collapse" style={{ tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: 72 }} />
+                {columns.map(col => (
+                  <col key={col.id} style={{ width: col.width || DEFAULT_COL_WIDTH }} />
+                ))}
+                <col style={{ width: 40 }} />
+              </colgroup>
+              <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
+                <tr>
+                  <th className="px-2 py-2 text-center text-xs font-medium text-muted-foreground border-b border-r border-border/50">#</th>
+                  {columns.map((col, ci) => {
+                    const TypeIcon = Icon(col.type);
+                    return (
+                      <th key={col.id} className="relative px-2 py-2 text-left text-xs font-medium text-muted-foreground border-b border-r border-border/50">
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <TypeIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                          {editingColId === col.id ? (
+                            <Input
+                              autoFocus value={editColName}
+                              onChange={e => setEditColName(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') commitRenameCol(); if (e.key === 'Escape') setEditingColId(null); }}
+                              onBlur={commitRenameCol}
+                              className="h-5 text-xs py-0 border-0 shadow-none bg-transparent"
+                              style={{ fontSize: 'inherit' }}
+                            />
+                          ) : (
+                            <span className="truncate">{col.name}</span>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto shrink-0 opacity-60 hover:opacity-100">
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48">
+                              <DropdownMenuItem onClick={() => startRenameCol(col.id, col.name)}>
+                                <Pencil className="h-3.5 w-3.5 mr-2" /> Renomear
+                              </DropdownMenuItem>
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                  <TypeIcon className="h-3.5 w-3.5 mr-2" /> Tipo: {TYPE_LABELS[col.type]}
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  {(Object.keys(TYPE_LABELS) as FinanceColumnType[]).map(t => (
+                                    <DropdownMenuItem key={t} onClick={() => changeColumnType(col.id, t)}>
+                                      {TYPE_LABELS[t]}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuSeparator />
+                              {ci > 0 && (
+                                <DropdownMenuItem onClick={() => moveColumn(col.id, -1)}>
+                                  <ArrowLeft className="h-3.5 w-3.5 mr-2" /> Mover esquerda
+                                </DropdownMenuItem>
+                              )}
+                              {ci < columns.length - 1 && (
+                                <DropdownMenuItem onClick={() => moveColumn(col.id, 1)}>
+                                  <ArrowRight className="h-3.5 w-3.5 mr-2" /> Mover direita
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive" onClick={() => deleteColumn(col.id)}>
+                                <Trash2 className="h-3.5 w-3.5 mr-2" /> Excluir coluna
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <div
+                          className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/30 active:bg-primary/50 transition-colors"
+                          onMouseDown={e => onResizeStart(e, col.id)}
+                        />
+                      </th>
+                    );
+                  })}
+                  <th className="px-1 py-2 border-b border-border/50">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAddCol(true)}>
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, ri) => (
+                  <tr key={row.id} className="group hover:bg-muted/30 transition-colors">
+                    <td className="px-2 py-1 text-center text-xs text-muted-foreground border-r border-border/30">
+                      <div className="flex items-center justify-center gap-0">
+                        <span className="group-hover:hidden">{ri + 1}</span>
+                        <div className="hidden group-hover:flex items-center gap-0">
+                          <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, -1)} disabled={ri === 0}>
+                            <ChevronUp className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, 1)} disabled={ri === rows.length - 1}>
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteRow(row.id)}>
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    </td>
+                    {columns.map(col => (
+                      <td key={col.id} className="px-1 py-0.5 border-r border-border/30 border-b border-border/20">
+                        {renderCell(row, col)}
+                      </td>
+                    ))}
+                    <td className="border-b border-border/20" />
+                  </tr>
+                ))}
+              </tbody>
+              {rows.length > 0 && (
+                <tfoot>
+                  <tr className="bg-muted/40 border-t border-border/50">
+                    <td className="px-2 py-2 text-xs font-medium text-muted-foreground text-center border-r border-border/30">Σ</td>
+                    {columns.map(col => {
+                      const sum = getColumnSum(col);
+                      return (
+                        <td key={col.id} className="px-2 py-2 font-semibold tabular-nums border-r border-border/30">
+                          {sum !== null ? (
+                            hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))
+                          ) : ''}
+                        </td>
+                      );
+                    })}
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+
+          <div className="px-4 py-2 border-t border-border/30">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={addRow}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Nova linha
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Add column dialog */}
       <Dialog open={showAddCol} onOpenChange={setShowAddCol}>
