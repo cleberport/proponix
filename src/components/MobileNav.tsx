@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, Settings, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, Settings, Sun, Moon, DollarSign } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -7,6 +7,7 @@ const items = [
   { label: 'Início', path: '/dashboard', icon: LayoutGrid },
   { label: 'Docs', path: '/documents', icon: FileText },
   { label: 'Inbox', path: '/recebidos', icon: Inbox },
+  { label: 'Fin', path: '/financas', icon: DollarSign },
 ];
 
 export default function MobileNav() {
