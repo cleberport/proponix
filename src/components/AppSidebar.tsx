@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, DollarSign } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,7 @@ const items = [
   { title: 'Templates', url: '/dashboard', icon: LayoutGrid },
   { title: 'Documentos', url: '/documents', icon: FileText },
   { title: 'Recebidos', url: '/recebidos', icon: Inbox },
+  { title: 'Finanças', url: '/financas', icon: DollarSign },
 ];
 
 export function AppSidebar() {
