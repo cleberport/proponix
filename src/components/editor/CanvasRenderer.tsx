@@ -370,6 +370,21 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       return readOnly ? '' : (el.variable ? `{{${el.variable}}}` : '');
     };
 
+    const renderTextContent = (el: CanvasElement): React.ReactNode => {
+      const content = resolveContent(el);
+      if (!el.listType || el.listType === 'none') return content;
+      const lines = content.split('\n');
+      return (
+        <>
+          {lines.map((line, i) => (
+            <span key={i} style={{ display: 'block' }}>
+              {el.listType === 'bullet' ? `• ${line}` : `${i + 1}. ${line}`}
+            </span>
+          ))}
+        </>
+      );
+    };
+
     const boxSelectRect = boxSelect ? {
       left: Math.min(boxSelect.startX, boxSelect.x),
       top: Math.min(boxSelect.startY, boxSelect.y),
