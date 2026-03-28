@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { generatePdfFromDom } from '@/lib/pdfGenerator';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
