@@ -379,6 +379,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const renderElement = (el: CanvasElement) => {
       const elSelected = isSelected(el.id) && !readOnly;
+      const lh = el.lineHeight || 1.4;
       const style: React.CSSProperties = {
         position: 'absolute',
         left: el.x,
@@ -387,7 +388,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         fontSize: el.fontSize,
         fontWeight: el.fontWeight,
         fontFamily: el.fontFamily,
+        fontStyle: el.fontStyle || 'normal',
         textDecoration: el.textDecoration || 'none',
+        lineHeight: lh,
         color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
