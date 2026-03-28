@@ -119,10 +119,8 @@ const ProposalView = () => {
 
   useEffect(() => {
     const check = () => {
-      setHeaderIsDark(
-        document.documentElement.classList.contains('dark') ||
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-      );
+      // .dark class = light mode in this project's inverted theme
+      setHeaderIsDark(!document.documentElement.classList.contains('dark'));
     };
     const observer = new MutationObserver(check);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
