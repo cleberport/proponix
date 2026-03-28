@@ -332,8 +332,18 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
+    // Inject service data
+    for (const idx of allServiceIndices) {
+      const svc = selectedServices[idx];
+      if (svc) {
+        display[`service_${idx}_name`] = svc.name;
+        display[`service_${idx}_description`] = svc.description;
+        display[`service_${idx}_price`] = formatCurrency(svc.price.toString());
+        display[`service_${idx}_notes`] = svc.notes;
+      }
+    }
     return display;
-  }, [resolvedValues]);
+  }, [resolvedValues, selectedServices, allServiceIndices]);
 
   // Build pages with dynamic table rows injected
   const visiblePages = useMemo(() => {
