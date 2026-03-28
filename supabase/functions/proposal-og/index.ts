@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
+  const wantImage = url.searchParams.get("image") === "1";
 
   if (!token || token.length < 10 || !/^[a-f0-9]+$/i.test(token)) {
     return new Response("Not found", { status: 404 });
@@ -13,7 +14,6 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // Fetch proposal link + document + company settings
   const { data: link } = await supabase
     .from("proposal_links")
     .select("document_id, user_id")
@@ -38,29 +38,41 @@ Deno.serve(async (req) => {
         .maybeSingle(),
     ]);
 
-    if (settingsRes.data?.company_name) {
-      companyName = settingsRes.data.company_name;
+    if (settingsRes.data?.company_name) companyName = settingsRes.data.company_name;
+    if (settingsRes.data?.logo_url) logoUrl = settingsRes.data.logo_url;
+    if (docRes.data?.client_name) clientName = docRes.data.client_name;
+  }
+
+  // Serve logo image directly if requested (for og:image)
+  if (wantImage && logoUrl) {
+    if (logoUrl.startsWith("data:")) {
+      const match = logoUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (match) {
+        const mimeType = match[1];
+        const raw = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+        return new Response(raw, {
+          headers: {
+            "Content-Type": mimeType,
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
     }
-    if (settingsRes.data?.logo_url) {
-      logoUrl = settingsRes.data.logo_url;
-    }
-    if (docRes.data?.client_name) {
-      clientName = docRes.data.client_name;
-    }
+    // If it's already a URL, redirect to it
+    return Response.redirect(logoUrl, 302);
   }
 
   const description = clientName
     ? `Proposta preparada para ${clientName}`
     : "Visualize os detalhes da proposta";
 
-  // Derive app origin from the function URL (same project)
-  const fnOrigin = new URL(req.url).origin;
-  // The app is published at freelox.lovable.app; fallback to referer or known URL
-  const referer = req.headers.get("referer");
-  const appOrigin = referer ? new URL(referer).origin : "https://freelox.lovable.app";
+  const appOrigin = "https://freelox.lovable.app";
   const redirectUrl = `${appOrigin}/p/${token}`;
 
-  // Escape HTML entities
+  // Build og:image URL — point to this same function with &image=1
+  const fnBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/proposal-og`;
+  const ogImageUrl = logoUrl ? `${fnBaseUrl}?token=${encodeURIComponent(token)}&image=1` : "";
+
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -71,11 +83,11 @@ Deno.serve(async (req) => {
 <meta property="og:type" content="website"/>
 <meta property="og:title" content="${esc(companyName)}"/>
 <meta property="og:description" content="${esc(description)}"/>
-${logoUrl ? `<meta property="og:image" content="${esc(logoUrl)}"/>` : ""}
+${ogImageUrl ? `<meta property="og:image" content="${esc(ogImageUrl)}"/>` : ""}
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="${esc(companyName)}"/>
 <meta name="twitter:description" content="${esc(description)}"/>
-${logoUrl ? `<meta name="twitter:image" content="${esc(logoUrl)}"/>` : ""}
+${ogImageUrl ? `<meta name="twitter:image" content="${esc(ogImageUrl)}"/>` : ""}
 <meta http-equiv="refresh" content="0;url=${esc(redirectUrl)}"/>
 <title>${esc(companyName)}</title>
 </head>

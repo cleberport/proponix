@@ -23,8 +23,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 
 const buildShareUrl = (token: string) => {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  return `https://${projectId}.supabase.co/functions/v1/proposal-og?token=${token}`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  return `${supabaseUrl}/functions/v1/proposal-og?token=${token}`;
 };
 type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado' | 'negociacao';
 
