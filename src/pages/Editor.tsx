@@ -401,7 +401,7 @@ const Editor = () => {
   const handleSave = async () => {
     const shouldCreateNewId = isNew || !id || !isUuid(id);
     const finalId = shouldCreateNewId ? uuidv4() : id!;
-    const savingToastId = toast.loading('Salvando template...');
+    const savingToastId: string | number | undefined = undefined;
 
     try {
       const optimizedLayout = await optimizeTemplatePagesForSave(pages);
@@ -439,7 +439,7 @@ const Editor = () => {
         navigate(`/editor/${finalId}`, { replace: true });
       }
 
-      toast.success('Template salvo!');
+      // Save silently — no toast banner
       if (optimizedLayout.optimizedCount > 0) {
         toast.info(`${optimizedLayout.optimizedCount} imagem(ns) otimizadas.`);
       }
