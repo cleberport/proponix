@@ -108,7 +108,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   // Cell editing
   const startEdit = (rowId: string, colId: string, value: any) => {
     const col = columns.find(c => c.id === colId);
-    if (col?.type === 'formula' || col?.type === 'checkbox') return;
+    if (col?.type === 'formula' || col?.type === 'checkbox' || col?.type === 'date') return;
     setEditingCell({ rowId, colId });
     setEditValue(value?.toString() || '');
   };
