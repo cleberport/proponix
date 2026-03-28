@@ -203,7 +203,7 @@ const Documents = () => {
       const link = data as unknown as ProposalLink;
       setProposalLinks((prev) => ({ ...prev, [docId]: link }));
 
-      const url = `${window.location.origin}/p/${link.token}`;
+      const url = buildShareUrl(link.token);
       await navigator.clipboard.writeText(url);
       toast.success('Link gerado e copiado!');
 
@@ -225,7 +225,7 @@ const Documents = () => {
       await handleGenerateLink(docId);
       return;
     }
-    const url = `${window.location.origin}/p/${link.token}`;
+    const url = buildShareUrl(link.token);
     await navigator.clipboard.writeText(url);
     toast.success('Link copiado!');
   }, [proposalLinks, handleGenerateLink]);
@@ -265,7 +265,7 @@ const Documents = () => {
 
       setHistory((prev) => prev.map((d) => d.id === docId ? { ...d, status: 'enviado' } as any : d));
 
-      const url = `${window.location.origin}/p/${link.token}`;
+      const url = buildShareUrl(link.token);
       const doc = history.find((d) => d.id === docId);
       setResendModal({
         docId,
