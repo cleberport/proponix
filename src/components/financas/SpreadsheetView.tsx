@@ -384,56 +384,102 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
         </div>
       </div>
 
-      {/* Mobile: Card layout */}
+      {/* Mobile: Compact row layout */}
       {isMobile ? (
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
-          {rows.map((row, ri) => (
-            <div key={row.id} className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">#{ri + 1}</span>
-                <div className="flex items-center gap-0.5">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveRow(row.id, -1)} disabled={ri === 0}>
-                    <ChevronUp className="h-3 w-3" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveRow(row.id, 1)} disabled={ri === rows.length - 1}>
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteRow(row.id)}>
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-              {columns.map(col => (
-                <div key={col.id} className="flex flex-col gap-0.5">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{col.name}</span>
-                  <div className="text-sm">{renderCell(row, col)}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-
-          {/* Summary card */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Summary chips */}
           {rows.length > 0 && columns.some(c => getColumnSum(c) !== null) && (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
-              <span className="text-xs font-semibold text-primary">Σ Totais</span>
+            <div className="flex flex-wrap gap-2 px-3 py-2 border-b border-border/30">
               {columns.map(col => {
                 const sum = getColumnSum(col);
                 if (sum === null) return null;
                 return (
-                  <div key={col.id} className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{col.name}</span>
-                    <span className="text-sm font-semibold tabular-nums">
+                  <div key={col.id} className="rounded-md border border-border/50 bg-muted/30 px-2.5 py-1.5 min-w-[90px]">
+                    <div className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">{col.name}</div>
+                    <div className="text-xs font-bold tabular-nums" style={{ color: col.type === 'currency' ? 'hsl(var(--primary))' : undefined }}>
                       {hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))}
-                    </span>
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
 
-          <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={addRow}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> Nova linha
-          </Button>
+          {/* Compact rows */}
+          <div className="divide-y divide-border/30">
+            {rows.map((row, ri) => {
+              // Pick key columns to show inline: first text col as title, first currency/number as value, first date
+              const textCols = columns.filter(c => c.type === 'text' || c.type === 'select');
+              const valueCols = columns.filter(c => c.type === 'currency' || c.type === 'number' || c.type === 'formula');
+              const dateCols = columns.filter(c => c.type === 'date');
+              const checkCols = columns.filter(c => c.type === 'checkbox');
+
+              const titleParts = textCols.map(c => {
+                const v = c.type === 'select' ? row.cells[c.id] : row.cells[c.id];
+                return v ? String(v) : '';
+              }).filter(Boolean);
+
+              const mainValue = valueCols[0];
+              const mainDate = dateCols[0];
+
+              return (
+                <div key={row.id} className="flex items-center gap-2 px-3 py-2.5 active:bg-muted/30" onClick={() => setExpandedRow(expandedRow === row.id ? null : row.id)}>
+                  {/* Drag / row number */}
+                  <span className="text-[10px] text-muted-foreground w-4 text-center shrink-0">{ri + 1}</span>
+
+                  {/* Main content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      {titleParts.length > 0 ? (
+                        <span className="text-xs font-semibold text-foreground truncate">
+                          {titleParts.join(' · ')}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Linha {ri + 1}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {mainValue && (
+                        <span className="text-xs font-bold tabular-nums text-primary">
+                          {hideValues ? '•••••' : (() => {
+                            if (mainValue.type === 'formula') return formatBRL(evaluateFinanceFormula(mainValue.formula || '', columns, row.cells));
+                            const v = row.cells[mainValue.id];
+                            if (!v) return '';
+                            return mainValue.type === 'currency' ? formatBRL(getColumnNumericValue(v)) : String(v);
+                          })()}
+                        </span>
+                      )}
+                      {mainDate && row.cells[mainDate.id] && (
+                        <span className="text-[10px] text-muted-foreground font-medium">{String(row.cells[mainDate.id])}</span>
+                      )}
+                      {checkCols.map(c => row.cells[c.id] ? (
+                        <span key={c.id} className="text-primary">✓</span>
+                      ) : null)}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-0 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); moveRow(row.id, -1); }} disabled={ri === 0}>
+                      <ChevronUp className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); moveRow(row.id, 1); }} disabled={ri === rows.length - 1}>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); deleteRow(row.id); }}>
+                      <Trash2 className="h-3 w-3 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="px-3 py-2">
+            <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={addRow}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Nova linha
+            </Button>
+          </div>
         </div>
       ) : (
         /* Desktop: Table layout */
