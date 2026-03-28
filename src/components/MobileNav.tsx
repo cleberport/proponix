@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 
 const items = [
-  { label: 'Templates', path: '/dashboard', icon: LayoutGrid },
-  { label: 'Documentos', path: '/documents', icon: FileText },
-  { label: 'Recebidos', path: '/recebidos', icon: Inbox },
+  { label: 'Início', path: '/dashboard', icon: LayoutGrid },
+  { label: 'Docs', path: '/documents', icon: FileText },
+  { label: 'Inbox', path: '/recebidos', icon: Inbox },
 ];
 
 export default function MobileNav() {
