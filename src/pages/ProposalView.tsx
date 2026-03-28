@@ -673,6 +673,36 @@ const ProposalView = () => {
             </div>
           )}
         </motion.div>
+
+        {/* Hidden off-screen container for PDF capture */}
+        {hasTemplate && (
+          <div
+            aria-hidden
+            style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
+          >
+            {templatePages.map((pageElements, idx) => (
+              <div
+                key={idx}
+                ref={(el) => {
+                  if (el) pageRefsMap.current.set(idx, el);
+                  else pageRefsMap.current.delete(idx);
+                }}
+                style={{ width: 595, height: 842, overflow: 'hidden' }}
+              >
+                <CanvasRenderer
+                  elements={pageElements}
+                  selectedId={null}
+                  onSelect={NOOP}
+                  onUpdate={NOOP}
+                  readOnly
+                  variableValues={variableValues}
+                  showGrid={false}
+                  backgroundColor={bgColor}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
