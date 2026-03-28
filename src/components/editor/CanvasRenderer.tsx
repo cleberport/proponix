@@ -658,7 +658,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           return (
             <div
               key={el.id}
-              style={{ ...style, height: el.height, overflow: 'hidden' }}
               className={`rounded ${selectedClass} ${hoverClass}`}
               style={{ ...style, height: el.height, overflow: 'hidden', border: `1px solid ${el.tableBorderColor || '#9CA3AF'}` }}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
