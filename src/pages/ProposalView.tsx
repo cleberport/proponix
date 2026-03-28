@@ -16,6 +16,7 @@ import { starterTemplates } from '@/data/templates';
 import { motion, AnimatePresence } from 'framer-motion';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import { resolveAllValues, formatCurrency } from '@/lib/calculations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProposalData {
   id: string;
@@ -85,6 +86,7 @@ const normalizeTemplatePages = (layout: unknown): CanvasElement[][] => {
 
 const ProposalView = () => {
   const { token } = useParams<{ token: string }>();
+  const isMobile = useIsMobile();
   const [proposal, setProposal] = useState<ProposalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -343,8 +345,8 @@ const ProposalView = () => {
       if (pageEls.length > 0) {
         const blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
         if (blob) {
-          // On mobile, trigger share
-          if (navigator.share) {
+          // On mobile, trigger native share
+          if (isMobile && navigator.share) {
             const file = new File([blob], fileName, { type: 'application/pdf' });
             if (navigator.canShare?.({ files: [file] })) {
               try {
