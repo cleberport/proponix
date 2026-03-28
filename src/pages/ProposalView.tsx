@@ -421,39 +421,7 @@ const ProposalView = () => {
 
   const hasTemplate = templatePages.some((page) => page.length > 0);
 
-  // Generate PDF blob as soon as we have template data (don't wait for step)
-  useEffect(() => {
-    if (!hasTemplate || !proposal || pdfUrl) return;
-    let cancelled = false;
-    const generate = async () => {
-      setGeneratingPdf(true);
-      try {
-        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-        const blob = await generateVectorPdf(
-          templatePages,
-          variableValues,
-          'preview.pdf',
-          { backgroundColor: bgColor, skipDownload: true }
-        );
-        if (blob && !cancelled) {
-          setPdfUrl(URL.createObjectURL(blob));
-        }
-      } catch (e) {
-        console.error('PDF generation failed', e);
-      } finally {
-        if (!cancelled) setGeneratingPdf(false);
-      }
-    };
-    generate();
-    return () => { cancelled = true; };
-  }, [hasTemplate, proposal, pdfUrl, templatePages, variableValues, bgColor]);
-
-  // Cleanup PDF URL on unmount
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
+  
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('pt-BR', {
