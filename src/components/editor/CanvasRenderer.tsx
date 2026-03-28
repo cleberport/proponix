@@ -447,10 +447,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                     fontSize: 'inherit',
                     fontWeight: 'inherit',
                     fontFamily: 'inherit',
+                    fontStyle: 'inherit',
                     color: 'inherit',
                     textAlign: el.alignment || 'left',
                     textDecoration: el.textDecoration || 'none',
-                    lineHeight: 1.4,
+                    lineHeight: lh,
                     border: 'none',
                     padding: 0,
                     margin: 0,
@@ -470,7 +471,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   onPointerDown={(e) => e.stopPropagation()}
                 />
               ) : (
-                <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
+                <span className="whitespace-pre-wrap">{renderTextContent(el)}</span>
               )}
               {resizeHandle}
             </div>
