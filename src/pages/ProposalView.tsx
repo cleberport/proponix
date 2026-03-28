@@ -104,6 +104,32 @@ const ProposalView = () => {
   const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   const NOOP = useCallback(() => undefined, []);
 
+  // Detect if UI is in dark mode to adapt logo contrast
+  const [headerIsDark, setHeaderIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ||
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const check = () => {
+      setHeaderIsDark(
+        document.documentElement.classList.contains('dark') ||
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      );
+    };
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', check);
+    return () => {
+      observer.disconnect();
+      mq.removeEventListener('change', check);
+    };
+  }, []);
+
   const fetchProposal = useCallback(async (markViewed = false) => {
     try {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
