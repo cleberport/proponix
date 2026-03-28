@@ -1,1 +1,4 @@
 project_id = "xnxvapmshzthxawdursg"
+
+[functions.proposal-og]
+verify_jwt = false
