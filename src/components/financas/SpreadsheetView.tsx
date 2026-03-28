@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
   Type, Hash, DollarSign, Calendar, CheckSquare, List, FunctionSquare, Pencil,
-  ZoomIn, ZoomOut,
+  ZoomIn, ZoomOut, Eye, EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   const [editingColId, setEditingColId] = useState<string | null>(null);
   const [editColName, setEditColName] = useState('');
   const [zoom, setZoom] = useState(100);
+  const [hideValues, setHideValues] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Column resize state
@@ -237,7 +238,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
 
     if (col.type === 'formula') {
       const result = evaluateFinanceFormula(col.formula || '', columns, row.cells);
-      return <span className="font-medium tabular-nums">{formatBRL(result)}</span>;
+      return <span className="font-medium tabular-nums">{hideValues ? '•••••' : formatBRL(result)}</span>;
     }
 
     if (isEditing) {
@@ -274,12 +275,14 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
       if (num !== 0 || displayValue.trim()) displayValue = formatBRL(num);
     }
 
+    const shouldMask = hideValues && (col.type === 'currency' || col.type === 'number');
+
     return (
       <div
         className="w-full h-full min-h-[28px] px-1 py-0.5 cursor-text flex items-center tabular-nums"
         onClick={() => startEdit(row.id, col.id, value)}
       >
-        {displayValue || <span className="text-muted-foreground/40">—</span>}
+        {shouldMask && displayValue ? '•••••' : (displayValue || <span className="text-muted-foreground/40">—</span>)}
       </div>
     );
   };
@@ -304,6 +307,16 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
         <h2 className="text-lg font-semibold text-foreground truncate">{table.name}</h2>
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-xs text-muted-foreground hidden sm:inline">{rows.length} linhas · {columns.length} colunas</span>
+          {/* Hide values toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setHideValues(!hideValues)}
+            title={hideValues ? 'Mostrar valores' : 'Ocultar valores'}
+          >
+            {hideValues ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+          </Button>
           {/* Zoom control */}
           <div className="flex items-center gap-1.5">
             <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
@@ -437,7 +450,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
                     return (
                       <td key={col.id} className="px-2 py-2 font-semibold tabular-nums border-r border-border/30">
                         {sum !== null ? (
-                          col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum)
+                          hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))
                         ) : ''}
                       </td>
                     );
