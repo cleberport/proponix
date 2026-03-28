@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
   Type, Hash, DollarSign, Calendar as CalendarIcon, CheckSquare, List, FunctionSquare, Pencil,
-  ZoomIn, ZoomOut, Eye, EyeOff,
+  ZoomIn, ZoomOut, Eye, EyeOff, ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -146,6 +146,15 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
 
   const deleteRow = (id: string) => {
     onUpdate({ rows: rows.filter(r => r.id !== id) });
+  };
+
+  const moveRow = (id: string, dir: -1 | 1) => {
+    const idx = rows.findIndex(r => r.id === id);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= rows.length) return;
+    const newRows = [...rows];
+    [newRows[idx], newRows[newIdx]] = [newRows[newIdx], newRows[idx]];
+    onUpdate({ rows: newRows });
   };
 
   // Column operations
@@ -388,7 +397,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
         <div className="min-w-full inline-block" style={{ fontSize: `${zoom}%` }}>
           <table className="w-max border-collapse" style={{ tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: 40 }} />
+              <col style={{ width: 72 }} />
               {columns.map(col => (
                 <col key={col.id} style={{ width: col.width || DEFAULT_COL_WIDTH }} />
               ))}
@@ -474,11 +483,19 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
               {rows.map((row, ri) => (
                 <tr key={row.id} className="group hover:bg-muted/30 transition-colors">
                   <td className="px-2 py-1 text-center text-xs text-muted-foreground border-r border-border/30">
-                    <div className="flex items-center justify-center gap-0.5">
+                    <div className="flex items-center justify-center gap-0">
                       <span className="group-hover:hidden">{ri + 1}</span>
-                      <Button variant="ghost" size="icon" className="h-5 w-5 hidden group-hover:flex" onClick={() => deleteRow(row.id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
+                      <div className="hidden group-hover:flex items-center gap-0">
+                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, -1)} disabled={ri === 0}>
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => moveRow(row.id, 1)} disabled={ri === rows.length - 1}>
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteRow(row.id)}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   </td>
                   {columns.map(col => (
