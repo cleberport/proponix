@@ -107,12 +107,14 @@ const ProposalView = () => {
   const NOOP = useCallback(() => undefined, []);
 
   // Detect if UI is in dark mode to adapt logo contrast
+  // NOTE: This project inverts the theme — :root is dark, .dark class is light
   const [headerIsDark, setHeaderIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ||
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // If .dark class is present, UI is actually LIGHT; otherwise it's dark
+      if (document.documentElement.classList.contains('dark')) return false;
+      return true; // :root = dark by default
     }
-    return false;
+    return true;
   });
 
   useEffect(() => {
