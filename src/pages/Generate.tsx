@@ -90,6 +90,30 @@ const Generate = () => {
 
   const hasTable = !!tableInfo;
 
+  // Detect service blocks in the template
+  const templateServiceIndices = useMemo(() => {
+    if (!template) return [];
+    const pages = getTemplatePages(template);
+    const indices: number[] = [];
+    for (const page of pages) {
+      for (const el of page) {
+        if (el.type === 'service') {
+          const idx = el.serviceIndex ?? 0;
+          if (!indices.includes(idx)) indices.push(idx);
+        }
+      }
+    }
+    return indices.sort((a, b) => a - b);
+  }, [template]);
+
+  // All service indices = template ones + dynamically added extras
+  const allServiceIndices = useMemo(() => {
+    const all = [...templateServiceIndices, ...extraServiceIndices];
+    return [...new Set(all)].sort((a, b) => a - b);
+  }, [templateServiceIndices, extraServiceIndices]);
+
+  const hasServices = allServiceIndices.length > 0;
+
   // Keep preview closed on mobile and open on desktop
   useEffect(() => {
     setShowPreview(!isMobile);
