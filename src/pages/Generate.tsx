@@ -44,6 +44,8 @@ const Generate = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const pdfPagesContainerRef = useRef<HTMLDivElement>(null);
+  const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const editingDoc = useMemo(() => {
     return (location.state as { documentId?: string; values?: Record<string, string> }) || {};
