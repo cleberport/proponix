@@ -390,8 +390,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         textDecoration: el.textDecoration || 'none',
         color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
-        cursor: readOnly ? 'default' : 'grab',
-        userSelect: 'none',
+        cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
+        userSelect: editingTextId === el.id ? 'text' : 'none',
       };
 
       if (el.type === 'logo' || el.type === 'image') {
