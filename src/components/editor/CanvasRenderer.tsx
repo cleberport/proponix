@@ -438,7 +438,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               {isEditingThis ? (
                 <textarea
                   autoFocus
-                  defaultValue={el.content}
+                  value={el.content}
                   className="w-full h-full bg-transparent outline-none resize-none whitespace-pre-wrap"
                   style={{
                     fontSize: 'inherit',
@@ -452,14 +452,15 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                     padding: 0,
                     margin: 0,
                   }}
-                  onBlur={(e) => {
+                  onChange={(e) => {
                     onUpdate(el.id, { content: e.target.value });
+                  }}
+                  onBlur={() => {
                     setEditingTextId(null);
                   }}
                   onKeyDown={(e) => {
                     e.stopPropagation();
                     if (e.key === 'Escape') {
-                      onUpdate(el.id, { content: (e.target as HTMLTextAreaElement).value });
                       setEditingTextId(null);
                     }
                   }}
