@@ -401,7 +401,7 @@ const Editor = () => {
   const handleSave = async () => {
     const shouldCreateNewId = isNew || !id || !isUuid(id);
     const finalId = shouldCreateNewId ? uuidv4() : id!;
-    const savingToastId = toast.loading('Salvando template...');
+    const savingToastId: string | number | undefined = undefined;
 
     try {
       const optimizedLayout = await optimizeTemplatePagesForSave(pages);
