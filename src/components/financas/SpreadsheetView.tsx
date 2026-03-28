@@ -397,7 +397,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
         <div className="min-w-full inline-block" style={{ fontSize: `${zoom}%` }}>
           <table className="w-max border-collapse" style={{ tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: 40 }} />
+              <col style={{ width: 72 }} />
               {columns.map(col => (
                 <col key={col.id} style={{ width: col.width || DEFAULT_COL_WIDTH }} />
               ))}
