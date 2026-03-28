@@ -141,13 +141,15 @@ const AdminPage = () => {
 
   const handleDelete = async () => {
     if (!deleteProfile) return;
-    const { error } = await supabase.rpc('admin_delete_profile', {
-      _profile_user_id: deleteProfile.user_id,
+    const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+      body: { user_id: deleteProfile.user_id },
     });
     if (error) {
-      toast.error('Erro ao apagar: ' + error.message);
+      toast.error('Erro ao apagar: ' + (error.message || 'Erro desconhecido'));
+    } else if (data?.error) {
+      toast.error('Erro ao apagar: ' + data.error);
     } else {
-      toast.success('Usuário apagado');
+      toast.success('Usuário apagado completamente (dados + conta)');
       setDeleteProfile(null);
       fetchData();
     }
