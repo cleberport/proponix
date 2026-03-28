@@ -115,7 +115,10 @@ const App = () => {
     if (!userId) return;
 
     void Promise.allSettled([
-      loadSettingsFromServer(),
+      loadSettingsFromServer().then(() => {
+        const s = getSettings();
+        document.documentElement.classList.toggle('dark', s.theme === 'light');
+      }),
       getSavedTemplates(),
       loadDocumentHistoryFromServer(),
     ]);
