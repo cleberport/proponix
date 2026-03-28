@@ -68,6 +68,12 @@ const Generate = () => {
   const [generatedLink, setGeneratedLink] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Service blocks state: map serviceIndex → selected service
+  const [selectedServices, setSelectedServices] = useState<Record<number, Service | null>>({});
+
+  // Extra dynamically added service blocks
+  const [extraServiceIndices, setExtraServiceIndices] = useState<number[]>([]);
+
   // Find table element info from template
   const tableInfo = useMemo(() => {
     if (!template) return null;
