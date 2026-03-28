@@ -498,10 +498,14 @@ function renderPageElements(
         const cols = el.rows[0].cells.length;
         const colW = w / cols;
         const rowH = scaleH(el.height) / el.rows.length;
+        const borderCol = el.tableBorderColor ? hexToRgb(el.tableBorderColor) : [226, 232, 240] as [number, number, number];
+        const headerBgCol = el.tableHeaderBg ? hexToRgb(el.tableHeaderBg) : [241, 245, 249] as [number, number, number];
+        const rowBgCol = el.tableRowBg ? hexToRgb(el.tableRowBg) : null;
         el.rows.forEach((row, ri) => {
           const ry = y + ri * rowH;
-          if (ri === 0) { pdf.setFillColor(241, 245, 249); pdf.rect(x, ry, w, rowH, 'F'); }
-          pdf.setDrawColor(226, 232, 240);
+          if (ri === 0) { pdf.setFillColor(...headerBgCol); pdf.rect(x, ry, w, rowH, 'F'); }
+          else if (rowBgCol) { pdf.setFillColor(...rowBgCol); pdf.rect(x, ry, w, rowH, 'F'); }
+          pdf.setDrawColor(...borderCol);
           pdf.setLineWidth(0.5);
           pdf.rect(x, ry, w, rowH, 'S');
           row.cells.forEach((cell, ci) => {
