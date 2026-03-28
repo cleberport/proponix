@@ -266,8 +266,8 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             </Select>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Alinhamento</Label>
-            <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Formatação</Label>
+            <div className="flex items-center gap-1 flex-wrap">
               {([
                 { value: 'left', icon: AlignLeft },
                 { value: 'center', icon: AlignCenter },
@@ -285,6 +285,14 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
               ))}
               <Separator orientation="vertical" className="mx-1 h-5" />
               <Button
+                variant={element.fontStyle === 'italic' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ fontStyle: element.fontStyle === 'italic' ? 'normal' : 'italic' })}
+              >
+                <Italic className="h-3.5 w-3.5" />
+              </Button>
+              <Button
                 variant={element.textDecoration === 'underline' ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 w-7 p-0"
@@ -292,7 +300,58 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
               >
                 <Underline className="h-3.5 w-3.5" />
               </Button>
+              <Button
+                variant={element.textDecoration === 'line-through' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ textDecoration: element.textDecoration === 'line-through' ? 'none' : 'line-through' })}
+              >
+                <Strikethrough className="h-3.5 w-3.5" />
+              </Button>
             </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Lista</Label>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={!element.listType || element.listType === 'none' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ listType: 'none' })}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={element.listType === 'bullet' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ listType: 'bullet' })}
+              >
+                <List className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={element.listType === 'number' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => onUpdate({ listType: 'number' })}
+              >
+                <ListOrdered className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Espaçamento</Label>
+            <Select value={String(element.lineHeight || 1.4)} onValueChange={(v) => onUpdate({ lineHeight: +v })}>
+              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Compacto (1.0)</SelectItem>
+                <SelectItem value="1.2">Apertado (1.2)</SelectItem>
+                <SelectItem value="1.4">Normal (1.4)</SelectItem>
+                <SelectItem value="1.6">Confortável (1.6)</SelectItem>
+                <SelectItem value="1.8">Espaçoso (1.8)</SelectItem>
+                <SelectItem value="2">Duplo (2.0)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </>
       )}
