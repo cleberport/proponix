@@ -258,7 +258,8 @@ function renderPageElements(
     const effectiveColor = resolveTextColor(el.color, bgColor);
     const color = hexToRgb(effectiveColor);
     const fontSize = (el.fontSize || 14) * (PDF_W / CANVAS_W);
-    const fontStyle = getFontStyle(el.fontWeight || '400');
+    const fontStyle = getFontStyle(el.fontWeight || '400', el.fontStyle);
+    const lineH = fontSize * (el.lineHeight || 1.4);
 
     switch (el.type) {
       case 'text':
