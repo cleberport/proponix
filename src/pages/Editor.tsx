@@ -218,6 +218,14 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [setElements]);
 
+  const getNextServiceIndex = useCallback(() => {
+    const allEls = pages.flat();
+    const usedIndices = allEls.filter(e => e.type === 'service').map(e => e.serviceIndex ?? 0);
+    let idx = 0;
+    while (usedIndices.includes(idx)) idx++;
+    return idx;
+  }, [pages]);
+
   const addElement = useCallback((type: ElementType) => {
     if (type === 'table') return; // handled by addTableElement
     const appSettings = getSettings();
