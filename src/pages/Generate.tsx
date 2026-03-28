@@ -7,7 +7,7 @@ import { Template } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Link2, Copy, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Link2, Copy, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
@@ -16,6 +16,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import DateRangePicker from '@/components/generate/DateRangePicker';
 import { saveAllInputs, getInputHistory } from '@/lib/inputHistory';
 import { supabase } from '@/integrations/supabase/client';
+import ServiceSelector from '@/components/services/ServiceSelector';
+import { Service } from '@/hooks/useServices';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
