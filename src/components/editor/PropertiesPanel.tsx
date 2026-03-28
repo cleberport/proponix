@@ -340,18 +340,14 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             </div>
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Espaçamento</Label>
-            <Select value={String(element.lineHeight || 1.4)} onValueChange={(v) => onUpdate({ lineHeight: +v })}>
-              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Compacto (1.0)</SelectItem>
-                <SelectItem value="1.2">Apertado (1.2)</SelectItem>
-                <SelectItem value="1.4">Normal (1.4)</SelectItem>
-                <SelectItem value="1.6">Confortável (1.6)</SelectItem>
-                <SelectItem value="1.8">Espaçoso (1.8)</SelectItem>
-                <SelectItem value="2">Duplo (2.0)</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-xs text-muted-foreground">Espaçamento ({element.lineHeight || 1.4})</Label>
+            <Slider
+              value={[element.lineHeight || 1.4]}
+              min={1}
+              max={2.5}
+              step={0.1}
+              onValueChange={([v]) => onUpdate({ lineHeight: Math.round(v * 10) / 10 })}
+            />
           </div>
         </>
       )}
