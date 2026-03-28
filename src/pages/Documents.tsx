@@ -183,7 +183,7 @@ const Documents = () => {
 
       const existing = proposalLinks[docId];
       if (existing) {
-        const url = `${window.location.origin}/p/${existing.token}`;
+        const url = buildShareUrl(existing.token);
         await navigator.clipboard.writeText(url);
         toast.success('Link copiado!');
         return;
