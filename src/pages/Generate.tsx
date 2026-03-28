@@ -277,8 +277,9 @@ const Generate = () => {
       merged.push(field);
     };
 
-    // Keep explicit template inputs and complement with vars found in canvas/formulas
-    (template?.inputFields || []).forEach(addField);
+    // Only show fields actually used in canvas or formulas
+    const usedSet = new Set(allDynamicVars);
+    (template?.inputFields || []).forEach((f) => { if (usedSet.has(f)) addField(f); });
     allDynamicVars.forEach(addField);
 
     return merged;
