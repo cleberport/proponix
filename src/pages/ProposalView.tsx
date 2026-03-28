@@ -99,8 +99,6 @@ const ProposalView = () => {
   const [step, setStep] = useState<Step>('entry');
   const [markingViewed, setMarkingViewed] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const docContainerRef = useRef<HTMLDivElement | null>(null);
   const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -310,43 +308,33 @@ const ProposalView = () => {
     try {
       const fileName = proposal!.document.fileName;
 
-      // Try DOM-based capture first for pixel-perfect consistency
+      // Always use DOM-based capture for pixel-perfect consistency
       const pageEls = Array.from(pageRefsMap.current.entries())
         .sort(([a], [b]) => a - b)
         .map(([, el]) => el)
         .filter(Boolean);
 
       if (pageEls.length > 0) {
-        const blob = await generatePdfFromDom(pageEls, fileName);
-        // On mobile, trigger share
-        if (blob && navigator.share) {
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.canShare?.({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: fileName });
-            } catch { /* user cancelled */ }
-            return;
+        const blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
+        if (blob) {
+          // On mobile, trigger share
+          if (navigator.share) {
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            if (navigator.canShare?.({ files: [file] })) {
+              try {
+                await navigator.share({ files: [file], title: fileName });
+              } catch { /* user cancelled */ }
+              return;
+            }
           }
+          // Desktop: download
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          URL.revokeObjectURL(url);
         }
-      } else if (pdfUrl) {
-        // Fallback: use pre-generated blob URL
-        const resp = await fetch(pdfUrl);
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else {
-        // Last resort: vector PDF
-        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-        await generateVectorPdf(
-          templatePages,
-          variableValues,
-          fileName,
-          { backgroundColor: bgColor }
-        );
       }
     } catch {
       // silent
@@ -433,39 +421,7 @@ const ProposalView = () => {
 
   const hasTemplate = templatePages.some((page) => page.length > 0);
 
-  // Generate PDF blob as soon as we have template data (don't wait for step)
-  useEffect(() => {
-    if (!hasTemplate || !proposal || pdfUrl) return;
-    let cancelled = false;
-    const generate = async () => {
-      setGeneratingPdf(true);
-      try {
-        const { generateVectorPdf } = await import('@/lib/pdfGenerator');
-        const blob = await generateVectorPdf(
-          templatePages,
-          variableValues,
-          'preview.pdf',
-          { backgroundColor: bgColor, skipDownload: true }
-        );
-        if (blob && !cancelled) {
-          setPdfUrl(URL.createObjectURL(blob));
-        }
-      } catch (e) {
-        console.error('PDF generation failed', e);
-      } finally {
-        if (!cancelled) setGeneratingPdf(false);
-      }
-    };
-    generate();
-    return () => { cancelled = true; };
-  }, [hasTemplate, proposal, pdfUrl, templatePages, variableValues, bgColor]);
-
-  // Cleanup PDF URL on unmount
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
+  
 
   const formatDate = (iso: string) => {
     return new Date(iso).toLocaleDateString('pt-BR', {
@@ -966,6 +922,7 @@ const ProposalView = () => {
                 if (el) pageRefsMap.current.set(idx, el);
                 else pageRefsMap.current.delete(idx);
               }}
+              style={{ width: CANVAS_W, height: CANVAS_H, overflow: 'hidden' }}
             >
               <CanvasRenderer
                 elements={pageElements}
