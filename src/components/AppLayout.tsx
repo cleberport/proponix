@@ -224,26 +224,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen flex flex-col w-full pb-14">
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
-        <MobileNav />
-      </div>
+      <FinanceProvider>
+        <div className="min-h-screen flex flex-col w-full pb-14">
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
+          <MobileNav />
+        </div>
+      </FinanceProvider>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
-          <main className="flex-1 overflow-auto">
-            {children}
-          </main>
+    <FinanceProvider>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </FinanceProvider>
   );
 }

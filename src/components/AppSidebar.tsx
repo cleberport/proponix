@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, DollarSign } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,12 +17,12 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import FinanceSidebarSection from '@/components/financas/FinanceSidebarSection';
 
 const items = [
   { title: 'Templates', url: '/dashboard', icon: LayoutGrid },
   { title: 'Documentos', url: '/documents', icon: FileText },
   { title: 'Recebidos', url: '/recebidos', icon: Inbox },
-  { title: 'Finanças', url: '/financas', icon: DollarSign },
 ];
 
 export function AppSidebar() {
@@ -42,9 +42,9 @@ export function AppSidebar() {
     navigate('/');
   };
 
-  const allItems = (!adminLoading && isAdmin)
-    ? [...items, { title: 'Admin', url: '/admin', icon: Shield }]
-    : items;
+  const adminItems = (!adminLoading && isAdmin)
+    ? [{ title: 'Admin', url: '/admin', icon: Shield }]
+    : [];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
@@ -62,15 +62,10 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {allItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
-                    >
+                    <NavLink to={item.url} end className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -80,6 +75,28 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Finanças section with nested folders/tables */}
+        <FinanceSidebarSection />
+
+        {adminItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <NavLink to={item.url} end className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <Button
