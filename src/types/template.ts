@@ -26,6 +26,9 @@ export interface CanvasElement {
   color?: string;
   alignment?: 'left' | 'center' | 'right';
   textDecoration?: string;
+  fontStyle?: 'normal' | 'italic'; // italic support
+  lineHeight?: number; // e.g. 1.2, 1.4, 1.6, 2.0
+  listType?: 'none' | 'bullet' | 'number'; // bullet points / numbered lists
   rows?: TableRow[];
   columnWidths?: number[]; // percentage widths per column
   imageUrl?: string;

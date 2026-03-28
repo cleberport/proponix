@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline } from 'lucide-react';
+import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline, Italic, Strikethrough, List, ListOrdered, Minus } from 'lucide-react';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import ImageEditingPanel from './ImageEditingPanel';
