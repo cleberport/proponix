@@ -264,7 +264,13 @@ function renderPageElements(
     switch (el.type) {
       case 'text':
       case 'notes': {
-        const content = resolveContent(el, variableValues);
+        let content = resolveContent(el, variableValues);
+        // Apply list formatting
+        if (el.listType && el.listType !== 'none') {
+          content = content.split('\n').map((line, i) =>
+            el.listType === 'bullet' ? `• ${line}` : `${i + 1}. ${line}`
+          ).join('\n');
+        }
         pdf.setFont('helvetica', fontStyle);
         pdf.setFontSize(fontSize);
         pdf.setTextColor(...color);
@@ -275,11 +281,9 @@ function renderPageElements(
           pdf.setFillColor(249, 250, 251);
           pdf.roundedRect(x, y, w, h, 3, 3, 'FD');
           const lines = wrapText(pdf, content, w - 16);
-          const lineH = fontSize * 1.4;
           lines.forEach((line, i) => pdf.text(line, x + 8, y + 12 + i * lineH));
         } else {
           const lines = wrapText(pdf, content, w);
-          const lineH = fontSize * 1.4;
           const align = el.alignment || 'left';
           const ascent = fontSize * 0.82;
           lines.forEach((line, i) => {
@@ -287,12 +291,24 @@ function renderPageElements(
             if (align === 'center') tx = x + w / 2;
             else if (align === 'right') tx = x + w;
             pdf.text(line, tx, y + ascent + i * lineH, { align });
+            // Underline
             if (el.textDecoration === 'underline') {
               const textW = pdf.getTextWidth(line);
               let ux = tx;
               if (align === 'center') ux = tx - textW / 2;
               else if (align === 'right') ux = tx - textW;
               const uy = y + ascent + i * lineH + fontSize * 0.15;
+              pdf.setDrawColor(...color);
+              pdf.setLineWidth(fontSize * 0.05);
+              pdf.line(ux, uy, ux + textW, uy);
+            }
+            // Strikethrough
+            if (el.textDecoration === 'line-through') {
+              const textW = pdf.getTextWidth(line);
+              let ux = tx;
+              if (align === 'center') ux = tx - textW / 2;
+              else if (align === 'right') ux = tx - textW;
+              const uy = y + ascent + i * lineH - fontSize * 0.25;
               pdf.setDrawColor(...color);
               pdf.setLineWidth(fontSize * 0.05);
               pdf.line(ux, uy, ux + textW, uy);
