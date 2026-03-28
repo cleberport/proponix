@@ -28,6 +28,7 @@ export interface CanvasElement {
   textDecoration?: string;
   fontStyle?: 'normal' | 'italic'; // italic support
   lineHeight?: number; // e.g. 1.2, 1.4, 1.6, 2.0
+  letterSpacing?: number; // em units, e.g. 0, 0.02, 0.05
   listType?: 'none' | 'bullet' | 'number'; // bullet points / numbered lists
   rows?: TableRow[];
   columnWidths?: number[]; // percentage widths per column
