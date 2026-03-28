@@ -701,6 +701,54 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             </div>
           );
 
+        case 'service': {
+          // Service block - renders name, description, price from variableValues
+          const svcIdx = el.serviceIndex ?? 0;
+          const svcName = variableValues?.[`service_${svcIdx}_name`] || '';
+          const svcDesc = variableValues?.[`service_${svcIdx}_description`] || '';
+          const svcPrice = variableValues?.[`service_${svcIdx}_price`] || '';
+          const svcNotes = variableValues?.[`service_${svcIdx}_notes`] || '';
+          const hasContent = svcName || svcDesc || svcPrice;
+
+          return (
+            <div
+              key={el.id}
+              style={{ ...style, height: el.height }}
+              className={`rounded border ${readOnly ? 'border-transparent' : 'border-dashed border-primary/30'} px-2 py-1.5 ${selectedClass} ${hoverClass}`}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
+            >
+              {hasContent ? (
+                <div className="flex flex-col gap-0.5 overflow-hidden h-full">
+                  <span style={{ fontSize: (el.fontSize || 14), fontWeight: '600', fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor) }} className="truncate">
+                    {svcName}
+                  </span>
+                  {svcDesc && (
+                    <span style={{ fontSize: Math.max((el.fontSize || 14) - 2, 8), fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor), opacity: 0.7 }} className="line-clamp-2">
+                      {svcDesc}
+                    </span>
+                  )}
+                  {svcPrice && (
+                    <span style={{ fontSize: (el.fontSize || 14), fontWeight: '700', fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor) }}>
+                      {svcPrice}
+                    </span>
+                  )}
+                  {svcNotes && (
+                    <span style={{ fontSize: Math.max((el.fontSize || 14) - 3, 7), fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor), opacity: 0.5, fontStyle: 'italic' }} className="truncate">
+                      {svcNotes}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full gap-1.5 text-muted-foreground">
+                  <span style={{ fontSize: (el.fontSize || 14) - 2 }}>📦 Serviço {svcIdx + 1}</span>
+                </div>
+              )}
+              {resizeHandle}
+            </div>
+          );
+        }
+
         default:
           return null;
       }
