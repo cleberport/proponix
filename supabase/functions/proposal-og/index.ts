@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
+const BOT_UA = /whatsapp|facebookexternalhit|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|googlebot|bingbot/i;
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
@@ -7,6 +9,16 @@ Deno.serve(async (req) => {
 
   if (!token || token.length < 10 || !/^[a-f0-9]+$/i.test(token)) {
     return new Response("Not found", { status: 404 });
+  }
+
+  const appOrigin = "https://freelox.lovable.app";
+  const redirectUrl = `${appOrigin}/p/${token}`;
+  const ua = req.headers.get("user-agent") || "";
+  const isBot = BOT_UA.test(ua);
+
+  // For regular browsers, redirect immediately (no HTML needed)
+  if (!isBot && !wantImage) {
+    return Response.redirect(redirectUrl, 302);
   }
 
   const supabase = createClient(
@@ -43,10 +55,10 @@ Deno.serve(async (req) => {
     if (docRes.data?.client_name) clientName = docRes.data.client_name;
   }
 
-  // Serve logo image directly if requested (for og:image)
+  // Serve logo image directly (for og:image URL)
   if (wantImage && logoUrl) {
     if (logoUrl.startsWith("data:")) {
-      const match = logoUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+      const match = logoUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
       if (match) {
         const mimeType = match[1];
         const raw = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
@@ -58,18 +70,15 @@ Deno.serve(async (req) => {
         });
       }
     }
-    // If it's already a URL, redirect to it
     return Response.redirect(logoUrl, 302);
   }
 
+  // For bots: serve OG meta tags as plain HTML text
+  // Bots parse meta tags from text regardless of Content-Type
   const description = clientName
     ? `Proposta preparada para ${clientName}`
     : "Visualize os detalhes da proposta";
 
-  const appOrigin = "https://freelox.lovable.app";
-  const redirectUrl = `${appOrigin}/p/${token}`;
-
-  // Build og:image URL — point to this same function with &image=1
   const fnBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/proposal-og`;
   const ogImageUrl = logoUrl ? `${fnBaseUrl}?token=${encodeURIComponent(token)}&image=1` : "";
 
@@ -91,10 +100,7 @@ ${ogImageUrl ? `<meta name="twitter:image" content="${esc(ogImageUrl)}"/>` : ""}
 <meta http-equiv="refresh" content="0;url=${esc(redirectUrl)}"/>
 <title>${esc(companyName)}</title>
 </head>
-<body>
-<script>window.location.replace("${redirectUrl.replace(/"/g, '\\"')}");</script>
-<p>Redirecionando...</p>
-</body>
+<body><p>Redirecionando...</p></body>
 </html>`;
 
   return new Response(html, {
