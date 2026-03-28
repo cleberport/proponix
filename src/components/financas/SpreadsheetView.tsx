@@ -423,7 +423,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
               const mainDate = dateCols[0];
 
               return (
-                <div key={row.id} className="flex items-center gap-2 px-3 py-2.5 active:bg-muted/30" onClick={() => setExpandedRow(expandedRow === row.id ? null : row.id)}>
+                <div key={row.id} className="flex items-center gap-2 px-3 py-2.5 active:bg-muted/30">
                   {/* Drag / row number */}
                   <span className="text-[10px] text-muted-foreground w-4 text-center shrink-0">{ri + 1}</span>
 
