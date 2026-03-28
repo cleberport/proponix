@@ -370,6 +370,21 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       return readOnly ? '' : (el.variable ? `{{${el.variable}}}` : '');
     };
 
+    const renderTextContent = (el: CanvasElement): React.ReactNode => {
+      const content = resolveContent(el);
+      if (!el.listType || el.listType === 'none') return content;
+      const lines = content.split('\n');
+      return (
+        <>
+          {lines.map((line, i) => (
+            <span key={i} style={{ display: 'block' }}>
+              {el.listType === 'bullet' ? `• ${line}` : `${i + 1}. ${line}`}
+            </span>
+          ))}
+        </>
+      );
+    };
+
     const boxSelectRect = boxSelect ? {
       left: Math.min(boxSelect.startX, boxSelect.x),
       top: Math.min(boxSelect.startY, boxSelect.y),
@@ -379,6 +394,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const renderElement = (el: CanvasElement) => {
       const elSelected = isSelected(el.id) && !readOnly;
+      const lh = el.lineHeight || 1.4;
       const style: React.CSSProperties = {
         position: 'absolute',
         left: el.x,
@@ -387,7 +403,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         fontSize: el.fontSize,
         fontWeight: el.fontWeight,
         fontFamily: el.fontFamily,
+        fontStyle: el.fontStyle || 'normal',
         textDecoration: el.textDecoration || 'none',
+        lineHeight: lh,
         color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
@@ -444,10 +462,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                     fontSize: 'inherit',
                     fontWeight: 'inherit',
                     fontFamily: 'inherit',
+                    fontStyle: 'inherit',
                     color: 'inherit',
                     textAlign: el.alignment || 'left',
                     textDecoration: el.textDecoration || 'none',
-                    lineHeight: 1.4,
+                    lineHeight: lh,
                     border: 'none',
                     padding: 0,
                     margin: 0,
@@ -467,7 +486,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   onPointerDown={(e) => e.stopPropagation()}
                 />
               ) : (
-                <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
+                <span className="whitespace-pre-wrap">{renderTextContent(el)}</span>
               )}
               {resizeHandle}
             </div>
