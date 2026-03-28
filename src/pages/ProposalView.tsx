@@ -966,6 +966,7 @@ const ProposalView = () => {
                 if (el) pageRefsMap.current.set(idx, el);
                 else pageRefsMap.current.delete(idx);
               }}
+              style={{ width: CANVAS_W, height: CANVAS_H, overflow: 'hidden' }}
             >
               <CanvasRenderer
                 elements={pageElements}

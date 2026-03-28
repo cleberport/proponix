@@ -860,6 +860,7 @@ const Generate = () => {
               if (el) pageRefsMap.current.set(idx, el);
               else pageRefsMap.current.delete(idx);
             }}
+            style={{ width: 595, height: 842, overflow: 'hidden' }}
           >
             <CanvasRenderer
               elements={pageElements}
