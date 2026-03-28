@@ -1,9 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
-  Type, Hash, DollarSign, Calendar, CheckSquare, List, FunctionSquare, Pencil,
+  Type, Hash, DollarSign, Calendar as CalendarIcon, CheckSquare, List, FunctionSquare, Pencil,
   ZoomIn, ZoomOut, Eye, EyeOff,
 } from 'lucide-react';
+import { format, parse, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,7 +29,7 @@ import type { FinanceColumn, FinanceColumnType, FinanceRow, FinanceTableData, Se
 
 const TYPE_ICONS: Record<FinanceColumnType, typeof Type> = {
   text: Type, number: Hash, currency: DollarSign,
-  date: Calendar, checkbox: CheckSquare, select: List, formula: FunctionSquare,
+  date: CalendarIcon, checkbox: CheckSquare, select: List, formula: FunctionSquare,
 };
 
 const TYPE_LABELS: Record<FinanceColumnType, string> = {
