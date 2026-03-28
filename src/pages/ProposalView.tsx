@@ -308,22 +308,43 @@ const ProposalView = () => {
     if (!hasTemplate) return;
     setDownloadingPdf(true);
     try {
-      if (pdfUrl) {
-        // Fetch the blob from the object URL to trigger a proper download
+      const fileName = proposal!.document.fileName;
+
+      // Try DOM-based capture first for pixel-perfect consistency
+      const pageEls = Array.from(pageRefsMap.current.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([, el]) => el)
+        .filter(Boolean);
+
+      if (pageEls.length > 0) {
+        const blob = await generatePdfFromDom(pageEls, fileName);
+        // On mobile, trigger share
+        if (blob && navigator.share) {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: fileName });
+            } catch { /* user cancelled */ }
+            return;
+          }
+        }
+      } else if (pdfUrl) {
+        // Fallback: use pre-generated blob URL
         const resp = await fetch(pdfUrl);
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = proposal!.document.fileName;
+        a.download = fileName;
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        // Last resort: vector PDF
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
         await generateVectorPdf(
           templatePages,
           variableValues,
-          proposal!.document.fileName,
+          fileName,
           { backgroundColor: bgColor }
         );
       }
