@@ -952,6 +952,35 @@ const ProposalView = () => {
           <p className="text-xs text-muted-foreground">Entre em contato para solicitar uma nova proposta.</p>
         </div>
       )}
+
+      {/* Hidden off-screen container for PDF capture — renders all pages at native resolution */}
+      {hasTemplate && (
+        <div
+          aria-hidden
+          style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
+        >
+          {templatePages.map((pageElements, idx) => (
+            <div
+              key={idx}
+              ref={(el) => {
+                if (el) pageRefsMap.current.set(idx, el);
+                else pageRefsMap.current.delete(idx);
+              }}
+            >
+              <CanvasRenderer
+                elements={pageElements}
+                selectedId={null}
+                onSelect={NOOP}
+                onUpdate={NOOP}
+                readOnly
+                variableValues={variableValues}
+                showGrid={false}
+                backgroundColor={bgColor}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
