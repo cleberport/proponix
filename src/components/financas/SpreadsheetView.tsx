@@ -1,9 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
-  Type, Hash, DollarSign, Calendar, CheckSquare, List, FunctionSquare, Pencil,
+  Type, Hash, DollarSign, Calendar as CalendarIcon, CheckSquare, List, FunctionSquare, Pencil,
   ZoomIn, ZoomOut, Eye, EyeOff,
 } from 'lucide-react';
+import { format, parse, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,7 +29,7 @@ import type { FinanceColumn, FinanceColumnType, FinanceRow, FinanceTableData, Se
 
 const TYPE_ICONS: Record<FinanceColumnType, typeof Type> = {
   text: Type, number: Hash, currency: DollarSign,
-  date: Calendar, checkbox: CheckSquare, select: List, formula: FunctionSquare,
+  date: CalendarIcon, checkbox: CheckSquare, select: List, formula: FunctionSquare,
 };
 
 const TYPE_LABELS: Record<FinanceColumnType, string> = {
@@ -104,7 +108,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   // Cell editing
   const startEdit = (rowId: string, colId: string, value: any) => {
     const col = columns.find(c => c.id === colId);
-    if (col?.type === 'formula' || col?.type === 'checkbox') return;
+    if (col?.type === 'formula' || col?.type === 'checkbox' || col?.type === 'date') return;
     setEditingCell({ rowId, colId });
     setEditValue(value?.toString() || '');
   };
@@ -241,6 +245,51 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
       return <span className="font-medium tabular-nums">{hideValues ? '•••••' : formatBRL(result)}</span>;
     }
 
+    if (col.type === 'date') {
+      const parseDate = (v: any): Date | undefined => {
+        if (!v) return undefined;
+        const str = String(v);
+        // Try dd/MM/yyyy
+        const parsed = parse(str, 'dd/MM/yyyy', new Date());
+        if (isValid(parsed)) return parsed;
+        // Try ISO
+        const iso = new Date(str);
+        if (isValid(iso)) return iso;
+        return undefined;
+      };
+      const dateVal = parseDate(value);
+      const setDate = (d: Date | undefined) => {
+        const formatted = d ? format(d, 'dd/MM/yyyy') : '';
+        const newRows = rows.map(r =>
+          r.id === row.id ? { ...r, cells: { ...r.cells, [col.id]: formatted } } : r
+        );
+        onUpdate({ rows: newRows });
+      };
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="w-full text-left px-1 py-0.5 rounded min-h-[28px] flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+              {dateVal ? (
+                <span className="text-sm">{format(dateVal, 'dd/MM/yyyy')}</span>
+              ) : (
+                <span className="text-muted-foreground text-xs">Selecionar...</span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateVal}
+              onSelect={setDate}
+              locale={ptBR}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      );
+    }
     if (isEditing) {
       return (
         <Input
@@ -263,7 +312,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
           }}
           className="h-7 border-0 shadow-none focus-visible:ring-1 px-1 bg-transparent"
           style={{ fontSize: 'inherit' }}
-          type={col.type === 'number' || col.type === 'currency' ? 'text' : col.type === 'date' ? 'date' : 'text'}
+          type="text"
           inputMode={col.type === 'number' || col.type === 'currency' ? 'decimal' : 'text'}
         />
       );
