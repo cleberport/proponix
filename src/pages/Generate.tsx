@@ -397,7 +397,7 @@ const Generate = () => {
     }
 
     return result;
-  }, [template, tableRows, hasTable, tableInfo]);
+  }, [template, tableRows, hasTable, tableInfo, extraServiceIndices, templateServiceIndices]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
