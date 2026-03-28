@@ -444,7 +444,26 @@ const Generate = () => {
     try {
       const fileName = generatePdfFileName();
       const bgColor = template?.settings?.backgroundColor;
-      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor });
+
+      // Try DOM-based capture for pixel-perfect consistency
+      let blob: Blob | null = null;
+      const pageEls = Array.from(pageRefsMap.current.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([, el]) => el)
+        .filter(Boolean);
+
+      if (pageEls.length === visiblePages.length && pageEls.length > 0) {
+        try {
+          blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
+        } catch (e) {
+          console.warn('[PDF] DOM capture failed, falling back to vector:', e);
+        }
+      }
+
+      // Fallback to vector PDF
+      if (!blob) {
+        blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true });
+      }
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
