@@ -845,6 +845,33 @@ const Generate = () => {
           </div>
         )}
       </div>
+      {/* Hidden off-screen container for PDF capture — renders all pages at native resolution */}
+      <div
+        ref={pdfPagesContainerRef}
+        aria-hidden
+        style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
+      >
+        {visiblePages.map((pageElements, idx) => (
+          <div
+            key={idx}
+            ref={(el) => {
+              if (el) pageRefsMap.current.set(idx, el);
+              else pageRefsMap.current.delete(idx);
+            }}
+          >
+            <CanvasRenderer
+              elements={pageElements}
+              selectedId={null}
+              onSelect={() => {}}
+              onUpdate={() => {}}
+              readOnly
+              variableValues={displayValues}
+              showGrid={false}
+              backgroundColor={template?.settings?.backgroundColor}
+            />
+          </div>
+        ))}
+      </div>
       {/* Link Modal */}
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
         <DialogContent className="sm:max-w-sm">
