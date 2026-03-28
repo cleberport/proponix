@@ -57,6 +57,14 @@ interface Props {
 
 export default function SpreadsheetView({ table, onUpdate }: Props) {
   const isMobile = useIsMobile();
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsCompact(window.innerWidth < 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const { columns, rows } = table;
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
   const [editValue, setEditValue] = useState('');
