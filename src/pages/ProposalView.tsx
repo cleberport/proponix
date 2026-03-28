@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { generatePdfFromDom } from '@/lib/pdfGenerator';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -102,6 +103,7 @@ const ProposalView = () => {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const docContainerRef = useRef<HTMLDivElement | null>(null);
+  const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   const NOOP = useCallback(() => undefined, []);
 
   const fetchProposal = useCallback(async (markViewed = false) => {
@@ -306,22 +308,43 @@ const ProposalView = () => {
     if (!hasTemplate) return;
     setDownloadingPdf(true);
     try {
-      if (pdfUrl) {
-        // Fetch the blob from the object URL to trigger a proper download
+      const fileName = proposal!.document.fileName;
+
+      // Try DOM-based capture first for pixel-perfect consistency
+      const pageEls = Array.from(pageRefsMap.current.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([, el]) => el)
+        .filter(Boolean);
+
+      if (pageEls.length > 0) {
+        const blob = await generatePdfFromDom(pageEls, fileName);
+        // On mobile, trigger share
+        if (blob && navigator.share) {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          if (navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: fileName });
+            } catch { /* user cancelled */ }
+            return;
+          }
+        }
+      } else if (pdfUrl) {
+        // Fallback: use pre-generated blob URL
         const resp = await fetch(pdfUrl);
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = proposal!.document.fileName;
+        a.download = fileName;
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        // Last resort: vector PDF
         const { generateVectorPdf } = await import('@/lib/pdfGenerator');
         await generateVectorPdf(
           templatePages,
           variableValues,
-          proposal!.document.fileName,
+          fileName,
           { backgroundColor: bgColor }
         );
       }
@@ -927,6 +950,35 @@ const ProposalView = () => {
         <div className="shrink-0 border-t border-border bg-muted/50 px-4 py-4 text-center">
           <p className="text-sm font-medium text-foreground">Esta proposta expirou</p>
           <p className="text-xs text-muted-foreground">Entre em contato para solicitar uma nova proposta.</p>
+        </div>
+      )}
+
+      {/* Hidden off-screen container for PDF capture — renders all pages at native resolution */}
+      {hasTemplate && (
+        <div
+          aria-hidden
+          style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
+        >
+          {templatePages.map((pageElements, idx) => (
+            <div
+              key={idx}
+              ref={(el) => {
+                if (el) pageRefsMap.current.set(idx, el);
+                else pageRefsMap.current.delete(idx);
+              }}
+            >
+              <CanvasRenderer
+                elements={pageElements}
+                selectedId={null}
+                onSelect={NOOP}
+                onUpdate={NOOP}
+                readOnly
+                variableValues={variableValues}
+                showGrid={false}
+                backgroundColor={bgColor}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>

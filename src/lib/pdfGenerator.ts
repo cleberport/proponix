@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { CanvasElement } from '@/types/template';
 import { resolveTextColor, parseColor, isDark } from '@/lib/colorContrast';
 
@@ -6,6 +7,64 @@ const CANVAS_W = 595;
 const CANVAS_H = 842;
 const PDF_W = 595.28;
 const PDF_H = 841.89;
+
+/**
+ * Capture a DOM element (CanvasRenderer) as a high-res canvas image,
+ * then place it into a PDF page. This ensures pixel-perfect match
+ * between preview and PDF.
+ */
+async function captureElementToCanvas(element: HTMLElement): Promise<HTMLCanvasElement> {
+  return html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: false,
+    backgroundColor: null, // Preserve the element's own background
+    width: CANVAS_W,
+    height: CANVAS_H,
+    logging: false,
+  });
+}
+
+/**
+ * Generate a PDF by capturing DOM elements (CanvasRenderer pages).
+ * This is the preferred method — it guarantees the PDF matches the preview exactly.
+ */
+export async function generatePdfFromDom(
+  pageElements: HTMLElement[],
+  fileName: string,
+  options?: { skipDownload?: boolean }
+): Promise<Blob> {
+  const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+
+  for (let i = 0; i < pageElements.length; i++) {
+    if (i > 0) pdf.addPage();
+
+    const canvas = await captureElementToCanvas(pageElements[i]);
+    const imgData = canvas.toDataURL('image/png');
+
+    pdf.addImage(imgData, 'PNG', 0, 0, PDF_W, PDF_H);
+  }
+
+  const blob = pdf.output('blob');
+
+  if (!options?.skipDownload) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
+
+  return blob;
+}
+
+// ─── Legacy vector PDF (kept as fallback for cases without DOM access) ───
 
 const scaleX = (x: number) => (x / CANVAS_W) * PDF_W;
 const scaleY = (y: number) => (y / CANVAS_H) * PDF_H;
@@ -46,7 +105,6 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
       img.src = src;
     });
 
-  // For remote URLs, try fetch→blob first (avoids CORS taint issues entirely)
   const fromFetch = async (src: string): Promise<HTMLImageElement | null> => {
     try {
       const resp = await fetch(src);
@@ -54,16 +112,12 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
       const blob = await resp.blob();
       const blobUrl = URL.createObjectURL(blob);
       const img = await fromElement(blobUrl, false);
-      // Don't revoke yet — the img element still references it
-      // It will be garbage collected eventually
       return img;
     } catch {
       return null;
     }
   };
 
-  // Strategy: fetch→blob (best for storage URLs), then Image with CORS.
-  // Avoid loading without CORS on remote URLs because it taints canvas and can break PDF export.
   if (url.startsWith('http')) {
     const sep = url.includes('?') ? '&' : '?';
     const bustUrl = `${url}${sep}_t=${Date.now()}`;
@@ -77,7 +131,6 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
       });
   }
 
-  // For data URLs, just load directly
   return fromElement(url, false)
     .then((img) => {
       if (!img) console.error('[pdfGen] Data URL falhou:', url.substring(0, 60));
@@ -85,13 +138,6 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     });
 }
 
-/**
- * Pre-crop an image to exactly match what CSS renders:
- * Container (overflow:hidden) → <img> (position:absolute, width:scale*100%, height:scale*100%,
- * object-fit:cover, transform:translate(offsetX,offsetY))
- *
- * Returns a PNG data URL at exact container pixel dimensions (×2 for sharpness).
- */
 function getCoverSourceRect(natW: number, natH: number, targetW: number, targetH: number) {
   const imgAspect = natW / natH;
   const targetAspect = targetW / targetH;
@@ -141,12 +187,10 @@ function cropImageCover(
 
   ctx.save();
 
-  // Container clip (overflow:hidden)
   ctx.beginPath();
   ctx.rect(0, 0, containerW, containerH);
   ctx.clip();
 
-  // Image clip-path inset(...) is relative to the transformed/scaled image element box
   if (cropRect && (cropRect.cropX > 0 || cropRect.cropY > 0 || cropRect.cropW < 100 || cropRect.cropH < 100)) {
     const cx = imgElX + (cropRect.cropX / 100) * imgElW;
     const cy = imgElY + (cropRect.cropY / 100) * imgElH;
@@ -160,7 +204,6 @@ function cropImageCover(
   ctx.globalAlpha = Math.min(1, Math.max(0, (opacity ?? 100) / 100));
   if (fp.length) ctx.filter = fp.join(' ');
 
-  // object-fit: cover in the image element box
   const natW = img.naturalWidth;
   const natH = img.naturalHeight;
   const { sx, sy, sw, sh } = getCoverSourceRect(natW, natH, imgElW, imgElH);
@@ -199,7 +242,6 @@ function renderPageElements(
   imageMap: Map<string, HTMLImageElement>,
   bgColor?: string
 ) {
-  // Background
   const bg = bgColor && bgColor !== '#ffffff' ? hexToRgb(bgColor) : [255, 255, 255] as [number, number, number];
   pdf.setFillColor(...bg);
   pdf.rect(0, 0, PDF_W, PDF_H, 'F');
@@ -233,8 +275,6 @@ function renderPageElements(
           const lines = wrapText(pdf, content, w);
           const lineH = fontSize * 1.4;
           const align = el.alignment || 'left';
-          // CSS renders text from top of element box; baseline ≈ top + ascent
-          // Use a consistent ascent ratio to match browser rendering
           const ascent = fontSize * 0.82;
           lines.forEach((line, i) => {
             let tx = x;
@@ -266,7 +306,6 @@ function renderPageElements(
         pdf.setTextColor(...color);
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-        // Canvas uses flex items-center → vertically center text within element height
         const h = scaleH(el.height);
         const textBaseline = y + h / 2 + fontSize * 0.3;
         let tx = x;
@@ -301,7 +340,6 @@ function renderPageElements(
           const h = scaleH(el.height);
           const isLogo = el.type === 'logo';
 
-          // For logos: fit inside bounding box (contain), never crop
           if (isLogo) {
             const natW = img.naturalWidth || img.width;
             const natH = img.naturalHeight || img.height;
@@ -324,7 +362,6 @@ function renderPageElements(
             }
 
             try {
-              // If dark background, invert logo via canvas
               const darkBg = isDark(bgColor);
               if (darkBg) {
                 const canvas = document.createElement('canvas');
@@ -349,7 +386,6 @@ function renderPageElements(
             break;
           }
 
-          // Regular images: existing cover/crop logic
           const scale = el.imageScale || 1;
           const offsetX = el.imageOffsetX || 0;
           const offsetY = el.imageOffsetY || 0;
@@ -388,7 +424,6 @@ function renderPageElements(
             console.error('[pdfGen] Falha ao recortar imagem, aplicando fallback:', err);
           }
 
-          // Handle rotation + fallback when pre-crop fails
           if (el.rotation) {
             pdf.saveGraphicsState();
             const cx = x + w / 2;
@@ -421,7 +456,6 @@ function renderPageElements(
             }
           }
 
-          // Border
           if ((el.borderWidth || 0) > 0) {
             const bColor = el.borderColor ? hexToRgb(el.borderColor) : [0, 0, 0] as [number, number, number];
             pdf.setDrawColor(...bColor);
@@ -468,8 +502,8 @@ function renderPageElements(
 }
 
 /**
- * Generate a multi-page vector PDF.
- * Accepts either a flat array of elements (single page) or an array of pages.
+ * Legacy vector PDF generator (fallback).
+ * Use generatePdfFromDom when DOM elements are available for pixel-perfect output.
  */
 export async function generateVectorPdf(
   elementsOrPages: CanvasElement[] | CanvasElement[][],
@@ -477,14 +511,12 @@ export async function generateVectorPdf(
   fileName: string,
   options?: { backgroundColor?: string; skipDownload?: boolean }
 ): Promise<Blob> {
-  // Normalize to pages array
   const pages: CanvasElement[][] = Array.isArray(elementsOrPages[0]) && Array.isArray((elementsOrPages as any[])[0])
     ? (elementsOrPages as CanvasElement[][])
     : [elementsOrPages as CanvasElement[]];
 
   const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-  // Preload all images across all pages
   const allElements = pages.flat();
   const imageMap = await preloadImages(allElements);
 
