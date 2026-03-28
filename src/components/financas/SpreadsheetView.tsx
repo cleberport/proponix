@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Plus, Trash2, MoreHorizontal, ArrowLeft, ArrowRight,
   Type, Hash, DollarSign, Calendar as CalendarIcon, CheckSquare, List, FunctionSquare, Pencil,
