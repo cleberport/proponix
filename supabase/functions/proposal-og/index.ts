@@ -53,8 +53,11 @@ Deno.serve(async (req) => {
     ? `Proposta preparada para ${clientName}`
     : "Visualize os detalhes da proposta";
 
-  // Build the SPA URL for redirect
-  const appOrigin = Deno.env.get("APP_ORIGIN") || "https://freelox.lovable.app";
+  // Derive app origin from the function URL (same project)
+  const fnOrigin = new URL(req.url).origin;
+  // The app is published at freelox.lovable.app; fallback to referer or known URL
+  const referer = req.headers.get("referer");
+  const appOrigin = referer ? new URL(referer).origin : "https://freelox.lovable.app";
   const redirectUrl = `${appOrigin}/p/${token}`;
 
   // Escape HTML entities
