@@ -109,6 +109,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     const [editingImageId, setEditingImageId] = useState<string | null>(null);
+    const [editingTextId, setEditingTextId] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
     const [guides, setGuides] = useState<AlignGuide[]>([]);
@@ -129,6 +130,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.preventDefault();
         onSelect(el.id);
         if (editingImageId !== el.id) setEditingImageId(null);
+        if (editingTextId !== el.id) setEditingTextId(null);
         startPos.current = { x: e.clientX, y: e.clientY, elX: el.x, elY: el.y, elW: el.width, elH: el.height };
         if (mode === 'drag') setDragging(el.id);
         else setResizing(el.id);
@@ -238,6 +240,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
       setEditingImageId(null);
+      setEditingTextId(null);
       onSelect(null);
       
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -387,8 +390,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         textDecoration: el.textDecoration || 'none',
         color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
-        cursor: readOnly ? 'default' : 'grab',
-        userSelect: 'none',
+        cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
+        userSelect: editingTextId === el.id ? 'text' : 'none',
       };
 
       if (el.type === 'logo' || el.type === 'image') {
@@ -409,19 +412,66 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
       switch (el.type) {
         case 'text':
-        case 'notes':
+        case 'notes': {
+          const isEditingThis = editingTextId === el.id && !readOnly;
           return (
             <div
               key={el.id}
               style={style}
               className={`rounded px-1 ${selectedClass} ${hoverClass} ${el.type === 'notes' ? 'border border-border bg-accent/30 p-2' : ''}`}
-              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              onPointerDown={(e) => {
+                if (isEditingThis) {
+                  e.stopPropagation();
+                  return;
+                }
+                handlePointerDown(e, el, 'drag');
+              }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (!readOnly && !el.locked) {
+                  setEditingTextId(el.id);
+                  onSelect(el.id);
+                }
+              }}
             >
-              <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
+              {isEditingThis ? (
+                <textarea
+                  autoFocus
+                  defaultValue={el.content}
+                  className="w-full h-full bg-transparent outline-none resize-none whitespace-pre-wrap"
+                  style={{
+                    fontSize: 'inherit',
+                    fontWeight: 'inherit',
+                    fontFamily: 'inherit',
+                    color: 'inherit',
+                    textAlign: el.alignment || 'left',
+                    textDecoration: el.textDecoration || 'none',
+                    lineHeight: 1.4,
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                  }}
+                  onBlur={(e) => {
+                    onUpdate(el.id, { content: e.target.value });
+                    setEditingTextId(null);
+                  }}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                    if (e.key === 'Escape') {
+                      onUpdate(el.id, { content: (e.target as HTMLTextAreaElement).value });
+                      setEditingTextId(null);
+                    }
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="whitespace-pre-wrap">{resolveContent(el)}</span>
+              )}
               {resizeHandle}
             </div>
           );
+        }
 
         case 'dynamic-field':
         case 'price-field':
