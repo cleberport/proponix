@@ -312,7 +312,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
           }}
           className="h-7 border-0 shadow-none focus-visible:ring-1 px-1 bg-transparent"
           style={{ fontSize: 'inherit' }}
-          type={col.type === 'number' || col.type === 'currency' ? 'text' : col.type === 'date' ? 'date' : 'text'}
+          type="text"
           inputMode={col.type === 'number' || col.type === 'currency' ? 'decimal' : 'text'}
         />
       );
