@@ -407,6 +407,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         fontStyle: el.fontStyle || 'normal',
         textDecoration: el.textDecoration || 'none',
         lineHeight: lh,
+        letterSpacing: ls,
         color: resolveTextColor(el.color, backgroundColor),
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
