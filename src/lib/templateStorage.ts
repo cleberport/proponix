@@ -516,9 +516,8 @@ export function saveSettings(settings: AppSettings): void {
 }
 
 export async function loadSettingsFromServer(): Promise<AppSettings> {
-  const local = getSettings();
   const userId = await resolveCurrentUserId();
-  if (!userId) return local;
+  if (!userId) return getSettings();
 
   const { data, error } = await db
     .from('user_settings')
@@ -526,7 +525,12 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (error || !data) return local;
+  // If no server data exists for this user, return defaults (NOT stale local cache)
+  if (error || !data) {
+    const defaults = { ...DEFAULT_SETTINGS };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaults));
+    return defaults;
+  }
 
   const remote: AppSettings = {
     profileName: data.profile_name ?? '',
