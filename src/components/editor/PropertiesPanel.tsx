@@ -2,7 +2,6 @@ import { CanvasElement } from '@/types/template';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline } from 'lucide-react';
@@ -192,20 +191,11 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
-      {/* Conteúdo - use Textarea for text blocks to preserve formatting */}
-      {element.type !== 'divider' && !isLogoOrImage && element.type !== 'table' && (
+      {/* Conteúdo - only for non-text types (text/notes use inline editing) */}
+      {element.type !== 'divider' && !isLogoOrImage && element.type !== 'table' && element.type !== 'text' && element.type !== 'notes' && (
         <div>
           <Label className="text-xs text-muted-foreground">Conteúdo</Label>
-          {element.type === 'notes' || element.type === 'text' ? (
-            <Textarea
-              value={element.content}
-              onChange={(e) => onUpdate({ content: e.target.value })}
-              className="text-xs"
-              rows={3}
-            />
-          ) : (
-            <Input value={element.content} onChange={(e) => onUpdate({ content: e.target.value })} className="h-7 text-xs" />
-          )}
+          <Input value={element.content} onChange={(e) => onUpdate({ content: e.target.value })} className="h-7 text-xs" />
         </div>
       )}
 
@@ -231,6 +221,13 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
       {/* Tipografia */}
       {element.type !== 'divider' && !isLogoOrImage && (
         <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Cor</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground">Tamanho da Fonte</Label>
             <Input type="number" value={element.fontSize || 14} onChange={(e) => onUpdate({ fontSize: +e.target.value })} className="h-7 text-xs" />
@@ -295,13 +292,6 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
               >
                 <Underline className="h-3.5 w-3.5" />
               </Button>
-            </div>
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Cor</Label>
-            <div className="flex gap-2">
-              <input type="color" value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
-              <Input value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
             </div>
           </div>
         </>
