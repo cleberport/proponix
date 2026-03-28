@@ -17,7 +17,7 @@ export function evaluateFinanceFormula(
     } else {
       val = parseFloat(rawVal) || 0;
     }
-    expr = expr.replaceAll(col.name, String(val));
+    expr = expr.split(col.name).join(String(val));
   }
   if (!/^[\d\s+\-*/.()]+$/.test(expr)) return 0;
   try {
