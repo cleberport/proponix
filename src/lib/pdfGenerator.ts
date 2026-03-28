@@ -80,8 +80,13 @@ function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
-function getFontStyle(weight: string): string {
-  return parseInt(weight) >= 700 ? 'bold' : 'normal';
+function getFontStyle(weight: string, fontStyle?: string): string {
+  const isBold = parseInt(weight) >= 700;
+  const isItalic = fontStyle === 'italic';
+  if (isBold && isItalic) return 'bolditalic';
+  if (isBold) return 'bold';
+  if (isItalic) return 'italic';
+  return 'normal';
 }
 
 function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
