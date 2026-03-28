@@ -22,6 +22,10 @@ import {
 } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
+const buildShareUrl = (token: string) => {
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  return `https://${projectId}.supabase.co/functions/v1/proposal-og?token=${token}`;
+};
 type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado' | 'negociacao';
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Send }> = {
@@ -179,7 +183,7 @@ const Documents = () => {
 
       const existing = proposalLinks[docId];
       if (existing) {
-        const url = `${window.location.origin}/p/${existing.token}`;
+        const url = buildShareUrl(existing.token);
         await navigator.clipboard.writeText(url);
         toast.success('Link copiado!');
         return;
@@ -199,7 +203,7 @@ const Documents = () => {
       const link = data as unknown as ProposalLink;
       setProposalLinks((prev) => ({ ...prev, [docId]: link }));
 
-      const url = `${window.location.origin}/p/${link.token}`;
+      const url = buildShareUrl(link.token);
       await navigator.clipboard.writeText(url);
       toast.success('Link gerado e copiado!');
 
@@ -221,7 +225,7 @@ const Documents = () => {
       await handleGenerateLink(docId);
       return;
     }
-    const url = `${window.location.origin}/p/${link.token}`;
+    const url = buildShareUrl(link.token);
     await navigator.clipboard.writeText(url);
     toast.success('Link copiado!');
   }, [proposalLinks, handleGenerateLink]);
@@ -261,7 +265,7 @@ const Documents = () => {
 
       setHistory((prev) => prev.map((d) => d.id === docId ? { ...d, status: 'enviado' } as any : d));
 
-      const url = `${window.location.origin}/p/${link.token}`;
+      const url = buildShareUrl(link.token);
       const doc = history.find((d) => d.id === docId);
       setResendModal({
         docId,
