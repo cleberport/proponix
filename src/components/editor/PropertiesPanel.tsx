@@ -218,8 +218,53 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         </div>
       )}
 
+      {/* Cor do Divisor */}
+      {element.type === 'divider' && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Cor do Divisor</Label>
+          <div className="flex gap-2">
+            <input type="color" value={element.color || '#E2E8F0'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+            <Input value={element.color || '#E2E8F0'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
+          </div>
+        </div>
+      )}
+
+      {/* Cores da Tabela */}
+      {element.type === 'table' && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Cor do Texto</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.color || '#0F172A'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Cor das Bordas</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.tableBorderColor || '#C8CCD4'} onChange={(e) => onUpdate({ tableBorderColor: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.tableBorderColor || '#C8CCD4'} onChange={(e) => onUpdate({ tableBorderColor: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Fundo do Cabeçalho</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.tableHeaderBg || '#DCDFE4'} onChange={(e) => onUpdate({ tableHeaderBg: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.tableHeaderBg || '#DCDFE4'} onChange={(e) => onUpdate({ tableHeaderBg: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Fundo das Linhas</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.tableRowBg || '#FFFFFF'} onChange={(e) => onUpdate({ tableRowBg: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.tableRowBg || '#FFFFFF'} onChange={(e) => onUpdate({ tableRowBg: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Tipografia */}
-      {element.type !== 'divider' && !isLogoOrImage && (
+      {element.type !== 'divider' && !isLogoOrImage && element.type !== 'table' && (
         <>
           <div>
             <Label className="text-xs text-muted-foreground">Cor</Label>

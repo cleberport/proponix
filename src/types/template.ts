@@ -31,6 +31,9 @@ export interface CanvasElement {
   letterSpacing?: number; // em units, e.g. 0, 0.02, 0.05
   listType?: 'none' | 'bullet' | 'number'; // bullet points / numbered lists
   rows?: TableRow[];
+  tableBorderColor?: string; // table border/grid color
+  tableHeaderBg?: string; // table header row background
+  tableRowBg?: string; // table body row background
   columnWidths?: number[]; // percentage widths per column
   imageUrl?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none';
