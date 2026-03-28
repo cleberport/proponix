@@ -667,34 +667,6 @@ const ProposalView = () => {
       : Math.min(availW / CANVAS_W, availH / CANVAS_H, 1)
     : 0;
 
-  // Detect if header bg is dark to adapt logo contrast — reactive to theme changes
-  const [headerIsDark, setHeaderIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ||
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    const check = () => {
-      setHeaderIsDark(
-        document.documentElement.classList.contains('dark') ||
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-      );
-    };
-    // Watch for class changes on html element
-    const observer = new MutationObserver(check);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    // Watch for system preference changes
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener('change', check);
-    return () => {
-      observer.disconnect();
-      mq.removeEventListener('change', check);
-    };
-  }, []);
-
   return (
     <div className="flex h-[100dvh] flex-col bg-muted/30">
       {/* Header */}
