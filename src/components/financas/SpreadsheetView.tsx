@@ -413,57 +413,71 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
             </div>
           )}
 
-          {/* Compact rows */}
+          {/* Rows */}
           <div className="divide-y divide-border/30">
             {rows.map((row, ri) => {
-              // Pick key columns to show inline: first text col as title, first currency/number as value, first date
               const textCols = columns.filter(c => c.type === 'text' || c.type === 'select');
               const valueCols = columns.filter(c => c.type === 'currency' || c.type === 'number' || c.type === 'formula');
               const dateCols = columns.filter(c => c.type === 'date');
               const checkCols = columns.filter(c => c.type === 'checkbox');
 
               const titleParts = textCols.map(c => {
-                const v = c.type === 'select' ? row.cells[c.id] : row.cells[c.id];
+                const v = row.cells[c.id];
                 return v ? String(v) : '';
               }).filter(Boolean);
 
-              const mainValue = valueCols[0];
-              const mainDate = dateCols[0];
+              const renderValueInline = (col: FinanceColumn) => {
+                if (hideValues) return '•••••';
+                if (col.type === 'formula') return formatBRL(evaluateFinanceFormula(col.formula || '', columns, row.cells));
+                const v = row.cells[col.id];
+                if (!v) return '—';
+                if (col.type === 'currency') return formatBRL(getColumnNumericValue(v));
+                return String(v);
+              };
 
               return (
                 <div key={row.id} className="flex items-center gap-2 px-3 py-2.5 active:bg-muted/30">
-                  {/* Drag / row number */}
                   <span className="text-[10px] text-muted-foreground w-4 text-center shrink-0">{ri + 1}</span>
 
-                  {/* Main content */}
                   <div className="flex-1 min-w-0">
+                    {/* Title row */}
                     <div className="flex items-center gap-1.5">
                       {titleParts.length > 0 ? (
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {titleParts.join(' · ')}
-                        </span>
+                        <span className="text-xs font-semibold text-foreground truncate">{titleParts.join(' · ')}</span>
                       ) : (
                         <span className="text-xs text-muted-foreground">Linha {ri + 1}</span>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {mainValue && (
-                        <span className="text-xs font-bold tabular-nums text-primary">
-                          {hideValues ? '•••••' : (() => {
-                            if (mainValue.type === 'formula') return formatBRL(evaluateFinanceFormula(mainValue.formula || '', columns, row.cells));
-                            const v = row.cells[mainValue.id];
-                            if (!v) return '';
-                            return mainValue.type === 'currency' ? formatBRL(getColumnNumericValue(v)) : String(v);
-                          })()}
-                        </span>
-                      )}
-                      {mainDate && row.cells[mainDate.id] && (
-                        <span className="text-[10px] text-muted-foreground font-medium">{String(row.cells[mainDate.id])}</span>
-                      )}
                       {checkCols.map(c => row.cells[c.id] ? (
-                        <span key={c.id} className="text-primary">✓</span>
+                        <span key={c.id} className="text-primary text-xs">✓</span>
                       ) : null)}
                     </div>
+
+                    {/* Tablet: show all values in a row. Mobile: only main value + date */}
+                    {isMobile ? (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {valueCols[0] && (
+                          <span className="text-xs font-bold tabular-nums text-primary">{renderValueInline(valueCols[0])}</span>
+                        )}
+                        {dateCols[0] && row.cells[dateCols[0].id] && (
+                          <span className="text-[10px] text-muted-foreground font-medium">{String(row.cells[dateCols[0].id])}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                        {valueCols.map(c => (
+                          <div key={c.id} className="flex items-center gap-1">
+                            <span className="text-[10px] text-muted-foreground">{c.name}:</span>
+                            <span className="text-xs font-bold tabular-nums text-primary">{renderValueInline(c)}</span>
+                          </div>
+                        ))}
+                        {dateCols.map(c => row.cells[c.id] ? (
+                          <div key={c.id} className="flex items-center gap-1">
+                            <span className="text-[10px] text-muted-foreground">{c.name}:</span>
+                            <span className="text-[11px] font-medium text-foreground/80">{String(row.cells[c.id])}</span>
+                          </div>
+                        ) : null)}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
