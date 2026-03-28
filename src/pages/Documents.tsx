@@ -455,9 +455,9 @@ const Documents = () => {
 
                         {/* Negotiation message */}
                         {link?.negotiation_message && status === 'negociacao' && (
-                          <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 px-3 py-2">
-                            <p className="text-[10px] font-medium text-amber-800 dark:text-amber-400 mb-0.5">Sugestão do cliente</p>
-                            <p className="text-xs text-amber-700 dark:text-amber-300">{link.negotiation_message}</p>
+                          <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
+                            <p className="text-[10px] font-medium text-amber-600 dark:text-amber-700 mb-0.5">Sugestão do cliente</p>
+                            <p className="text-xs text-foreground/80">{link.negotiation_message}</p>
                           </div>
                         )}
 
