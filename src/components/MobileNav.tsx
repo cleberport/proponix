@@ -1,9 +1,8 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useTheme } from '@/hooks/useTheme';
 
 const items = [
   { label: 'Templates', path: '/dashboard', icon: LayoutGrid },
@@ -14,7 +13,6 @@ const items = [
 export default function MobileNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -42,11 +40,14 @@ export default function MobileNav() {
           );
         })}
         <button
-          onClick={toggleTheme}
-          className="flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[11px] font-medium text-muted-foreground transition-colors"
+          onClick={() => navigate('/settings')}
+          className={cn(
+            'flex flex-1 flex-col items-center gap-0.5 py-2 pt-2.5 text-[11px] font-medium transition-colors',
+            pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'
+          )}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          <span>Tema</span>
+          <Settings className={cn('h-5 w-5', pathname === '/settings' && 'text-primary')} />
+          <span>Config</span>
         </button>
         <button
           onClick={handleLogout}
