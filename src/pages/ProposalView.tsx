@@ -708,7 +708,7 @@ const ProposalView = () => {
       {/* Document area — fills remaining space, centers doc */}
       <div
         ref={docContainerRef}
-        className="flex-1 min-h-0 flex justify-center overflow-auto"
+        className="flex-1 min-h-0 flex justify-center items-start overflow-auto"
         style={{ padding: PAD }}
       >
         {hasTemplate && docScale > 0 ? (
@@ -716,7 +716,7 @@ const ProposalView = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`shrink-0 ${templatePages.length <= 1 ? 'my-auto' : 'pt-4 pb-4'}`}
+            className={`shrink-0 w-full flex flex-col items-center ${templatePages.length <= 1 ? 'my-auto' : 'pt-4 pb-24'}`}
           >
             {templatePages.length > 1 && (
               <div className="flex items-center justify-center gap-2 mb-3 text-xs text-muted-foreground">
