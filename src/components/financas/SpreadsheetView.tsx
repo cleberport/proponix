@@ -56,6 +56,7 @@ interface Props {
 }
 
 export default function SpreadsheetView({ table, onUpdate }: Props) {
+  const isMobile = useIsMobile();
   const { columns, rows } = table;
   const [editingCell, setEditingCell] = useState<{ rowId: string; colId: string } | null>(null);
   const [editValue, setEditValue] = useState('');
