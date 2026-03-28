@@ -22,6 +22,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -75,6 +78,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
   const [editColName, setEditColName] = useState('');
   const [zoom, setZoom] = useState(100);
   const [hideValues, setHideValues] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Column resize state
@@ -482,6 +486,9 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
 
                   {/* Actions */}
                   <div className="flex items-center gap-0 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); setEditingRowId(row.id); }}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); moveRow(row.id, -1); }} disabled={ri === 0}>
                       <ChevronUp className="h-3 w-3" />
                     </Button>
@@ -735,6 +742,114 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit row sheet (mobile/tablet) */}
+      <Sheet open={!!editingRowId} onOpenChange={open => { if (!open) setEditingRowId(null); }}>
+        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Editar Linha</SheetTitle>
+          </SheetHeader>
+          {editingRowId && (() => {
+            const row = rows.find(r => r.id === editingRowId);
+            if (!row) return null;
+            const updateCell = (colId: string, value: any) => {
+              const newRows = rows.map(r =>
+                r.id === editingRowId ? { ...r, cells: { ...r.cells, [colId]: value } } : r
+              );
+              onUpdate({ rows: newRows });
+            };
+            return (
+              <div className="space-y-4 py-4">
+                {columns.map(col => {
+                  const val = row.cells[col.id];
+                  if (col.type === 'formula') {
+                    const result = evaluateFinanceFormula(col.formula || '', columns, row.cells);
+                    return (
+                      <div key={col.id} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{col.name}</Label>
+                        <div className="text-sm font-semibold tabular-nums px-3 py-2 rounded-md bg-muted/50">
+                          {hideValues ? '•••••' : formatBRL(result)}
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (col.type === 'checkbox') {
+                    return (
+                      <div key={col.id} className="flex items-center gap-2">
+                        <Checkbox checked={!!val} onCheckedChange={v => updateCell(col.id, v)} />
+                        <Label className="text-sm">{col.name}</Label>
+                      </div>
+                    );
+                  }
+                  if (col.type === 'select') {
+                    const opts = col.options || [];
+                    return (
+                      <div key={col.id} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{col.name}</Label>
+                        <Select value={val || ''} onValueChange={v => updateCell(col.id, v)}>
+                          <SelectTrigger className="h-9"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                          <SelectContent>
+                            {opts.map(o => (
+                              <SelectItem key={o.label} value={o.label}>
+                                <Badge variant="secondary" className={cn('text-xs font-normal', o.color)}>{o.label}</Badge>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  }
+                  if (col.type === 'date') {
+                    const parseD = (v: any): Date | undefined => {
+                      if (!v) return undefined;
+                      const p = parse(String(v), 'dd/MM/yyyy', new Date());
+                      if (isValid(p)) return p;
+                      const iso = new Date(String(v));
+                      return isValid(iso) ? iso : undefined;
+                    };
+                    const dateVal = parseD(val);
+                    return (
+                      <div key={col.id} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{col.name}</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start h-9 text-sm">
+                              <CalendarIcon className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                              {dateVal ? format(dateVal, 'dd/MM/yyyy') : 'Selecionar data...'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={dateVal}
+                              onSelect={d => updateCell(col.id, d ? format(d, 'dd/MM/yyyy') : '')}
+                              locale={ptBR}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={col.id} className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">{col.name}</Label>
+                      <Input
+                        value={val?.toString() || ''}
+                        onChange={e => updateCell(col.id, e.target.value)}
+                        className="h-9"
+                        inputMode={col.type === 'number' || col.type === 'currency' ? 'decimal' : 'text'}
+                        placeholder={col.type === 'currency' ? 'R$ 0,00' : ''}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
