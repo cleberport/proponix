@@ -345,22 +345,20 @@ const Generate = () => {
     return display;
   }, [resolvedValues, selectedServices, allServiceIndices]);
 
-  // Build pages with dynamic table rows injected
+  // Build pages with dynamic table rows + extra service blocks injected
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
     const templatePages = getTemplatePages(template);
-    return templatePages.map((pageEls) =>
+    const result = templatePages.map((pageEls) =>
       pageEls
         .filter((el) => el.isVisible !== false)
         .map((el) => {
           if (el.type === 'table' && hasTable && tableInfo) {
-            // Replace table rows with dynamic rows (keep headers)
             const dataRows = tableRows.filter((r) => r.cells.some((c) => c.trim()));
             const allRows = [
               { cells: tableInfo.headers },
               ...(dataRows.length > 0 ? dataRows : [{ cells: tableInfo.headers.map(() => '') }]),
             ];
-            // Auto-adjust height based on row count
             const rowHeight = 28;
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
@@ -368,6 +366,37 @@ const Generate = () => {
           return el;
         })
     );
+
+    // Add extra service blocks at the end of the last page
+    if (extraServiceIndices.length > 0 && result.length > 0) {
+      const lastPage = result[result.length - 1];
+      // Find the last service element to position extras below
+      const lastServiceEl = [...lastPage].reverse().find(e => e.type === 'service');
+      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height + 10 : 600;
+      const baseEl = lastServiceEl || lastPage[0];
+
+      extraServiceIndices.forEach((idx, i) => {
+        if (templateServiceIndices.includes(idx)) return; // already in template
+        result[result.length - 1] = [...result[result.length - 1], {
+          id: `extra-service-${idx}`,
+          type: 'service' as const,
+          x: baseEl?.x ?? 40,
+          y: baseY + i * 90,
+          width: baseEl?.width ?? 300,
+          height: 80,
+          content: '',
+          fontSize: baseEl?.fontSize ?? 14,
+          fontWeight: '400',
+          fontFamily: baseEl?.fontFamily ?? 'Space Grotesk',
+          color: baseEl?.color ?? '#0F172A',
+          alignment: 'left' as const,
+          isVisible: true,
+          serviceIndex: idx,
+        }];
+      });
+    }
+
+    return result;
   }, [template, tableRows, hasTable, tableInfo]);
 
   // Map each variable to the page index where it first appears
