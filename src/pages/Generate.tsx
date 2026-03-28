@@ -572,8 +572,8 @@ const Generate = () => {
 
       const link = data as any;
       // Use edge function URL for sharing (dynamic OG tags for WhatsApp preview)
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const ogUrl = `https://${projectId}.supabase.co/functions/v1/proposal-og?token=${link.token}`;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const ogUrl = `${supabaseUrl}/functions/v1/proposal-og?token=${link.token}`;
       setGeneratedLink(ogUrl);
       setLinkCopied(false);
       setLinkModalOpen(true);
