@@ -102,6 +102,7 @@ const ProposalView = () => {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const docContainerRef = useRef<HTMLDivElement | null>(null);
+  const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   const NOOP = useCallback(() => undefined, []);
 
   const fetchProposal = useCallback(async (markViewed = false) => {
