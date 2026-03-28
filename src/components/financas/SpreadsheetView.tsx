@@ -450,7 +450,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
                     return (
                       <td key={col.id} className="px-2 py-2 font-semibold tabular-nums border-r border-border/30">
                         {sum !== null ? (
-                          col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum)
+                          hideValues ? '•••••' : (col.type === 'number' ? sum.toLocaleString('pt-BR') : formatBRL(sum))
                         ) : ''}
                       </td>
                     );
