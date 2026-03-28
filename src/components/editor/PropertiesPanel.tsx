@@ -349,6 +349,16 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
               onValueChange={([v]) => onUpdate({ lineHeight: Math.round(v * 10) / 10 })}
             />
           </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Espaço entre letras ({element.letterSpacing || 0})</Label>
+            <Slider
+              value={[element.letterSpacing || 0]}
+              min={-0.05}
+              max={0.3}
+              step={0.01}
+              onValueChange={([v]) => onUpdate({ letterSpacing: Math.round(v * 100) / 100 })}
+            />
+          </div>
         </>
       )}
 
