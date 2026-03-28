@@ -439,7 +439,7 @@ const Editor = () => {
         navigate(`/editor/${finalId}`, { replace: true });
       }
 
-      toast.success('Template salvo!');
+      // Save silently — no toast banner
       if (optimizedLayout.optimizedCount > 0) {
         toast.info(`${optimizedLayout.optimizedCount} imagem(ns) otimizadas.`);
       }
