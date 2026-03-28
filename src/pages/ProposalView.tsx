@@ -811,28 +811,17 @@ const ProposalView = () => {
         )}
       </div>
 
-      {/* Sticky action bar */}
-      {!isExpired && (
-        <div className="shrink-0 border-t border-border bg-card/95 backdrop-blur px-4 py-3 sm:px-6 sm:py-4 safe-area-bottom">
+      {/* Sticky action bar — appears after delay */}
+      {!isExpired && (step === 'decision' || showApproveForm || showNegotiationForm) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur px-4 py-3 sm:px-6 sm:py-4 safe-area-bottom"
+        >
           <div className="mx-auto max-w-5xl">
             <AnimatePresence mode="wait">
-              {step === 'viewing' ? (
-                <motion.div
-                  key="continue-btn"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex justify-center"
-                >
-                  <Button
-                    size="lg"
-                    className="h-12 px-10 rounded-xl gap-2 font-semibold"
-                    onClick={() => setStep('decision')}
-                  >
-                    Continuar
-                  </Button>
-                </motion.div>
-              ) : showApproveForm ? (
+              {showApproveForm ? (
                 <motion.div
                   key="approve-form"
                   initial={{ opacity: 0, y: 10 }}
@@ -887,19 +876,20 @@ const ProposalView = () => {
                   exit={{ opacity: 0 }}
                   className="space-y-3"
                 >
-                  <p className="text-center text-sm font-medium text-foreground">Gostou da proposta?</p>
+                  <p className="text-center text-sm text-muted-foreground">Se fizer sentido pra você:</p>
                   <div className="flex gap-2.5">
                     <Button
                       size="lg"
-                      className="flex-1 h-12 rounded-xl gap-2 font-semibold text-sm"
+                      variant="outline"
+                      className="flex-1 h-11 rounded-xl gap-2 text-sm border-primary/30 text-primary hover:bg-primary/5"
                       onClick={() => setShowApproveForm(true)}
                     >
-                      <CheckCircle className="h-4 w-4 shrink-0" /> Aprovar
+                      <CheckCircle className="h-4 w-4 shrink-0" /> Aprovar proposta
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
-                      className="flex-1 h-12 rounded-xl gap-2 text-sm"
+                      className="flex-1 h-11 rounded-xl gap-2 text-sm"
                       onClick={() => setShowNegotiationForm(true)}
                     >
                       <MessageSquare className="h-4 w-4 shrink-0" /> Sugerir ajuste
@@ -923,7 +913,7 @@ const ProposalView = () => {
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {isExpired && (
