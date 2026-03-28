@@ -393,7 +393,7 @@ export default function SpreadsheetView({ table, onUpdate }: Props) {
       </div>
 
       {/* Mobile: Compact row layout */}
-      {isMobile ? (
+      {isCompact ? (
         <div className="flex-1 overflow-y-auto">
           {/* Summary chips */}
           {rows.length > 0 && columns.some(c => getColumnSum(c) !== null) && (
