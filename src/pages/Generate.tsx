@@ -771,6 +771,32 @@ const Generate = () => {
                 onBlur={() => handleFieldBlur('__table__')}
               />
             )}
+
+            {hasServices && (
+              <div className="flex flex-col gap-3 pt-2 border-t border-border mt-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Serviços</Label>
+                {allServiceIndices.map((idx) => (
+                  <ServiceSelector
+                    key={idx}
+                    label={`Serviço ${idx + 1}`}
+                    selectedServiceId={selectedServices[idx]?.id || ''}
+                    onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
+                  />
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-1.5"
+                  onClick={() => {
+                    const maxIdx = allServiceIndices.length > 0 ? Math.max(...allServiceIndices) : -1;
+                    setExtraServiceIndices(prev => [...prev, maxIdx + 1]);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Adicionar serviço
+                </Button>
+              </div>
+            )}
           </div>
 
 
