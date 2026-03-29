@@ -70,7 +70,7 @@ export interface CanvasElement {
   serviceId?: string; // links to selected service at generation time
   serviceIndex?: number; // distinguishes multiple service blocks (0, 1, 2...)
   showPrice?: boolean; // toggle price visibility on service block (default true)
-  transparentBg?: boolean; // transparent background for service block
+  bgOpacity?: number; // 0-100, default 100
 }
 
 export interface TableRow {
