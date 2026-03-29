@@ -511,6 +511,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 gap: 4,
                 paddingLeft: 4,
                 paddingRight: 4,
+                overflow: 'hidden',
               }}
               className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
