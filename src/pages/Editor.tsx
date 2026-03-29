@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Undo2 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -63,10 +63,27 @@ const Editor = () => {
 
   const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];
 
+  // Undo history
+  const historyRef = useRef<CanvasElement[][][]>([]);
+  const MAX_HISTORY = 50;
+
+  const pushHistory = useCallback(() => {
+    historyRef.current = [...historyRef.current.slice(-(MAX_HISTORY - 1)), pages.map(p => [...p])];
+  }, [pages]);
+
+  const undo = useCallback(() => {
+    if (historyRef.current.length === 0) return;
+    const prev = historyRef.current.pop()!;
+    setPages(prev);
+    setSelectedIds([]);
+  }, []);
+
   // Current page elements
   const elements = pages[currentPage] || [];
   const setElements = useCallback((updater: CanvasElement[] | ((prev: CanvasElement[]) => CanvasElement[])) => {
     setPages(prev => {
+      // Push current state to history before mutating
+      historyRef.current = [...historyRef.current.slice(-(MAX_HISTORY - 1)), prev.map(p => [...p])];
       const newPages = [...prev];
       if (typeof updater === 'function') {
         newPages[currentPage] = updater(newPages[currentPage] || []);
