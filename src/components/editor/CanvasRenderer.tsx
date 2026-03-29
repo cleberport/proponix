@@ -720,7 +720,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {hasContent ? (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: el.fontFamily || 'Space Grotesk' }}>
+                <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', fontFamily: el.fontFamily || 'Space Grotesk' }}>
                   {/* Header row: Name + Price */}
                   <div style={{
                     display: 'flex',
@@ -735,9 +735,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                       color: textColor,
                       letterSpacing: '0.01em',
                       flex: 1,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      minWidth: 0,
+                      wordBreak: 'break-word' as any,
+                      whiteSpace: 'normal',
                     }}>
                       {svcName}
                     </span>
@@ -749,6 +749,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                         marginLeft: 24,
                         whiteSpace: 'nowrap',
                         letterSpacing: '-0.01em',
+                        flexShrink: 0,
                       }}>
                         {svcPrice}
                       </span>
@@ -756,7 +757,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   </div>
                   {/* Description + Notes */}
                   {(svcDesc || svcNotes) && (
-                    <div style={{ padding: '6px 12px 8px', flex: 1, overflow: 'hidden' }}>
+                    <div style={{ padding: '6px 12px 8px' }}>
                       {svcDesc && (
                         <p style={{
                           fontSize: Math.max((el.fontSize || 14) - 2, 9),
@@ -764,10 +765,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                           opacity: 0.65,
                           margin: 0,
                           lineHeight: 1.4,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical' as any,
-                          overflow: 'hidden',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word' as any,
                         }}>
                           {svcDesc}
                         </p>
@@ -780,9 +779,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                           fontStyle: 'italic',
                           margin: svcDesc ? '4px 0 0' : 0,
                           lineHeight: 1.3,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word' as any,
                         }}>
                           {svcNotes}
                         </p>
