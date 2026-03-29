@@ -504,13 +504,23 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           return (
             <div
               key={el.id}
-              style={style}
-              className={`flex items-center gap-1 rounded px-1 ${selectedClass} ${hoverClass}`}
+              style={{
+                ...style,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                paddingLeft: 4,
+                paddingRight: 4,
+              }}
+              className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              {showContent && <span>{resolveContent(el)}</span>}
-              <span className={`${readOnly ? '' : 'rounded bg-primary/10 px-1.5 py-0.5 font-mono'}`} style={readOnly ? {} : { color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))' }}>
+              {showContent && <span style={{ whiteSpace: 'nowrap' }}>{resolveContent(el)}</span>}
+              <span
+                className={readOnly ? '' : 'rounded'}
+                style={readOnly ? { whiteSpace: 'nowrap' } : { color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))', background: 'hsl(var(--primary) / 0.1)', padding: '2px 6px', whiteSpace: 'nowrap' }}
+              >
                 {varValue}
               </span>
               {resizeHandle}
