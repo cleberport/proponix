@@ -702,46 +702,108 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           );
 
         case 'service': {
-          // Service block - renders name, description, price from variableValues
           const svcIdx = el.serviceIndex ?? 0;
           const svcName = variableValues?.[`service_${svcIdx}_name`] || '';
           const svcDesc = variableValues?.[`service_${svcIdx}_description`] || '';
           const svcPrice = variableValues?.[`service_${svcIdx}_price`] || '';
           const svcNotes = variableValues?.[`service_${svcIdx}_notes`] || '';
           const hasContent = svcName || svcDesc || svcPrice;
+          const textColor = resolveTextColor(el.color, backgroundColor);
+          const borderColor = el.tableBorderColor || (backgroundColor && backgroundColor !== '#ffffff' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
 
           return (
             <div
               key={el.id}
               style={{ ...style, height: el.height }}
-              className={`rounded border ${readOnly ? 'border-transparent' : 'border-dashed border-primary/30'} px-2 py-1.5 ${selectedClass} ${hoverClass}`}
+              className={`${readOnly ? '' : 'border border-dashed border-primary/30'} ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {hasContent ? (
-                <div className="flex flex-col gap-0.5 overflow-hidden h-full">
-                  <span style={{ fontSize: (el.fontSize || 14), fontWeight: '600', fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor) }} className="truncate">
-                    {svcName}
-                  </span>
-                  {svcDesc && (
-                    <span style={{ fontSize: Math.max((el.fontSize || 14) - 2, 8), fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor), opacity: 0.7 }} className="line-clamp-2">
-                      {svcDesc}
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: el.fontFamily || 'Space Grotesk' }}>
+                  {/* Header row: Name + Price */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    padding: '8px 12px 6px',
+                    borderBottom: `1px solid ${borderColor}`,
+                  }}>
+                    <span style={{
+                      fontSize: el.fontSize || 14,
+                      fontWeight: '600',
+                      color: textColor,
+                      letterSpacing: '0.01em',
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {svcName}
                     </span>
-                  )}
-                  {svcPrice && (
-                    <span style={{ fontSize: (el.fontSize || 14), fontWeight: '700', fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor) }}>
-                      {svcPrice}
-                    </span>
-                  )}
-                  {svcNotes && (
-                    <span style={{ fontSize: Math.max((el.fontSize || 14) - 3, 7), fontFamily: el.fontFamily, color: resolveTextColor(el.color, backgroundColor), opacity: 0.5, fontStyle: 'italic' }} className="truncate">
-                      {svcNotes}
-                    </span>
+                    {svcPrice && (
+                      <span style={{
+                        fontSize: el.fontSize || 14,
+                        fontWeight: '700',
+                        color: textColor,
+                        marginLeft: 24,
+                        whiteSpace: 'nowrap',
+                        letterSpacing: '-0.01em',
+                      }}>
+                        {svcPrice}
+                      </span>
+                    )}
+                  </div>
+                  {/* Description + Notes */}
+                  {(svcDesc || svcNotes) && (
+                    <div style={{ padding: '6px 12px 8px', flex: 1, overflow: 'hidden' }}>
+                      {svcDesc && (
+                        <p style={{
+                          fontSize: Math.max((el.fontSize || 14) - 2, 9),
+                          color: textColor,
+                          opacity: 0.65,
+                          margin: 0,
+                          lineHeight: 1.4,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical' as any,
+                          overflow: 'hidden',
+                        }}>
+                          {svcDesc}
+                        </p>
+                      )}
+                      {svcNotes && (
+                        <p style={{
+                          fontSize: Math.max((el.fontSize || 14) - 3, 8),
+                          color: textColor,
+                          opacity: 0.45,
+                          fontStyle: 'italic',
+                          margin: svcDesc ? '4px 0 0' : 0,
+                          lineHeight: 1.3,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {svcNotes}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full gap-1.5 text-muted-foreground">
-                  <span style={{ fontSize: (el.fontSize || 14) - 2 }}>📦 Serviço {svcIdx + 1}</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  gap: 6,
+                  border: `1.5px dashed ${borderColor}`,
+                  borderRadius: 4,
+                  opacity: 0.5,
+                }}>
+                  <span style={{ fontSize: (el.fontSize || 14) - 2, color: textColor || '#888', fontFamily: el.fontFamily || 'Space Grotesk' }}>
+                    📦 Serviço {svcIdx + 1}
+                  </span>
                 </div>
               )}
               {resizeHandle}
