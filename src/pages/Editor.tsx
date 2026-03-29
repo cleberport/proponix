@@ -204,10 +204,17 @@ const Editor = () => {
             return;
         }
       }
+
+      // Ctrl+Z / Cmd+Z → undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, setElements]);
+  }, [selectedIds, setElements, undo]);
 
   const handleSelect = useCallback((id: string | null) => {
     if (id) setSelectedIds([id]);
