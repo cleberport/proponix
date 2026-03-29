@@ -706,10 +706,11 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const svcName = variableValues?.[`service_${svcIdx}_name`] || '';
           const svcDesc = variableValues?.[`service_${svcIdx}_description`] || '';
           const svcPrice = variableValues?.[`service_${svcIdx}_price`] || '';
-          const svcNotes = variableValues?.[`service_${svcIdx}_notes`] || '';
           const hasContent = svcName || svcDesc || svcPrice;
           const textColor = resolveTextColor(el.color, backgroundColor);
           const borderColor = el.tableBorderColor || (backgroundColor && backgroundColor !== '#ffffff' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
+          const isTransparent = el.transparentBg !== false;
+          const showPrice = el.showPrice !== false;
 
           return (
             <div
@@ -720,72 +721,58 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {hasContent ? (
-                <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', fontFamily: el.fontFamily || 'Space Grotesk' }}>
-                  {/* Header row: Name + Price */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    padding: '8px 12px 6px',
-                    borderBottom: `1px solid ${borderColor}`,
-                  }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '100%',
+                  padding: '0 12px',
+                  fontFamily: el.fontFamily || 'Space Grotesk',
+                  background: isTransparent ? 'transparent' : undefined,
+                  borderBottom: isTransparent ? 'none' : `1px solid ${borderColor}`,
+                }}>
+                  {/* Left: Name + Description inline */}
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                     <span style={{
                       fontSize: el.fontSize || 14,
                       fontWeight: '600',
                       color: textColor,
                       letterSpacing: '0.01em',
-                      flex: 1,
-                      minWidth: 0,
-                      wordBreak: 'break-word' as any,
-                      whiteSpace: 'normal',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
                     }}>
                       {svcName}
                     </span>
-                    {svcPrice && (
+                    {svcDesc && (
                       <span style={{
-                        fontSize: el.fontSize || 14,
-                        fontWeight: '700',
+                        fontSize: Math.max((el.fontSize || 14) - 2, 9),
                         color: textColor,
-                        marginLeft: 24,
+                        opacity: 0.55,
                         whiteSpace: 'nowrap',
-                        letterSpacing: '-0.01em',
-                        flexShrink: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'block',
+                        lineHeight: 1.3,
                       }}>
-                        {svcPrice}
+                        {svcDesc}
                       </span>
                     )}
                   </div>
-                  {/* Description + Notes */}
-                  {(svcDesc || svcNotes) && (
-                    <div style={{ padding: '6px 12px 8px' }}>
-                      {svcDesc && (
-                        <p style={{
-                          fontSize: Math.max((el.fontSize || 14) - 2, 9),
-                          color: textColor,
-                          opacity: 0.65,
-                          margin: 0,
-                          lineHeight: 1.4,
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word' as any,
-                        }}>
-                          {svcDesc}
-                        </p>
-                      )}
-                      {svcNotes && (
-                        <p style={{
-                          fontSize: Math.max((el.fontSize || 14) - 3, 8),
-                          color: textColor,
-                          opacity: 0.45,
-                          fontStyle: 'italic',
-                          margin: svcDesc ? '4px 0 0' : 0,
-                          lineHeight: 1.3,
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word' as any,
-                        }}>
-                          {svcNotes}
-                        </p>
-                      )}
-                    </div>
+                  {/* Right: Price */}
+                  {showPrice && svcPrice && (
+                    <span style={{
+                      fontSize: el.fontSize || 14,
+                      fontWeight: '700',
+                      color: textColor,
+                      marginLeft: 24,
+                      whiteSpace: 'nowrap',
+                      letterSpacing: '-0.01em',
+                      flexShrink: 0,
+                    }}>
+                      {svcPrice}
+                    </span>
                   )}
                 </div>
               ) : (
@@ -795,7 +782,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   justifyContent: 'center',
                   height: '100%',
                   gap: 6,
-                  border: `1.5px dashed ${borderColor}`,
+                  border: isTransparent ? `1.5px dashed ${borderColor}` : 'none',
                   borderRadius: 4,
                   opacity: 0.5,
                 }}>
