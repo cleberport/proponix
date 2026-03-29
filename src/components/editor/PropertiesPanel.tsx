@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline, Italic, Strikethrough, List, ListOrdered, Minus } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import ImageEditingPanel from './ImageEditingPanel';
@@ -142,7 +143,27 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         )}
       </div>
 
-      {/* Upload de Imagem */}
+      {/* Service-specific toggles */}
+      {element.type === 'service' && (
+        <div className="space-y-3">
+          <Separator />
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">Fundo transparente</Label>
+            <Switch
+              checked={element.transparentBg !== false}
+              onCheckedChange={(checked) => onUpdate({ transparentBg: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">Mostrar preço</Label>
+            <Switch
+              checked={element.showPrice !== false}
+              onCheckedChange={(checked) => onUpdate({ showPrice: checked })}
+            />
+          </div>
+        </div>
+      )}
+
       {isLogoOrImage && (
         <div>
           <Label className="text-xs text-muted-foreground">
