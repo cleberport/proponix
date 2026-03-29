@@ -128,18 +128,27 @@ const Generate = () => {
     });
   }, [tableInfo]);
 
-  // Auto-sum table price column → feed into price
+  // Auto-sum table price column + service prices → feed into price
   useEffect(() => {
-    if (!hasTable || !tableInfo) return;
-    const priceColIndex = tableInfo.headers.length - 1;
-    const total = tableRows.reduce((sum, row) => {
-      const val = row.cells[priceColIndex] || '';
-      const cleaned = val.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
-      const num = parseFloat(cleaned);
-      return sum + (isFinite(num) ? num : 0);
+    let tableTotal = 0;
+    if (hasTable && tableInfo) {
+      const priceColIndex = tableInfo.headers.length - 1;
+      tableTotal = tableRows.reduce((sum, row) => {
+        const val = row.cells[priceColIndex] || '';
+        const cleaned = val.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+        const num = parseFloat(cleaned);
+        return sum + (isFinite(num) ? num : 0);
+      }, 0);
+    }
+
+    // Sum all selected service prices
+    const servicesTotal = Object.values(selectedServices).reduce((sum, svc) => {
+      return sum + (svc?.price || 0);
     }, 0);
-    setUserInputs((prev) => ({ ...prev, price: total > 0 ? total.toString() : '' }));
-  }, [tableRows, hasTable, tableInfo]);
+
+    const combined = tableTotal + servicesTotal;
+    setUserInputs((prev) => ({ ...prev, price: combined > 0 ? combined.toString() : (prev.price || '') }));
+  }, [tableRows, hasTable, tableInfo, selectedServices]);
 
   useEffect(() => {
     let active = true;
