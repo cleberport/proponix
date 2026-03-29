@@ -857,6 +857,18 @@ const Editor = () => {
           {/* Canvas toolbar */}
           <div className="flex w-full items-center justify-center gap-2 border-b border-border bg-card px-3 py-1.5 shrink-0 flex-wrap">
             <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={undo}
+              title="Desfazer (Ctrl+Z)"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </Button>
+
+            <div className="h-5 w-px bg-border" />
+
+            <Button
               variant={showGrid ? 'secondary' : 'ghost'}
               size="sm"
               className="h-8 w-8 p-0"
