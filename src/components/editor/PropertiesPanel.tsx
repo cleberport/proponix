@@ -147,11 +147,15 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
       {element.type === 'service' && (
         <div className="space-y-3">
           <Separator />
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">Fundo transparente</Label>
-            <Switch
-              checked={element.transparentBg !== false}
-              onCheckedChange={(checked) => onUpdate({ transparentBg: checked })}
+          <div>
+            <Label className="text-xs text-muted-foreground">Opacidade do fundo ({element.bgOpacity ?? 100}%)</Label>
+            <Slider
+              min={0}
+              max={100}
+              step={5}
+              value={[element.bgOpacity ?? 100]}
+              onValueChange={([v]) => onUpdate({ bgOpacity: v })}
+              className="mt-1"
             />
           </div>
           <div className="flex items-center justify-between">

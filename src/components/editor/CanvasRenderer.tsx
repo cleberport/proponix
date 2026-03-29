@@ -709,7 +709,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const hasContent = svcName || svcDesc || svcPrice;
           const textColor = resolveTextColor(el.color, backgroundColor);
           const borderColor = el.tableBorderColor || (backgroundColor && backgroundColor !== '#ffffff' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
-          const isTransparent = el.transparentBg !== false;
+          const bgOpacity = (el.bgOpacity ?? 100) / 100;
           const showPrice = el.showPrice !== false;
 
           return (
@@ -728,8 +728,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   height: '100%',
                   padding: '0 12px',
                   fontFamily: el.fontFamily || 'Space Grotesk',
-                  background: isTransparent ? 'transparent' : undefined,
-                  borderBottom: isTransparent ? 'none' : `1px solid ${borderColor}`,
+                  background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
+                  borderBottom: bgOpacity < 0.5 ? 'none' : `1px solid ${borderColor}`,
                 }}>
                   {/* Left: Name + Description inline */}
                   <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
@@ -782,7 +782,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   justifyContent: 'center',
                   height: '100%',
                   gap: 6,
-                  border: isTransparent ? `1.5px dashed ${borderColor}` : 'none',
+                  border: bgOpacity < 0.5 ? `1.5px dashed ${borderColor}` : 'none',
                   borderRadius: 4,
                   opacity: 0.5,
                 }}>
