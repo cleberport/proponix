@@ -509,102 +509,38 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
         case 'image':
         case 'logo': {
-          const hasCrop = el.cropX || el.cropY || (el.cropWidth && el.cropWidth < 100) || (el.cropHeight && el.cropHeight < 100);
-          const cropX = el.cropX || 0;
-          const cropY = el.cropY || 0;
-          const cropW = el.cropWidth || 100;
-          const cropH = el.cropHeight || 100;
-
           const filterParts: string[] = [];
           if (el.imageBrightness != null && el.imageBrightness !== 100) filterParts.push(`brightness(${el.imageBrightness / 100})`);
           if (el.imageContrast != null && el.imageContrast !== 100) filterParts.push(`contrast(${el.imageContrast / 100})`);
           if (el.imageSaturation != null && el.imageSaturation !== 100) filterParts.push(`saturate(${el.imageSaturation / 100})`);
           const filterStr = filterParts.length > 0 ? filterParts.join(' ') : undefined;
 
-          const scale = el.imageScale || 1;
-          const offsetX = el.imageOffsetX || 0;
-          const offsetY = el.imageOffsetY || 0;
-          const isZoomed = scale > 1 || offsetX !== 0 || offsetY !== 0;
+          const isLogoEl = el.type === 'logo';
+          const logoDarkBg = isLogoEl && isDark(backgroundColor);
+          const logoFilter = logoDarkBg ? 'brightness(0) invert(1)' : undefined;
+          const combinedFilter = isLogoEl ? logoFilter : filterStr;
 
           const imgContainerStyle: React.CSSProperties = {
             ...style,
             height: el.height || 'auto',
             minHeight: 20,
-            overflow: 'hidden',
             borderWidth: el.borderWidth || 0,
             borderStyle: (el.borderWidth || 0) > 0 ? 'solid' : 'none',
             borderColor: el.borderColor || '#000000',
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-            cursor: el.locked ? 'not-allowed' : (readOnly ? 'default' : (el.imageUrl ? 'grab' : 'grab')),
+            cursor: el.locked ? 'not-allowed' : (readOnly ? 'default' : 'grab'),
           };
-
-          const isLogoEl = el.type === 'logo';
-          // Auto-invert logo on dark backgrounds
-          const logoDarkBg = isLogoEl && isDark(backgroundColor);
-          const logoFilter = logoDarkBg ? 'brightness(0) invert(1)' : undefined;
-          const combinedFilter = isLogoEl
-            ? logoFilter
-            : filterStr;
-
-          const imgInnerStyle: React.CSSProperties = {
-            filter: combinedFilter,
-            position: isLogoEl ? 'relative' as const : 'absolute' as const,
-            top: isLogoEl ? undefined : 0,
-            left: isLogoEl ? undefined : 0,
-            width: isLogoEl ? '100%' : `${scale * 100}%`,
-            height: isLogoEl ? '100%' : `${scale * 100}%`,
-            objectFit: isLogoEl ? 'contain' : 'cover',
-            objectPosition: 'center',
-            transform: isLogoEl ? undefined : `translate(${offsetX}px, ${offsetY}px)`,
-            pointerEvents: 'none',
-          };
-
-          if (hasCrop) {
-            imgInnerStyle.clipPath = `inset(${cropY}% ${100 - cropX - cropW}% ${100 - cropY - cropH}% ${cropX}%)`;
-          }
 
           return (
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${elSelected && isZoomed ? 'ring-2 ring-blue-500' : ''}`}
+              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => {
                 if (readOnly) return;
-                // If image exists and not locked, always pan the image inside the frame
-                if (el.imageUrl && !el.locked) {
-                  handleImagePanPointerDown(e, el);
-                  return;
-                }
-                // No image: move the frame to position it
                 handlePointerDown(e, el, 'drag');
-              }}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                if (!readOnly && !el.locked && el.imageUrl) {
-                  // Double-click resets pan/zoom
-                  if (isZoomed) {
-                    onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
-                  } else {
-                    // Zoom in slightly to enable panning
-                    onUpdate(el.id, { imageScale: 1.3 });
-                  }
-                  onSelect(el.id);
-                }
-              }}
-              onWheel={(e) => {
-                // Always allow zoom on selected images (no framing mode needed)
-                if (readOnly || el.locked || !elSelected || !el.imageUrl) return;
-                e.stopPropagation();
-                const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                const newScale = Math.max(1, Math.min(3, scale + delta));
-                // When zooming back to 1, reset offsets
-                if (newScale <= 1) {
-                  onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
-                } else {
-                  onUpdate(el.id, { imageScale: newScale });
-                }
               }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
