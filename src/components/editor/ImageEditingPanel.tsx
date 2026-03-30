@@ -71,8 +71,7 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
       {/* Tip */}
       <div className="rounded-md bg-accent/50 px-3 py-2">
         <p className="text-[11px] text-foreground leading-relaxed">
-          <strong>Duplo clique</strong> na imagem para enquadrar.
-          Arraste para reposicionar, <strong>scroll</strong> para zoom.
+          Arraste para mover livremente. Use o <strong>handle</strong> no canto para redimensionar.
         </p>
       </div>
 
