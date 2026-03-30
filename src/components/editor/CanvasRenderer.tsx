@@ -148,16 +148,23 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             if (multiDragStart) {
               multiDragStart.forEach(item => {
                 onUpdate(item.id, {
-                  x: snap(Math.max(0, item.x + dx)),
-                  y: snap(Math.max(0, item.y + dy)),
+                  x: snap(item.x + dx),
+                  y: snap(item.y + dy),
                 });
               });
               setGuides([]);
             } else {
-              const maxX = Math.max(0, CANVAS_W - el.width);
-              const maxY = Math.max(0, CANVAS_H - el.height);
-              let newX = Math.max(0, Math.min(maxX, startPos.current.elX + dx));
-              let newY = Math.max(0, Math.min(maxY, startPos.current.elY + dy));
+              const isImageEl = el.type === 'image' || el.type === 'logo';
+              let newX = startPos.current.elX + dx;
+              let newY = startPos.current.elY + dy;
+
+              if (!isImageEl) {
+                // Non-image elements stay within canvas bounds
+                const maxX = Math.max(0, CANVAS_W - el.width);
+                const maxY = Math.max(0, CANVAS_H - el.height);
+                newX = Math.max(0, Math.min(maxX, newX));
+                newY = Math.max(0, Math.min(maxY, newY));
+              }
 
               // Compute snap against other elements
               const others = elementsRef.current.filter(e => e.id !== el.id);
@@ -166,10 +173,10 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 others,
               );
 
-              if (snapResult.x !== null) newX = Math.max(0, Math.min(maxX, snapResult.x));
+              if (snapResult.x !== null) newX = isImageEl ? snapResult.x : Math.max(0, Math.min(Math.max(0, CANVAS_W - el.width), snapResult.x));
               else newX = snap(newX);
 
-              if (snapResult.y !== null) newY = Math.max(0, Math.min(maxY, snapResult.y));
+              if (snapResult.y !== null) newY = isImageEl ? snapResult.y : Math.max(0, Math.min(Math.max(0, CANVAS_H - el.height), snapResult.y));
               else newY = snap(newY);
 
               setGuides(snapResult.guides);

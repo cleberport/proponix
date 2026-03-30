@@ -66,14 +66,6 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
     });
   };
 
-  const resetFraming = () => {
-    onUpdate({
-      imageScale: 1,
-      imageOffsetX: 0,
-      imageOffsetY: 0,
-    });
-  };
-
   return (
     <div className="flex flex-col gap-3">
       {/* Tip */}
