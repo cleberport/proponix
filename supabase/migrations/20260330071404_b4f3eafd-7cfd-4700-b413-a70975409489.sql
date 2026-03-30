@@ -1,0 +1,1 @@
+ALTER TABLE public.proposal_links ALTER COLUMN token SET DEFAULT encode(extensions.gen_random_bytes(8), 'hex');
