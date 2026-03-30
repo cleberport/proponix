@@ -157,6 +157,7 @@ const Dashboard = () => {
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
+                  onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('saved'); setDeleteId(t.id); }}
                   onDuplicate={() => { void handleDuplicate(t.id); }}
                   isSaved
@@ -190,6 +191,7 @@ const Dashboard = () => {
                 <TemplateCard
                   template={t}
                   onEdit={() => navigate(`/editor/${t.id}`)}
+                  onGenerate={() => navigate(`/generate/${t.id}`)}
                   onDelete={() => { setDeleteType('starter'); setDeleteId(t.id); }}
                   onDuplicate={() => { void handleDuplicate(t.id); }}
                 />
