@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     const token = url.searchParams.get("token");
 
     // ── Token validation ──
-    if (!token || typeof token !== "string" || token.length < 10 || token.length > 100 || !/^[a-f0-9]+$/i.test(token)) {
+    if (!token || typeof token !== "string" || token.length < 8 || token.length > 100 || !/^[a-f0-9]+$/i.test(token)) {
       return jsonResponse({ error: "Token inválido" }, 400);
     }
 
