@@ -59,6 +59,7 @@ const Editor = () => {
     return 100;
   });
   const [showGrid, setShowGrid] = useState(true);
+  const [previewMode, setPreviewMode] = useState(false);
   const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
 
   const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];

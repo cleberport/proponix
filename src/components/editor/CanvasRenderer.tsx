@@ -16,6 +16,7 @@ interface Props {
   variableValues?: Record<string, string>;
   showGrid?: boolean;
   backgroundColor?: string;
+  clipOverflow?: boolean;
 }
 
 const CANVAS_W = 595;
