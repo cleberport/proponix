@@ -22,10 +22,7 @@ import {
 } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
-const buildShareUrl = (token: string) => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  return `${supabaseUrl}/functions/v1/proposal-og?token=${token}`;
-};
+const buildShareUrl = (token: string) => `https://freelox.lovable.app/p/${token}`;
 type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado' | 'negociacao';
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Send }> = {

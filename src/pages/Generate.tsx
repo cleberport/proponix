@@ -652,10 +652,8 @@ const Generate = () => {
       if (error) throw error;
 
       const link = data as any;
-      // Use edge function URL for sharing (dynamic OG tags for WhatsApp preview)
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const ogUrl = `${supabaseUrl}/functions/v1/proposal-og?token=${link.token}`;
-      setGeneratedLink(ogUrl);
+      const shortUrl = `https://freelox.lovable.app/p/${link.token}`;
+      setGeneratedLink(shortUrl);
       setLinkCopied(false);
       setLinkModalOpen(true);
 
