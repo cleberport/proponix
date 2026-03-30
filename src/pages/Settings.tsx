@@ -50,19 +50,49 @@ const SettingsPage = () => {
     toast.success('Configurações salvas');
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const url = ev.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        update({ logoUrl: url, logoWidth: img.naturalWidth, logoHeight: img.naturalHeight, logoAspectRatio: img.naturalWidth / img.naturalHeight });
-      };
+
+    // Read dimensions first
+    const url = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => resolve(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    });
+
+    const img = new Image();
+    await new Promise<void>((resolve) => {
+      img.onload = () => resolve();
       img.src = url;
-    };
-    reader.readAsDataURL(file);
+    });
+
+    // Upload to public storage
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    if (!userId) return;
+
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `${userId}/logo.${ext}`;
+    const { error } = await supabase.storage
+      .from('template-images')
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (error) {
+      toast.error('Erro ao fazer upload do logo');
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('template-images').getPublicUrl(path);
+    const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`;
+
+    update({
+      logoUrl: publicUrl,
+      logoWidth: img.naturalWidth,
+      logoHeight: img.naturalHeight,
+      logoAspectRatio: img.naturalWidth / img.naturalHeight,
+    });
+    toast.success('Logo atualizado');
   };
 
   const toggleTheme = () => {
