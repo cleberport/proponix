@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    const origin = req.headers.get("origin") || "https://freelox.lovable.app";
+    const origin = req.headers.get("origin") || "https://freelox.app";
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,

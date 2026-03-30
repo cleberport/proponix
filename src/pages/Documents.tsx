@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
-const buildShareUrl = (token: string) => `https://freelox.lovable.app/p/${token}`;
+const buildShareUrl = (token: string) => `https://freelox.app/p/${token}`;
 type DocStatus = 'enviado' | 'visualizado' | 'aprovado' | 'expirado' | 'negociacao';
 
 const STATUS_CONFIG: Record<DocStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Send }> = {
@@ -696,7 +696,7 @@ const Documents = () => {
                 className="w-full h-11 sm:h-12 rounded-xl gap-2 px-3 font-semibold text-xs sm:text-sm whitespace-nowrap bg-[#25D366] hover:bg-[#1da851] text-white"
                 onClick={() => {
                   const msg = encodeURIComponent(
-                    `Olá! Segue novamente o orçamento para sua análise:\n\n${resendModal.url}\n\nQualquer dúvida, me avise 👍`
+                    `Olá! Segue novamente a proposta para sua análise:\n\n${resendModal.url}\n\nQualquer dúvida, me avise 👍`
                   );
                   window.open(`https://wa.me/?text=${msg}`, '_blank');
                   setResendModal(null);
