@@ -554,10 +554,10 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           if (el.imageSaturation != null && el.imageSaturation !== 100) filterParts.push(`saturate(${el.imageSaturation / 100})`);
           const filterStr = filterParts.length > 0 ? filterParts.join(' ') : undefined;
 
-          const isFraming = editingImageId === el.id;
           const scale = el.imageScale || 1;
           const offsetX = el.imageOffsetX || 0;
           const offsetY = el.imageOffsetY || 0;
+          const isZoomed = scale > 1 || offsetX !== 0 || offsetY !== 0;
 
           const imgContainerStyle: React.CSSProperties = {
             ...style,
@@ -570,7 +570,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-            cursor: el.locked ? 'not-allowed' : (isFraming ? 'grab' : (readOnly ? 'default' : 'grab')),
+            cursor: el.locked ? 'not-allowed' : (readOnly ? 'default' : (el.imageUrl ? 'grab' : 'grab')),
           };
 
           const isLogoEl = el.type === 'logo';
@@ -602,31 +602,42 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${isFraming ? 'ring-2 ring-blue-500' : ''}`}
+              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${elSelected && isZoomed ? 'ring-2 ring-blue-500' : ''}`}
               onPointerDown={(e) => {
-                if (isFraming) {
+                if (readOnly) return;
+                // If image exists and not locked, always pan the image inside the frame
+                if (el.imageUrl && !el.locked) {
                   handleImagePanPointerDown(e, el);
                   return;
                 }
+                // No image: move the frame to position it
                 handlePointerDown(e, el, 'drag');
               }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 if (!readOnly && !el.locked && el.imageUrl) {
-                  const entering = editingImageId !== el.id;
-                  setEditingImageId(entering ? el.id : null);
-                  if (entering && (el.imageScale || 1) <= 1) {
-                    onUpdate(el.id, { imageScale: 1.2 });
+                  // Double-click resets pan/zoom
+                  if (isZoomed) {
+                    onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
+                  } else {
+                    // Zoom in slightly to enable panning
+                    onUpdate(el.id, { imageScale: 1.3 });
                   }
                   onSelect(el.id);
                 }
               }}
               onWheel={(e) => {
-                if (!isFraming || el.locked) return;
+                // Always allow zoom on selected images (no framing mode needed)
+                if (readOnly || el.locked || !elSelected || !el.imageUrl) return;
                 e.stopPropagation();
                 const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                const newScale = Math.max(1, Math.min(3, (el.imageScale || 1) + delta));
-                onUpdate(el.id, { imageScale: newScale });
+                const newScale = Math.max(1, Math.min(3, scale + delta));
+                // When zooming back to 1, reset offsets
+                if (newScale <= 1) {
+                  onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
+                } else {
+                  onUpdate(el.id, { imageScale: newScale });
+                }
               }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
@@ -655,9 +666,9 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   </svg>
                 </div>
               )}
-              {isFraming && !el.locked && (
-                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[10px] text-background font-medium z-10">
-                  Arraste para enquadrar · Scroll para zoom
+              {elSelected && !readOnly && !el.locked && el.imageUrl && (
+                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[10px] text-background font-medium z-10 whitespace-nowrap">
+                  Arraste para mover · Scroll para zoom · Duplo clique para resetar
                 </div>
               )}
               {resizeHandle}
