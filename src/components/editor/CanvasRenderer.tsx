@@ -106,7 +106,7 @@ function computeElementSnap(
 }
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor, clipOverflow = false }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     
