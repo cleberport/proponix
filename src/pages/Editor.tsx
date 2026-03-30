@@ -973,8 +973,9 @@ const Editor = () => {
             )}
           </div>
 
-          <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full">
+          <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full" style={{ background: 'hsl(var(--background) / 0.6)', backgroundImage: 'radial-gradient(circle at 50% 0%, hsl(var(--muted) / 0.3), transparent 70%)' }}>
             <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.15s ease' }}>
+              <div className="relative" style={{ filter: 'drop-shadow(0 4px 24px hsl(0 0% 0% / 0.25))' }}>
               <CanvasRenderer
                 ref={canvasRef}
                 elements={elements}
@@ -986,7 +987,9 @@ const Editor = () => {
                 onAddElement={addElementDirect}
                 showGrid={showGrid}
                 backgroundColor={canvasBgColor}
+                clipOverflow={previewMode}
               />
+              </div>
             </div>
           </div>
         </main>
