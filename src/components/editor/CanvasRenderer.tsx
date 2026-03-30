@@ -548,7 +548,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <img
                   src={el.imageUrl}
                   alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
-                  style={imgInnerStyle}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: isLogoEl ? 'contain' : (el.objectFit || 'cover'),
+                    filter: combinedFilter,
+                    pointerEvents: 'none',
+                  }}
                   draggable={false}
                 />
               ) : el.type === 'logo' ? (
@@ -559,19 +565,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <div className="flex flex-col items-center justify-center h-full gap-1 py-4">
                   <span className="text-xs text-muted-foreground">🖼 Imagem</span>
                   <span className="text-[10px] text-muted-foreground">Arraste ou clique para enviar</span>
-                </div>
-              )}
-              {el.locked && elSelected && (
-                <div className="absolute top-1 left-1 rounded bg-card/80 p-0.5 z-10">
-                  <svg className="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                  </svg>
-                </div>
-              )}
-              {elSelected && !readOnly && !el.locked && el.imageUrl && (
-                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[10px] text-background font-medium z-10 whitespace-nowrap">
-                  Arraste para mover · Scroll para zoom · Duplo clique para resetar
                 </div>
               )}
               {resizeHandle}
