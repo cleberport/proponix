@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
         .maybeSingle(),
     ]);
 
-    if (settingsRes.data?.company_name) companyName = settingsRes.data.company_name;
+    // Keep companyName as "Powered by Freelox" for clean branding
     if (settingsRes.data?.logo_url) logoUrl = settingsRes.data.logo_url;
     if (docRes.data?.client_name) clientName = docRes.data.client_name;
   }
