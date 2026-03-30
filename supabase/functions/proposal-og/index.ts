@@ -55,30 +55,9 @@ Deno.serve(async (req) => {
     if (docRes.data?.client_name) clientName = docRes.data.client_name;
   }
 
-  // Serve logo image directly (for og:image URL)
-  if (wantImage && logoUrl) {
-    if (logoUrl.startsWith("data:")) {
-      const match = logoUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-      if (match) {
-        const mimeType = match[1];
-        const raw = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
-        return new Response(raw, {
-          headers: {
-            "Content-Type": mimeType,
-            "Cache-Control": "public, max-age=86400",
-          },
-        });
-      }
-    }
-    return Response.redirect(logoUrl, 302);
-  }
-
-  // For bots: serve OG meta tags as plain HTML text
-  // Bots parse meta tags from text regardless of Content-Type
-  const description = "";
-
-  const fnBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/proposal-og`;
-  const ogImageUrl = logoUrl ? `${fnBaseUrl}?token=${encodeURIComponent(token)}&image=1` : "";
+  // Default OG image — always use branded Freelox image for consistent WhatsApp previews
+  const defaultOgImage = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/template-images/og-default.jpg`;
+  const ogImageUrl = defaultOgImage;
 
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
