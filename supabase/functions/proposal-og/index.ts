@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     .eq("token", token)
     .maybeSingle();
 
-  let companyName = "Proposta comercial";
+  let companyName = "Powered by Freelox";
   let logoUrl = "";
   let clientName = "";
 
@@ -75,9 +75,7 @@ Deno.serve(async (req) => {
 
   // For bots: serve OG meta tags as plain HTML text
   // Bots parse meta tags from text regardless of Content-Type
-  const description = clientName
-    ? `Proposta preparada para ${clientName}`
-    : "Visualize os detalhes da proposta";
+  const description = "";
 
   const fnBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/proposal-og`;
   const ogImageUrl = logoUrl ? `${fnBaseUrl}?token=${encodeURIComponent(token)}&image=1` : "";
