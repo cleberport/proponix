@@ -345,23 +345,28 @@ const ProposalView = () => {
       if (pageEls.length > 0) {
         const blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
         if (blob) {
-          // On mobile, trigger native share
+          let shared = false;
+          // On mobile, try native share first
           if (isMobile && navigator.share) {
             const file = new File([blob], fileName, { type: 'application/pdf' });
-            if (navigator.canShare?.({ files: [file] })) {
-              try {
+            try {
+              if (navigator.canShare?.({ files: [file] })) {
                 await navigator.share({ files: [file], title: fileName });
-              } catch { /* user cancelled */ }
-              return;
-            }
+                shared = true;
+              }
+            } catch { /* user cancelled or failed — fall through to download */ }
           }
-          // Desktop: download
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          a.click();
-          URL.revokeObjectURL(url);
+          // Fallback: download
+          if (!shared) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
         }
       }
     } catch {

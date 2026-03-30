@@ -566,15 +566,14 @@ const Generate = () => {
       if (blob) {
         if (isMobile) {
           const file = new File([blob], fileName, { type: 'application/pdf' });
-          if (navigator.share && navigator.canShare?.({ files: [file] })) {
-            try {
+          try {
+            if (navigator.share && navigator.canShare?.({ files: [file] })) {
               await navigator.share({ files: [file], title: fileName });
-            } catch (e: any) {
-              if (e.name !== 'AbortError') {
-                toast.error('Erro ao compartilhar');
-              }
+              return;
             }
-            return;
+          } catch (e: any) {
+            if (e.name === 'AbortError') return;
+            // Fall through to download
           }
         }
         // Desktop or fallback: download
