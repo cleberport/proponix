@@ -148,16 +148,23 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             if (multiDragStart) {
               multiDragStart.forEach(item => {
                 onUpdate(item.id, {
-                  x: snap(Math.max(0, item.x + dx)),
-                  y: snap(Math.max(0, item.y + dy)),
+                  x: snap(item.x + dx),
+                  y: snap(item.y + dy),
                 });
               });
               setGuides([]);
             } else {
-              const maxX = Math.max(0, CANVAS_W - el.width);
-              const maxY = Math.max(0, CANVAS_H - el.height);
-              let newX = Math.max(0, Math.min(maxX, startPos.current.elX + dx));
-              let newY = Math.max(0, Math.min(maxY, startPos.current.elY + dy));
+              const isImageEl = el.type === 'image' || el.type === 'logo';
+              let newX = startPos.current.elX + dx;
+              let newY = startPos.current.elY + dy;
+
+              if (!isImageEl) {
+                // Non-image elements stay within canvas bounds
+                const maxX = Math.max(0, CANVAS_W - el.width);
+                const maxY = Math.max(0, CANVAS_H - el.height);
+                newX = Math.max(0, Math.min(maxX, newX));
+                newY = Math.max(0, Math.min(maxY, newY));
+              }
 
               // Compute snap against other elements
               const others = elementsRef.current.filter(e => e.id !== el.id);
@@ -166,10 +173,10 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 others,
               );
 
-              if (snapResult.x !== null) newX = Math.max(0, Math.min(maxX, snapResult.x));
+              if (snapResult.x !== null) newX = isImageEl ? snapResult.x : Math.max(0, Math.min(Math.max(0, CANVAS_W - el.width), snapResult.x));
               else newX = snap(newX);
 
-              if (snapResult.y !== null) newY = Math.max(0, Math.min(maxY, snapResult.y));
+              if (snapResult.y !== null) newY = isImageEl ? snapResult.y : Math.max(0, Math.min(Math.max(0, CANVAS_H - el.height), snapResult.y));
               else newY = snap(newY);
 
               setGuides(snapResult.guides);
@@ -203,38 +210,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       [onSelect, onUpdate, readOnly, selectedIds]
     );
 
-    const handleImagePanPointerDown = useCallback(
-      (e: React.PointerEvent, el: CanvasElement) => {
-        if (readOnly || el.locked) return;
-        e.stopPropagation();
-        e.preventDefault();
-        onSelect(el.id);
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startOffsetX = el.imageOffsetX || 0;
-        const startOffsetY = el.imageOffsetY || 0;
-
-        const handleMove = (ev: PointerEvent) => {
-          const dx = ev.clientX - startX;
-          const dy = ev.clientY - startY;
-
-          onUpdate(el.id, {
-            imageOffsetX: startOffsetX + dx,
-            imageOffsetY: startOffsetY + dy,
-          });
-        };
-
-        const handleUp = () => {
-          document.removeEventListener('pointermove', handleMove);
-          document.removeEventListener('pointerup', handleUp);
-        };
-
-        document.addEventListener('pointermove', handleMove);
-        document.addEventListener('pointerup', handleUp);
-      },
-      [onSelect, onUpdate, readOnly]
-    );
+    // handleImagePanPointerDown removed — images are now free elements
 
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
@@ -540,102 +516,38 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
         case 'image':
         case 'logo': {
-          const hasCrop = el.cropX || el.cropY || (el.cropWidth && el.cropWidth < 100) || (el.cropHeight && el.cropHeight < 100);
-          const cropX = el.cropX || 0;
-          const cropY = el.cropY || 0;
-          const cropW = el.cropWidth || 100;
-          const cropH = el.cropHeight || 100;
-
           const filterParts: string[] = [];
           if (el.imageBrightness != null && el.imageBrightness !== 100) filterParts.push(`brightness(${el.imageBrightness / 100})`);
           if (el.imageContrast != null && el.imageContrast !== 100) filterParts.push(`contrast(${el.imageContrast / 100})`);
           if (el.imageSaturation != null && el.imageSaturation !== 100) filterParts.push(`saturate(${el.imageSaturation / 100})`);
           const filterStr = filterParts.length > 0 ? filterParts.join(' ') : undefined;
 
-          const scale = el.imageScale || 1;
-          const offsetX = el.imageOffsetX || 0;
-          const offsetY = el.imageOffsetY || 0;
-          const isZoomed = scale > 1 || offsetX !== 0 || offsetY !== 0;
+          const isLogoEl = el.type === 'logo';
+          const logoDarkBg = isLogoEl && isDark(backgroundColor);
+          const logoFilter = logoDarkBg ? 'brightness(0) invert(1)' : undefined;
+          const combinedFilter = isLogoEl ? logoFilter : filterStr;
 
           const imgContainerStyle: React.CSSProperties = {
             ...style,
             height: el.height || 'auto',
             minHeight: 20,
-            overflow: 'hidden',
             borderWidth: el.borderWidth || 0,
             borderStyle: (el.borderWidth || 0) > 0 ? 'solid' : 'none',
             borderColor: el.borderColor || '#000000',
             borderRadius: el.borderRadius || 0,
             opacity: (el.imageOpacity ?? 100) / 100,
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-            cursor: el.locked ? 'not-allowed' : (readOnly ? 'default' : (el.imageUrl ? 'grab' : 'grab')),
+            cursor: el.locked ? 'not-allowed' : (readOnly ? 'default' : 'grab'),
           };
-
-          const isLogoEl = el.type === 'logo';
-          // Auto-invert logo on dark backgrounds
-          const logoDarkBg = isLogoEl && isDark(backgroundColor);
-          const logoFilter = logoDarkBg ? 'brightness(0) invert(1)' : undefined;
-          const combinedFilter = isLogoEl
-            ? logoFilter
-            : filterStr;
-
-          const imgInnerStyle: React.CSSProperties = {
-            filter: combinedFilter,
-            position: isLogoEl ? 'relative' as const : 'absolute' as const,
-            top: isLogoEl ? undefined : 0,
-            left: isLogoEl ? undefined : 0,
-            width: isLogoEl ? '100%' : `${scale * 100}%`,
-            height: isLogoEl ? '100%' : `${scale * 100}%`,
-            objectFit: isLogoEl ? 'contain' : 'cover',
-            objectPosition: 'center',
-            transform: isLogoEl ? undefined : `translate(${offsetX}px, ${offsetY}px)`,
-            pointerEvents: 'none',
-          };
-
-          if (hasCrop) {
-            imgInnerStyle.clipPath = `inset(${cropY}% ${100 - cropX - cropW}% ${100 - cropY - cropH}% ${cropX}%)`;
-          }
 
           return (
             <div
               key={el.id}
               style={imgContainerStyle}
-              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass} ${elSelected && isZoomed ? 'ring-2 ring-blue-500' : ''}`}
+              className={`relative ${el.imageUrl ? '' : 'border border-dashed border-border bg-accent/30'} ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => {
                 if (readOnly) return;
-                // If image exists and not locked, always pan the image inside the frame
-                if (el.imageUrl && !el.locked) {
-                  handleImagePanPointerDown(e, el);
-                  return;
-                }
-                // No image: move the frame to position it
                 handlePointerDown(e, el, 'drag');
-              }}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                if (!readOnly && !el.locked && el.imageUrl) {
-                  // Double-click resets pan/zoom
-                  if (isZoomed) {
-                    onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
-                  } else {
-                    // Zoom in slightly to enable panning
-                    onUpdate(el.id, { imageScale: 1.3 });
-                  }
-                  onSelect(el.id);
-                }
-              }}
-              onWheel={(e) => {
-                // Always allow zoom on selected images (no framing mode needed)
-                if (readOnly || el.locked || !elSelected || !el.imageUrl) return;
-                e.stopPropagation();
-                const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                const newScale = Math.max(1, Math.min(3, scale + delta));
-                // When zooming back to 1, reset offsets
-                if (newScale <= 1) {
-                  onUpdate(el.id, { imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 });
-                } else {
-                  onUpdate(el.id, { imageScale: newScale });
-                }
               }}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
@@ -643,7 +555,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <img
                   src={el.imageUrl}
                   alt={el.type === 'logo' ? 'Logo' : 'Imagem'}
-                  style={imgInnerStyle}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: isLogoEl ? 'contain' : (el.objectFit || 'cover'),
+                    filter: combinedFilter,
+                    pointerEvents: 'none',
+                  }}
                   draggable={false}
                 />
               ) : el.type === 'logo' ? (
@@ -654,19 +572,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 <div className="flex flex-col items-center justify-center h-full gap-1 py-4">
                   <span className="text-xs text-muted-foreground">🖼 Imagem</span>
                   <span className="text-[10px] text-muted-foreground">Arraste ou clique para enviar</span>
-                </div>
-              )}
-              {el.locked && elSelected && (
-                <div className="absolute top-1 left-1 rounded bg-card/80 p-0.5 z-10">
-                  <svg className="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                  </svg>
-                </div>
-              )}
-              {elSelected && !readOnly && !el.locked && el.imageUrl && (
-                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[10px] text-background font-medium z-10 whitespace-nowrap">
-                  Arraste para mover · Scroll para zoom · Duplo clique para resetar
                 </div>
               )}
               {resizeHandle}

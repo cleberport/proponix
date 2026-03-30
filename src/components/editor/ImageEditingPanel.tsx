@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Upload, Lock, Unlock, RotateCw, RefreshCw } from 'lucide-react';
+import { Upload, Lock, Unlock, RotateCw } from 'lucide-react';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { optimizeImageFile } from '@/lib/imageOptimization';
@@ -66,21 +66,12 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
     });
   };
 
-  const resetFraming = () => {
-    onUpdate({
-      imageScale: 1,
-      imageOffsetX: 0,
-      imageOffsetY: 0,
-    });
-  };
-
   return (
     <div className="flex flex-col gap-3">
       {/* Tip */}
       <div className="rounded-md bg-accent/50 px-3 py-2">
         <p className="text-[11px] text-foreground leading-relaxed">
-          <strong>Duplo clique</strong> na imagem para enquadrar.
-          Arraste para reposicionar, <strong>scroll</strong> para zoom.
+          Arraste para mover livremente. Use o <strong>handle</strong> no canto para redimensionar.
         </p>
       </div>
 
@@ -102,29 +93,6 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
         Substituir Imagem
       </Button>
 
-      <Separator />
-
-      {/* Zoom (secondary control) */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <Label className="text-xs text-muted-foreground">Zoom</Label>
-          <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={resetFraming}>
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Resetar
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Slider
-            value={[Math.round((element.imageScale || 1) * 100)]}
-            min={100}
-            max={300}
-            step={5}
-            className="flex-1"
-            onValueChange={([val]) => onUpdate({ imageScale: val / 100 })}
-          />
-          <span className="text-[10px] text-muted-foreground w-10 text-right">{Math.round((element.imageScale || 1) * 100)}%</span>
-        </div>
-      </div>
 
       <Separator />
 
