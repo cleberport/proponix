@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Upload, Lock, Unlock, RotateCw, RefreshCw } from 'lucide-react';
+import { Upload, Lock, Unlock, RotateCw } from 'lucide-react';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { optimizeImageFile } from '@/lib/imageOptimization';
