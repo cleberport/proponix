@@ -203,38 +203,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       [onSelect, onUpdate, readOnly, selectedIds]
     );
 
-    const handleImagePanPointerDown = useCallback(
-      (e: React.PointerEvent, el: CanvasElement) => {
-        if (readOnly || el.locked) return;
-        e.stopPropagation();
-        e.preventDefault();
-        onSelect(el.id);
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startOffsetX = el.imageOffsetX || 0;
-        const startOffsetY = el.imageOffsetY || 0;
-
-        const handleMove = (ev: PointerEvent) => {
-          const dx = ev.clientX - startX;
-          const dy = ev.clientY - startY;
-
-          onUpdate(el.id, {
-            imageOffsetX: startOffsetX + dx,
-            imageOffsetY: startOffsetY + dy,
-          });
-        };
-
-        const handleUp = () => {
-          document.removeEventListener('pointermove', handleMove);
-          document.removeEventListener('pointerup', handleUp);
-        };
-
-        document.addEventListener('pointermove', handleMove);
-        document.addEventListener('pointerup', handleUp);
-      },
-      [onSelect, onUpdate, readOnly]
-    );
+    // handleImagePanPointerDown removed — images are now free elements
 
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
