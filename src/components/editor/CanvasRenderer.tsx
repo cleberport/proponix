@@ -108,7 +108,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
   ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
-    const [editingImageId, setEditingImageId] = useState<string | null>(null);
+    const [editingImageId] = useState<string | null>(null);
     const [editingTextId, setEditingTextId] = useState<string | null>(null);
     const [boxSelect, setBoxSelect] = useState<{ startX: number; startY: number; x: number; y: number } | null>(null);
     const [dragOver, setDragOver] = useState(false);
@@ -129,7 +129,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         e.stopPropagation();
         e.preventDefault();
         onSelect(el.id);
-        if (editingImageId !== el.id) setEditingImageId(null);
         if (editingTextId !== el.id) setEditingTextId(null);
         startPos.current = { x: e.clientX, y: e.clientY, elX: el.x, elY: el.y, elW: el.width, elH: el.height };
         if (mode === 'drag') setDragging(el.id);
@@ -239,7 +238,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
 
     const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
       if (readOnly) return;
-      setEditingImageId(null);
       setEditingTextId(null);
       onSelect(null);
       
