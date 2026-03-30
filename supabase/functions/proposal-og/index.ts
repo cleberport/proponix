@@ -55,10 +55,9 @@ Deno.serve(async (req) => {
     if (docRes.data?.client_name) clientName = docRes.data.client_name;
   }
 
-  // Use user's logo if it's a public HTTPS URL; otherwise fall back to default Freelox OG image
-  const defaultOgImage = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/template-images/og-default.jpg`;
-  const isPublicUrl = logoUrl && logoUrl.startsWith("https://") && !logoUrl.startsWith("data:");
-  const ogImageUrl = isPublicUrl ? logoUrl : defaultOgImage;
+  // Always use the default Freelox OG image (1200x630, professional look)
+  // User logos are too small/raw and look bad as OG preview images
+  const ogImageUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/template-images/og-default.jpg`;
   const description = "";
 
   const esc = (s: string) =>
