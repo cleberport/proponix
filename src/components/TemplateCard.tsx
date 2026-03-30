@@ -59,26 +59,26 @@ const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: P
       </div>
 
       {/* Desktop action buttons */}
-      <div className="hidden md:flex gap-1.5 px-2 pb-2">
+      <div className="hidden md:grid grid-cols-2 gap-1.5 px-2 pb-2">
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-7 text-[11px] gap-1"
+          className="h-7 text-[11px] gap-1 px-0 w-full"
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
         >
-          <Pencil className="h-3 w-3" />
-          Editar
+          <Pencil className="h-3 w-3 shrink-0" />
+          <span className="truncate">Editar</span>
         </Button>
-        {onGenerate && (
+        {onGenerate ? (
           <Button
             size="sm"
-            className="flex-1 h-7 text-[11px] gap-1"
+            className="h-7 text-[11px] gap-1 px-0 w-full"
             onClick={(e) => { e.stopPropagation(); onGenerate(); }}
           >
-            <FileText className="h-3 w-3" />
-            Gerar
+            <FileText className="h-3 w-3 shrink-0" />
+            <span className="truncate">Gerar</span>
           </Button>
-        )}
+        ) : <span />}
       </div>
     </article>
   );
