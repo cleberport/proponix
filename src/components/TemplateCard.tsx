@@ -1,30 +1,36 @@
 import { Template } from '@/types/template';
-import { Pencil, Trash2, Copy } from 'lucide-react';
+import { Pencil, Trash2, Copy, FileText } from 'lucide-react';
 import TemplatePreview from '@/components/TemplatePreview';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   template: Template;
   onEdit: () => void;
+  onGenerate?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
   isSaved?: boolean;
 }
 
-const TemplateCard = ({ template, onEdit, onDelete, onDuplicate }: Props) => {
+const TemplateCard = ({ template, onEdit, onGenerate, onDelete, onDuplicate }: Props) => {
+  const handleClick = () => {
+    // Mobile: go straight to generate if available, otherwise edit
+    if (window.innerWidth < 768 && onGenerate) {
+      onGenerate();
+    } else if (window.innerWidth < 768) {
+      onEdit();
+    }
+    // Desktop: no action on card click (buttons below handle it)
+  };
+
   return (
     <article
-      className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card cursor-pointer transition-all duration-200 hover:shadow-lg"
-      onClick={onEdit}
+      className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 hover:shadow-lg md:cursor-default cursor-pointer"
+      onClick={handleClick}
     >
       {/* Preview with hover overlay */}
       <div className="relative overflow-hidden bg-muted/20">
         <TemplatePreview template={template} className="w-full" />
-
-        {/* Dark overlay + edit icon on hover */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/50 group-hover:opacity-100">
-          <Pencil className="h-5 w-5 text-white drop-shadow-md" />
-          <span className="text-xs font-semibold text-white drop-shadow-md">Editar</span>
-        </div>
 
         {/* Action icons top-right */}
         <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -47,9 +53,32 @@ const TemplateCard = ({ template, onEdit, onDelete, onDuplicate }: Props) => {
         </div>
       </div>
 
-      {/* Compact label */}
+      {/* Label */}
       <div className="px-2 py-1.5">
         <h3 className="truncate text-xs font-medium text-foreground">{template.name}</h3>
+      </div>
+
+      {/* Desktop action buttons */}
+      <div className="hidden md:flex gap-1.5 px-2 pb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 h-7 text-[11px] gap-1"
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        >
+          <Pencil className="h-3 w-3" />
+          Editar
+        </Button>
+        {onGenerate && (
+          <Button
+            size="sm"
+            className="flex-1 h-7 text-[11px] gap-1"
+            onClick={(e) => { e.stopPropagation(); onGenerate(); }}
+          >
+            <FileText className="h-3 w-3" />
+            Gerar
+          </Button>
+        )}
       </div>
     </article>
   );
