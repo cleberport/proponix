@@ -94,29 +94,6 @@ const ImageEditingPanel = ({ element, onUpdate }: Props) => {
         Substituir Imagem
       </Button>
 
-      <Separator />
-
-      {/* Zoom (secondary control) */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <Label className="text-xs text-muted-foreground">Zoom</Label>
-          <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={resetFraming}>
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Resetar
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Slider
-            value={[Math.round((element.imageScale || 1) * 100)]}
-            min={100}
-            max={300}
-            step={5}
-            className="flex-1"
-            onValueChange={([val]) => onUpdate({ imageScale: val / 100 })}
-          />
-          <span className="text-[10px] text-muted-foreground w-10 text-right">{Math.round((element.imageScale || 1) * 100)}%</span>
-        </div>
-      </div>
 
       <Separator />
 
