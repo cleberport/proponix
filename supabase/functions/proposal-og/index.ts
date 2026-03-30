@@ -55,9 +55,11 @@ Deno.serve(async (req) => {
     if (docRes.data?.client_name) clientName = docRes.data.client_name;
   }
 
-  // Default OG image — always use branded Freelox image for consistent WhatsApp previews
+  // Use user's logo if it's a public HTTPS URL; otherwise fall back to default Freelox OG image
   const defaultOgImage = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/template-images/og-default.jpg`;
-  const ogImageUrl = defaultOgImage;
+  const isPublicUrl = logoUrl && logoUrl.startsWith("https://") && !logoUrl.startsWith("data:");
+  const ogImageUrl = isPublicUrl ? logoUrl : defaultOgImage;
+  const description = "";
 
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -69,11 +71,14 @@ Deno.serve(async (req) => {
 <meta property="og:type" content="website"/>
 <meta property="og:title" content="${esc(companyName)}"/>
 <meta property="og:description" content="${esc(description)}"/>
-${ogImageUrl ? `<meta property="og:image" content="${esc(ogImageUrl)}"/>` : ""}
-<meta name="twitter:card" content="summary"/>
+<meta property="og:image" content="${esc(ogImageUrl)}"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:url" content="${esc(redirectUrl)}"/>
+<meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="${esc(companyName)}"/>
 <meta name="twitter:description" content="${esc(description)}"/>
-${ogImageUrl ? `<meta name="twitter:image" content="${esc(ogImageUrl)}"/>` : ""}
+<meta name="twitter:image" content="${esc(ogImageUrl)}"/>
 <meta http-equiv="refresh" content="0;url=${esc(redirectUrl)}"/>
 <title>${esc(companyName)}</title>
 </head>
