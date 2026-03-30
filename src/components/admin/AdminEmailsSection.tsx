@@ -227,7 +227,7 @@ export default function AdminEmailsSection() {
                 value={editForm.ctaUrl}
                 onChange={(e) => setEditForm({ ...editForm, ctaUrl: e.target.value })}
                 className="mt-1 h-10"
-                placeholder="https://freelox.lovable.app/dashboard"
+                placeholder="https://freelox.app/dashboard"
               />
             </div>
             <div>

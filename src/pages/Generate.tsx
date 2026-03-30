@@ -652,7 +652,7 @@ const Generate = () => {
       if (error) throw error;
 
       const link = data as any;
-      const shortUrl = `https://freelox.lovable.app/p/${link.token}`;
+      const shortUrl = `https://freelox.app/p/${link.token}`;
       setGeneratedLink(shortUrl);
       setLinkCopied(false);
       setLinkModalOpen(true);
@@ -680,7 +680,7 @@ const Generate = () => {
   };
 
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(`Olá! Segue o orçamento para sua análise:\n${generatedLink}`);
+    const message = encodeURIComponent(`Olá! Segue a proposta para sua análise:\n${generatedLink}`);
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
 

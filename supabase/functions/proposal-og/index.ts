@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     return new Response("Not found", { status: 404 });
   }
 
-  const appOrigin = "https://freelox.lovable.app";
+  const appOrigin = "https://freelox.app";
   const redirectUrl = `${appOrigin}/p/${token}`;
   const ua = req.headers.get("user-agent") || "";
   const isBot = BOT_UA.test(ua);
