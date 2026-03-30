@@ -128,7 +128,7 @@
 @layer utilities {
   .canvas-paper {
     background: hsl(var(--canvas));
-    box-shadow: var(--canvas-shadow);
+    box-shadow: 0 0 0 1px hsl(var(--border)), 0 8px 32px -8px hsl(0 0% 0% / 0.3);
   }
 
   .grid-dots {

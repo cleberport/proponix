@@ -16,6 +16,7 @@ interface Props {
   variableValues?: Record<string, string>;
   showGrid?: boolean;
   backgroundColor?: string;
+  clipOverflow?: boolean;
 }
 
 const CANVAS_W = 595;
@@ -105,7 +106,7 @@ function computeElementSnap(
 }
 
 const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
-  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor }, ref) => {
+  ({ elements, selectedId, selectedIds = [], onSelect, onMultiSelect, onUpdate, onAddElement, readOnly, variableValues, showGrid = true, backgroundColor, clipOverflow = false }, ref) => {
     const [dragging, setDragging] = useState<string | null>(null);
     const [resizing, setResizing] = useState<string | null>(null);
     
@@ -734,7 +735,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
         className={`canvas-paper relative touch-none ${!readOnly && showGrid ? 'grid-dots' : ''} ${dragOver ? 'ring-2 ring-primary ring-inset' : ''}`}
-        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H, backgroundColor: backgroundColor || '#ffffff' }}
+        style={{ width: CANVAS_W, height: CANVAS_H, minWidth: CANVAS_W, minHeight: CANVAS_H, backgroundColor: backgroundColor || '#ffffff', overflow: clipOverflow || readOnly ? 'hidden' : 'visible' }}
         onPointerDown={handleCanvasPointerDown}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

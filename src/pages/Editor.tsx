@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Undo2 } from 'lucide-react';
+import { ArrowLeft, Save, Play, Plus, GripVertical, Settings2, Trash2, Copy, AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal, Grid3X3, ZoomIn, ZoomOut, Paintbrush, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Undo2, Eye, EyeOff } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
@@ -59,6 +59,7 @@ const Editor = () => {
     return 100;
   });
   const [showGrid, setShowGrid] = useState(true);
+  const [previewMode, setPreviewMode] = useState(false);
   const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
 
   const BG_PRESETS = ['#ffffff', '#f8fafc', '#f1f5f9', '#fef3c7', '#fce7f3', '#e0e7ff', '#d1fae5', '#1e293b', '#0f172a'];
@@ -878,6 +879,16 @@ const Editor = () => {
               <Grid3X3 className="h-3.5 w-3.5" />
             </Button>
 
+            <Button
+              variant={previewMode ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setPreviewMode(!previewMode)}
+              title={previewMode ? 'Modo edição' : 'Preview (como no PDF)'}
+            >
+              {previewMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </Button>
+
             <div className="flex items-center gap-1.5">
               <ZoomOut className="h-3.5 w-3.5 text-muted-foreground" />
               <Slider
@@ -973,8 +984,9 @@ const Editor = () => {
             )}
           </div>
 
-          <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full">
+          <div className="flex flex-1 items-start justify-center overflow-auto p-4 md:p-8 w-full" style={{ background: 'hsl(var(--background) / 0.6)', backgroundImage: 'radial-gradient(circle at 50% 0%, hsl(var(--muted) / 0.3), transparent 70%)' }}>
             <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.15s ease' }}>
+              <div className="relative" style={{ filter: 'drop-shadow(0 4px 24px hsl(0 0% 0% / 0.25))' }}>
               <CanvasRenderer
                 ref={canvasRef}
                 elements={elements}
@@ -986,7 +998,9 @@ const Editor = () => {
                 onAddElement={addElementDirect}
                 showGrid={showGrid}
                 backgroundColor={canvasBgColor}
+                clipOverflow={previewMode}
               />
+              </div>
             </div>
           </div>
         </main>
