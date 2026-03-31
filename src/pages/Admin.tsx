@@ -347,6 +347,9 @@ const AdminPage = () => {
                   <SelectItem value="trial">Trial</SelectItem>
                   <SelectItem value="active">Ativo</SelectItem>
                   <SelectItem value="expired">Expirado</SelectItem>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
                 </SelectContent>
               </Select>
             </div>
