@@ -16,9 +16,13 @@ interface Props {
   variables: string[];
   onUpdate: (updates: Partial<CanvasElement>) => void;
   onDelete: () => void;
+  onBringForward?: () => void;
+  onSendBackward?: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
 }
 
-const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
+const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForward, onSendBackward, onBringToFront, onSendToBack }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
