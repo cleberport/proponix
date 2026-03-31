@@ -674,6 +674,7 @@ function renderPageElements(
           const svcName = variableValues[`service_${svcIdx}_name`] || '';
           const svcDesc = variableValues[`service_${svcIdx}_description`] || '';
           const svcPrice = variableValues[`service_${svcIdx}_price`] || '';
+          const isDimmed = variableValues[`service_${svcIdx}_dimmed`] === '1';
           const hasContent = svcName || svcDesc || (showPrice && svcPrice);
           if (!hasContent) continue;
 
@@ -686,11 +687,16 @@ function renderPageElements(
             hasPrice: Boolean(showPrice && svcPrice),
           });
 
+          // Apply dimmed opacity
+          if (isDimmed) {
+            pdf.setGState(new (pdf as any).GState({ opacity: 0.5 }));
+          }
+
           if (opacity < 1) {
             pdf.setFillColor(255, 255, 255);
-            pdf.setGState(new (pdf as any).GState({ opacity: opacity * 0.1 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: (isDimmed ? 0.5 : 1) * opacity * 0.1 }));
             pdf.rect(x, itemY, w, scaleH(itemHeight), 'F');
-            pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: isDimmed ? 0.5 : 1 }));
           }
 
           pdf.setFont('helvetica', 'bold');
