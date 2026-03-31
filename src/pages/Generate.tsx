@@ -541,7 +541,7 @@ const Generate = () => {
       const fileName = generatePdfFileName();
       const bgColor = template?.settings?.backgroundColor;
 
-      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true });
+      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true, watermark: showWatermark });
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
