@@ -60,6 +60,7 @@ const Generate = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
+  const [taxRateDisplay, setTaxRateDisplay] = useState('0');
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
@@ -216,7 +217,11 @@ const Generate = () => {
       if (!fetchedTemplate) return;
 
       if (editingDoc.values) {
-        setUserInputs({ ...editingDoc.values });
+        const values = { ...editingDoc.values };
+        setUserInputs(values);
+        const taxRaw = values.tax_rate ?? fetchedTemplate.defaultValues?.tax_rate ?? '0';
+        const taxDecimal = parseFloat(taxRaw) || 0;
+        setTaxRateDisplay(String(taxDecimal * 100));
       } else {
         const init: Record<string, string> = {};
         const pages = getTemplatePages(fetchedTemplate);
@@ -269,7 +274,10 @@ const Generate = () => {
           }
         }
 
+        const initialTaxRate = fetchedTemplate.defaultValues?.tax_rate ?? '0';
+        init.tax_rate = initialTaxRate;
         setUserInputs(init);
+        setTaxRateDisplay(String((parseFloat(initialTaxRate) || 0) * 100));
       }
     };
 
@@ -880,18 +888,15 @@ const Generate = () => {
                   <Input
                     type="number"
                     step="0.01"
-                    value={(() => {
-                      const raw = userInputs.tax_rate ?? template?.defaultValues?.tax_rate ?? '0';
-                      const decimal = parseFloat(raw) || 0;
-                      return decimal <= 1 ? (decimal * 100).toFixed(1) : decimal.toFixed(1);
-                    })()}
+                    value={taxRateDisplay}
                     onChange={(e) => {
-                      const pct = parseFloat(e.target.value) || 0;
-                      const decimal = pct / 100;
-                      setUserInputs(prev => ({ ...prev, tax_rate: decimal.toString() }));
+                      const next = e.target.value;
+                      setTaxRateDisplay(next);
+                      const pct = parseFloat(next);
+                      setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
                     }}
                     className="h-12 text-base md:h-10 md:text-sm"
-                    inputMode="numeric"
+                    inputMode="decimal"
                   />
                   <span className="text-sm text-muted-foreground">%</span>
                 </div>
