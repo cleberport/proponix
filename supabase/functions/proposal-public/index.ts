@@ -19,6 +19,58 @@ function sanitizeString(value: unknown, maxLength = 500): string {
   return value.trim().replace(/[\x00-\x1F\x7F]/g, "").slice(0, maxLength);
 }
 
+/**
+ * Fire an email trigger from edge function context (non-blocking).
+ * Looks up enabled automation + template, then invokes send-transactional-email.
+ */
+async function fireEmailTriggerFromEdge(
+  supabase: any,
+  event: string,
+  userId: string,
+  templateData: Record<string, any> = {}
+) {
+  try {
+    const { data: automations } = await supabase
+      .from("email_automations")
+      .select("id, template_id, delay_minutes")
+      .eq("trigger_event", event)
+      .eq("enabled", true)
+      .limit(1);
+    if (!automations || automations.length === 0) return;
+
+    const auto = automations[0];
+    if (auto.delay_minutes > 0) return; // skip delayed for now
+
+    const { data: template } = await supabase
+      .from("email_templates")
+      .select("id, enabled")
+      .eq("id", auto.template_id)
+      .eq("enabled", true)
+      .maybeSingle();
+    if (!template) return;
+
+    // Get user email from profiles
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!profile?.email) return;
+
+    // Invoke send-transactional-email
+    await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: auto.template_id,
+        recipientEmail: profile.email,
+        idempotencyKey: `auto-${event}-${userId}-${Date.now()}`,
+        templateData: { ...templateData, user_name: profile.full_name || "" },
+      },
+    });
+  } catch (err) {
+    console.error(`[email-trigger] ${event} error:`, err);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
