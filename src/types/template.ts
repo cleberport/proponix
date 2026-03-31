@@ -162,7 +162,7 @@ export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }
   { type: 'shape', label: 'Forma', icon: 'Square' },
   { type: 'image', label: 'Imagem', icon: 'Image' },
   { type: 'logo', label: 'Logo', icon: 'Stamp' },
-  { type: 'divider', label: 'Divisor', icon: 'Minus' },
+  
   { type: 'table', label: 'Tabela', icon: 'Table' },
   { type: 'price-field', label: 'Campo de Preço', icon: 'DollarSign' },
   { type: 'total-calculation', label: 'Total', icon: 'Calculator' },
