@@ -24,8 +24,9 @@ const Dashboard = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
-  const { maxTemplates } = useSubscription();
+  const { maxTemplates, showWatermark } = useSubscription();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const isFree = showWatermark;
 
   const refreshSaved = useCallback(async () => {
     setLoadingSaved(true);
