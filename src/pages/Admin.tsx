@@ -187,27 +187,8 @@ const AdminPage = () => {
         <p className="text-sm text-muted-foreground mt-1">Gerenciamento de usuários e sistema</p>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-5 w-full grid grid-cols-4">
-          <TabsTrigger value="users" className="gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            Usuários
-          </TabsTrigger>
-          <TabsTrigger value="emails" className="gap-1.5">
-            <Mail className="h-3.5 w-3.5" />
-            Templates
-          </TabsTrigger>
-          <TabsTrigger value="automations" className="gap-1.5">
-            <Zap className="h-3.5 w-3.5" />
-            Automações
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="gap-1.5">
-            <FileText className="h-3.5 w-3.5" />
-            Logs
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users">
+      {section === 'users' && (
+        <>
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {statCards.map((s) => (
@@ -301,20 +282,12 @@ const AdminPage = () => {
               </Table>
             </div>
           </div>
-        </TabsContent>
+        </>
+      )}
 
-        <TabsContent value="emails">
-          <AdminEmailsSection />
-        </TabsContent>
-
-        <TabsContent value="automations">
-          <AdminAutomations />
-        </TabsContent>
-
-        <TabsContent value="logs">
-          <AdminEmailLogs />
-        </TabsContent>
-      </Tabs>
+      {section === 'emails' && <AdminEmailsSection />}
+      {section === 'automations' && <AdminAutomations />}
+      {section === 'logs' && <AdminEmailLogs />}
 
       {/* View dialog */}
       <Dialog open={!!viewProfile} onOpenChange={() => setViewProfile(null)}>
