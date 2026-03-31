@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Users, Mail, Zap, ScrollText } from 'lucide-react';
 import freeloxLogo from '@/assets/freelox_logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,6 +24,13 @@ const items = [
   { title: 'Templates', url: '/dashboard', icon: LayoutGrid },
   { title: 'Documentos', url: '/documents', icon: FileText },
   { title: 'Recebidos', url: '/recebidos', icon: Inbox },
+];
+
+const adminSubItems = [
+  { title: 'Usuários', url: '/admin?section=users', section: 'users', icon: Users },
+  { title: 'Templates', url: '/admin?section=emails', section: 'emails', icon: Mail },
+  { title: 'Automações', url: '/admin?section=automations', section: 'automations', icon: Zap },
+  { title: 'Logs', url: '/admin?section=logs', section: 'logs', icon: ScrollText },
 ];
 
 export function AppSidebar() {
