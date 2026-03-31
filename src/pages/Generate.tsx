@@ -97,21 +97,25 @@ const Generate = () => {
 
   const hasTable = !!tableInfo;
 
-  // Detect service blocks in the template
-  const templateServiceIndices = useMemo(() => {
-    if (!template) return [];
+  // Detect service blocks in the template and their serviceCount
+  const templateServiceInfo = useMemo(() => {
+    if (!template) return { count: 0, hasService: false };
     const pages = getTemplatePages(template);
-    const indices: number[] = [];
     for (const page of pages) {
       for (const el of page) {
         if (el.type === 'service') {
-          const idx = el.serviceIndex ?? 0;
-          if (!indices.includes(idx)) indices.push(idx);
+          return { count: el.serviceCount || 3, hasService: true };
         }
       }
     }
-    return indices.sort((a, b) => a - b);
+    return { count: 0, hasService: false };
   }, [template]);
+
+  // Build service indices from serviceCount (0, 1, 2, ...)
+  const templateServiceIndices = useMemo(() => {
+    if (!templateServiceInfo.hasService) return [];
+    return Array.from({ length: templateServiceInfo.count }, (_, i) => i);
+  }, [templateServiceInfo]);
 
   // All service indices = template ones + dynamically added extras
   const allServiceIndices = useMemo(() => {
@@ -119,7 +123,7 @@ const Generate = () => {
     return [...new Set(all)].sort((a, b) => a - b);
   }, [templateServiceIndices, extraServiceIndices]);
 
-  const hasServices = allServiceIndices.length > 0;
+  const hasServices = templateServiceInfo.hasService;
 
   // Keep preview closed on mobile and open on desktop
   useEffect(() => {
@@ -379,50 +383,19 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
-          // Apply showPrice toggle from generation form and compact service block height in preview
+          // Service blocks: update serviceCount based on total selected services
           if (el.type === 'service') {
-            const idx = el.serviceIndex ?? 0;
-            const show = serviceShowPrice[idx] ?? true;
-            const compactHeight = Math.min(el.height, 48);
-            return { ...el, showPrice: show, height: compactHeight } as CanvasElement;
+            const totalCount = allServiceIndices.length;
+            const itemHeight = Math.max(Math.floor(el.height / (el.serviceCount || 3)), 20);
+            const newHeight = itemHeight * totalCount;
+            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight) } as CanvasElement;
           }
           return el;
         })
     );
 
-    // Add extra service blocks at the end of the last page
-    if (extraServiceIndices.length > 0 && result.length > 0) {
-      const lastPage = result[result.length - 1];
-      // Find the last service element to position extras below
-      const lastServiceEl = [...lastPage].reverse().find(e => e.type === 'service');
-      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height : 600;
-      const baseEl = lastServiceEl || lastPage[0];
-      const svcHeight = lastServiceEl?.height ?? 50;
-
-      extraServiceIndices.forEach((idx, i) => {
-        if (templateServiceIndices.includes(idx)) return;
-        result[result.length - 1] = [...result[result.length - 1], {
-          id: `extra-service-${idx}`,
-          type: 'service' as const,
-          x: baseEl?.x ?? 40,
-          y: baseY + i * svcHeight,
-          width: baseEl?.width ?? 300,
-          height: svcHeight,
-          content: '',
-          fontSize: baseEl?.fontSize ?? 14,
-          fontWeight: '400',
-          fontFamily: baseEl?.fontFamily ?? 'Space Grotesk',
-          color: baseEl?.color ?? '#0F172A',
-          alignment: 'left' as const,
-          isVisible: true,
-          serviceIndex: idx,
-          showPrice: serviceShowPrice[idx] ?? true,
-        }];
-      });
-    }
-
     return result;
-  }, [template, tableRows, hasTable, tableInfo, extraServiceIndices, templateServiceIndices, serviceShowPrice]);
+  }, [template, tableRows, hasTable, tableInfo, allServiceIndices, serviceShowPrice]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {

@@ -695,19 +695,6 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const itemHeight = Math.max(Math.floor(el.height / count), 20);
 
           // Mock data for editor preview
-          const mockServices = [
-            { name: 'Fotografia Premium', desc: 'Cobertura completa do evento', price: 'R$ 2.500,00' },
-            { name: 'Edição Avançada', desc: 'Tratamento profissional das fotos', price: 'R$ 1.200,00' },
-            { name: 'Álbum Digital', desc: 'Álbum com 40 páginas', price: 'R$ 800,00' },
-            { name: 'Ensaio Pré-Evento', desc: 'Sessão de fotos preparatória', price: 'R$ 950,00' },
-            { name: 'Vídeo Highlight', desc: 'Vídeo resumo de 3 minutos', price: 'R$ 1.800,00' },
-            { name: 'Drone Aéreo', desc: 'Imagens aéreas do local', price: 'R$ 600,00' },
-            { name: 'Impressão Fine Art', desc: 'Impressão em papel especial', price: 'R$ 450,00' },
-            { name: 'Segundo Fotógrafo', desc: 'Cobertura com ângulo adicional', price: 'R$ 1.100,00' },
-            { name: 'Cabine de Fotos', desc: 'Cabine interativa para convidados', price: 'R$ 700,00' },
-            { name: 'Entrega Expressa', desc: 'Galeria online em 48h', price: 'R$ 350,00' },
-          ];
-
           const items: { name: string; desc: string; price: string }[] = [];
           for (let i = 0; i < count; i++) {
             const realName = variableValues?.[`service_${i}_name`];
@@ -716,7 +703,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             if (realName) {
               items.push({ name: realName, desc: realDesc || '', price: realPrice || '' });
             } else {
-              items.push(mockServices[i % mockServices.length]);
+              const num = String(i + 1).padStart(2, '0');
+              items.push({ name: `Item ${num}`, desc: `Descrição do item ${num}`, price: `R$ ${((i + 1) * 500).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` });
             }
           }
 
