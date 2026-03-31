@@ -72,6 +72,13 @@ export interface CanvasElement {
   serviceIndex?: number; // distinguishes multiple service blocks (0, 1, 2...)
   showPrice?: boolean; // toggle price visibility on service block (default true)
   bgOpacity?: number; // 0-100, default 100
+
+  // Shape properties
+  shapeColor?: string; // fill color for shape elements
+  shapeBorderRadius?: number; // border radius in px
+  shapeOpacity?: number; // 0-100, default 100
+  shapeBorderWidth?: number; // border width in px
+  shapeBorderColor?: string; // border color
 }
 
 export interface TableRow {
