@@ -70,6 +70,7 @@ export interface CanvasElement {
   // Service block
   serviceId?: string; // links to selected service at generation time
   serviceIndex?: number; // distinguishes multiple service blocks (0, 1, 2...)
+  serviceCount?: number; // how many service items to display (default 3)
   showPrice?: boolean; // toggle price visibility on service block (default true)
   bgOpacity?: number; // 0-100, default 100
 
