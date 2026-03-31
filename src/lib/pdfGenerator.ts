@@ -689,7 +689,7 @@ function renderPageElements(
 
           // Apply dimmed opacity
           if (isDimmed) {
-            pdf.setGState(new (pdf as any).GState({ opacity: 0.5 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
           }
 
           if (opacity < 1) {
