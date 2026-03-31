@@ -108,7 +108,7 @@ const Landing = () => {
               Entrar
             </Button>
             <Button size="sm" onClick={() => go()}
-              className="bg-primary text-white hover:bg-primary/90 rounded-full px-5 text-xs font-semibold">
+              className="bg-primary text-white hover:bg-primary/90 rounded-full px-5 text-sm font-bold">
               Começar grátis
             </Button>
           </div>
