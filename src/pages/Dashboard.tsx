@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SavedTemplate } from '@/types/template';
 import OnboardingTour from '@/components/OnboardingTour';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import UpgradeModal from '@/components/UpgradeModal';
 
 
 const Dashboard = () => {
