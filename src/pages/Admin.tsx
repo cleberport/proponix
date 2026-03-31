@@ -341,12 +341,10 @@ const AdminPage = () => {
               <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
                 <SelectTrigger className="mt-1 h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="trial">Trial</SelectItem>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="expired">Expirado</SelectItem>
                   <SelectItem value="free">Free</SelectItem>
                   <SelectItem value="pro">Pro</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="expired">Expirado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
