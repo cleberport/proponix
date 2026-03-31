@@ -546,7 +546,7 @@ const Landing = () => {
             </div>
             <span className="text-sm font-semibold">Freelox</span>
           </div>
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} Freelox. Todos os direitos reservados.</p>
+          <p className="text-xs text-white/60">© {new Date().getFullYear()} Freelox. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
