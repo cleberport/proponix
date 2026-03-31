@@ -241,6 +241,11 @@ Deno.serve(async (req) => {
 
       await supabase.from("generated_documents").update({ status: "aprovado" }).eq("id", link.document_id).eq("user_id", link.user_id);
 
+      // Fire proposal_approved email trigger to the sender
+      fireEmailTriggerFromEdge(supabase, "proposal_approved", link.user_id, {
+        client_name: approverName,
+      });
+
       return jsonResponse({ success: true, approvedAt: now });
     }
 
