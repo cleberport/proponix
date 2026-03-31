@@ -212,10 +212,17 @@ const Editor = () => {
         undo();
         return;
       }
+
+      // Ctrl+D / Cmd+D → duplicate
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        duplicateSelected();
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, setElements, undo]);
+  }, [selectedIds, setElements, undo, duplicateSelected]);
 
   const handleSelect = useCallback((id: string | null) => {
     if (id) setSelectedIds([id]);
