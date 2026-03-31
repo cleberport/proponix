@@ -872,7 +872,7 @@ const Generate = () => {
               </div>
             )}
 
-            {/* Tax rate override - only shown here, not in editor */}
+            {/* Tax rate override */}
             {template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')) && (
               <div className="pt-2 border-t border-border mt-2">
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
@@ -880,7 +880,11 @@ const Generate = () => {
                   <Input
                     type="number"
                     step="0.01"
-                    value={userInputs.tax_rate ? (parseFloat(userInputs.tax_rate) * 100).toFixed(1) : (template.defaultValues?.tax_rate ? (parseFloat(template.defaultValues.tax_rate) * 100).toFixed(1) : '10')}
+                    value={(() => {
+                      const raw = userInputs.tax_rate ?? template?.defaultValues?.tax_rate ?? '0';
+                      const decimal = parseFloat(raw) || 0;
+                      return decimal <= 1 ? (decimal * 100).toFixed(1) : decimal.toFixed(1);
+                    })()}
                     onChange={(e) => {
                       const pct = parseFloat(e.target.value) || 0;
                       const decimal = pct / 100;

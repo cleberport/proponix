@@ -154,7 +154,7 @@ export const DEFAULT_CALCULATED_FIELDS: Record<string, string> = {
 export const DEFAULT_TEMPLATE_VALUES: Record<string, string> = {
   service_name: 'Serviços Profissionais',
   price: '1000',
-  tax_rate: '0.10',
+  tax_rate: '0',
 };
 
 export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }[] = [
