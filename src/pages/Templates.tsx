@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import TemplateCard from '@/components/TemplateCard';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import UpgradeModal from '@/components/UpgradeModal';
 import {
   AlertDialog,
   AlertDialogAction,
