@@ -90,9 +90,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       let plan: PlanType = 'free';
 
       if (data?.subscribed) {
-        if (productId === PLAN_CONFIG.premium.product_id) {
+        if (productId === PLAN_CONFIG.premium.product_id || productId === 'manual_premium') {
           plan = 'premium';
-        } else if (productId === PLAN_CONFIG.pro.product_id) {
+        } else if (productId === PLAN_CONFIG.pro.product_id || productId === 'manual_pro') {
           plan = 'pro';
         } else {
           plan = 'premium'; // Legacy subscribers
