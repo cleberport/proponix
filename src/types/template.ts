@@ -157,6 +157,7 @@ export const DEFAULT_TEMPLATE_VALUES: Record<string, string> = {
 export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }[] = [
   { type: 'text', label: 'Bloco de Texto', icon: 'Type' },
   { type: 'dynamic-field', label: 'Campo Dinâmico', icon: 'Variable' },
+  { type: 'shape', label: 'Forma', icon: 'Square' },
   { type: 'image', label: 'Imagem', icon: 'Image' },
   { type: 'logo', label: 'Logo', icon: 'Stamp' },
   { type: 'divider', label: 'Divisor', icon: 'Minus' },
