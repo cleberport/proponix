@@ -361,9 +361,9 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
-    // Inject service data — only selected services, with sequential indices
-    let seqIdx = 0;
-    for (const idx of allServiceIndices) {
+    // Inject service data for all indices
+    for (let seqIdx = 0; seqIdx < allServiceIndices.length; seqIdx++) {
+      const idx = allServiceIndices[seqIdx];
       const svc = selectedServices[idx];
       if (svc) {
         display[`service_${seqIdx}_name`] = svc.name;
@@ -371,7 +371,6 @@ const Generate = () => {
         display[`service_${seqIdx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
         display[`service_${seqIdx}_notes`] = svc.notes;
         display[`service_${seqIdx}_dimmed`] = serviceDimmed[idx] ? '1' : '';
-        seqIdx++;
       }
     }
     return display;
