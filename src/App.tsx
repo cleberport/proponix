@@ -172,7 +172,7 @@ const App = () => {
                 </Routes>
               </Suspense>
             </ThemeInit>
-          </SubscriptionProvider>
+          </SubscriptionProviderLazy>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
