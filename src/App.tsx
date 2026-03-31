@@ -140,35 +140,37 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ThemeInit>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public */}
-                <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
-                <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
-                <Route path="/p/:token" element={<ProposalView />} />
-                <Route path="/pricing" element={<Pricing />} />
+          <SubscriptionProvider>
+            <ThemeInit>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public */}
+                  <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <Landing />} />
+                  <Route path="/auth" element={session ? <Navigate to="/dashboard" replace /> : <Auth />} />
+                  <Route path="/p/:token" element={<ProposalView />} />
+                  <Route path="/pricing" element={<Pricing />} />
 
-                {/* Protected */}
-                <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-                <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
-                <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/emails" element={<ProtectedRoute session={session}><Navigate to="/admin" replace /></ProtectedRoute>} />
-                <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
-                <Route path="/recebidos" element={<ProtectedRoute session={session}><AppLayout><Recebidos /></AppLayout></ProtectedRoute>} />
-                <Route path="/financas" element={<ProtectedRoute session={session}><AppLayout><Financas /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
-                <Route path="/billing" element={<ProtectedRoute session={session}><Navigate to="/settings?tab=billing" replace /></ProtectedRoute>} />
-                <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
-                <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
+                  {/* Protected */}
+                  <Route path="/dashboard" element={<ProtectedRoute session={session}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+                  <Route path="/quick" element={<ProtectedRoute session={session}><DefaultTemplateRedirect /></ProtectedRoute>} />
+                  <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/documents" element={<ProtectedRoute session={session}><AppLayout><Documents /></AppLayout></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute session={session}><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute session={session}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+                  <Route path="/emails" element={<ProtectedRoute session={session}><Navigate to="/admin" replace /></ProtectedRoute>} />
+                  <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
+                  <Route path="/recebidos" element={<ProtectedRoute session={session}><AppLayout><Recebidos /></AppLayout></ProtectedRoute>} />
+                  <Route path="/financas" element={<ProtectedRoute session={session}><AppLayout><Financas /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
+                  <Route path="/billing" element={<ProtectedRoute session={session}><Navigate to="/settings?tab=billing" replace /></ProtectedRoute>} />
+                  <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
+                  <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </ThemeInit>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </ThemeInit>
+          </SubscriptionProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
