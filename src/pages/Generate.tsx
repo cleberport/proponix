@@ -361,9 +361,9 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
-    // Inject service data — only selected services, with sequential indices
-    let seqIdx = 0;
-    for (const idx of allServiceIndices) {
+    // Inject service data for all indices
+    for (let seqIdx = 0; seqIdx < allServiceIndices.length; seqIdx++) {
+      const idx = allServiceIndices[seqIdx];
       const svc = selectedServices[idx];
       if (svc) {
         display[`service_${seqIdx}_name`] = svc.name;
@@ -371,7 +371,6 @@ const Generate = () => {
         display[`service_${seqIdx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
         display[`service_${seqIdx}_notes`] = svc.notes;
         display[`service_${seqIdx}_dimmed`] = serviceDimmed[idx] ? '1' : '';
-        seqIdx++;
       }
     }
     return display;
@@ -395,13 +394,12 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
-          // Service blocks: update serviceCount based on actually selected services
+          // Service blocks: update serviceCount based on all service slots
           if (el.type === 'service') {
-            const selectedCount = allServiceIndices.filter(idx => selectedServices[idx]).length;
-            const count = Math.max(selectedCount, 1);
+            const totalCount = allServiceIndices.length;
             const itemHeight = Math.max(Math.floor(el.height / (el.serviceCount || 3)), 20);
-            const newHeight = itemHeight * count;
-            return { ...el, serviceCount: count, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
+            const newHeight = itemHeight * totalCount;
+            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
           }
           return el;
         })
