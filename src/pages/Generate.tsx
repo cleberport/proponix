@@ -825,12 +825,30 @@ const Generate = () => {
               <div className="flex flex-col gap-3 pt-2 border-t border-border mt-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Serviços</Label>
                 {allServiceIndices.map((idx) => (
-                  <div key={idx} className="flex flex-col gap-1.5">
-                    <ServiceSelector
-                      label={`Serviço ${idx + 1}`}
-                      selectedServiceId={selectedServices[idx]?.id || ''}
-                      onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
-                    />
+                  <div key={idx} className="flex flex-col gap-1.5 relative group">
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <ServiceSelector
+                          label={`Serviço ${idx + 1}`}
+                          selectedServiceId={selectedServices[idx]?.id || ''}
+                          onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
+                        />
+                      </div>
+                      {(extraServiceIndices.includes(idx) || allServiceIndices.length > 1) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive shrink-0 mt-5"
+                          onClick={() => {
+                            setExtraServiceIndices(prev => prev.filter(i => i !== idx));
+                            setSelectedServices(prev => { const n = { ...prev }; delete n[idx]; return n; });
+                            setServiceShowPrice(prev => { const n = { ...prev }; delete n[idx]; return n; });
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 pl-1">
                       <Switch
                         id={`show-price-${idx}`}
