@@ -367,6 +367,7 @@ const Documents = () => {
   };
 
   return (
+    <FeatureGate feature="documents_full" featureLabel="Documentos" description="Faça upgrade para Premium para gerenciar propostas enviadas." viewOnly>
     <div className="p-4 md:p-8">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-foreground md:text-2xl">Documentos</h1>
