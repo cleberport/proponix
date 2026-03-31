@@ -323,6 +323,9 @@ const Editor = () => {
     toast.success(selectedIds.length > 1 ? `${selectedIds.length} elementos duplicados` : 'Elemento duplicado');
   }, [selectedIds, setElements]);
 
+  // Keep ref in sync
+  useEffect(() => { duplicateRef.current = duplicateSelected; }, [duplicateSelected]);
+
   // Z-index controls
   const bringForward = useCallback(() => {
     if (!selectedId) return;
