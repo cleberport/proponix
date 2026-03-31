@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline, Italic, Strikethrough, List, ListOrdered, Minus } from 'lucide-react';
+import { Trash2, Plus, Upload, X, AlignLeft, AlignCenter, AlignRight, Underline, Italic, Strikethrough, List, ListOrdered, Minus, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
@@ -16,9 +16,13 @@ interface Props {
   variables: string[];
   onUpdate: (updates: Partial<CanvasElement>) => void;
   onDelete: () => void;
+  onBringForward?: () => void;
+  onSendBackward?: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
 }
 
-const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
+const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForward, onSendBackward, onBringToFront, onSendToBack }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +74,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
     'price-field': 'Campo de Preço',
     'total-calculation': 'Total',
     'notes': 'Observações',
+    'shape': 'Forma',
   };
 
   const addRow = () => {
@@ -99,9 +104,23 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Propriedades
         </h3>
-        <Button variant="ghost" size="sm" className="h-7 text-destructive" onClick={onDelete}>
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onSendToBack} title="Enviar para trás de tudo">
+            <ChevronsDown className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onSendBackward} title="Enviar para trás">
+            <ArrowDown className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onBringForward} title="Trazer para frente">
+            <ArrowUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onBringToFront} title="Trazer para frente de tudo">
+            <ChevronsUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 text-destructive" onClick={onDelete}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md bg-accent/50 px-2 py-1">
@@ -252,6 +271,59 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete }: Props) => {
             <Input value={element.color || '#E2E8F0'} onChange={(e) => onUpdate({ color: e.target.value })} className="h-7 flex-1 text-xs" />
           </div>
         </div>
+      )}
+
+      {/* Propriedades da Forma */}
+      {element.type === 'shape' && (
+        <>
+          <Separator />
+          <div>
+            <Label className="text-xs text-muted-foreground">Cor de Preenchimento</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.shapeColor || '#3B82F6'} onChange={(e) => onUpdate({ shapeColor: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.shapeColor || '#3B82F6'} onChange={(e) => onUpdate({ shapeColor: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Arredondamento ({element.shapeBorderRadius || 0}px)</Label>
+            <Slider
+              value={[element.shapeBorderRadius || 0]}
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={([v]) => onUpdate({ shapeBorderRadius: v })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Opacidade ({element.shapeOpacity ?? 100}%)</Label>
+            <Slider
+              value={[element.shapeOpacity ?? 100]}
+              min={0}
+              max={100}
+              step={5}
+              onValueChange={([v]) => onUpdate({ shapeOpacity: v })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Borda ({element.shapeBorderWidth || 0}px)</Label>
+            <Slider
+              value={[element.shapeBorderWidth || 0]}
+              min={0}
+              max={10}
+              step={1}
+              onValueChange={([v]) => onUpdate({ shapeBorderWidth: v })}
+            />
+          </div>
+          {(element.shapeBorderWidth || 0) > 0 && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Cor da Borda</Label>
+              <div className="flex gap-2">
+                <input type="color" value={element.shapeBorderColor || '#000000'} onChange={(e) => onUpdate({ shapeBorderColor: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+                <Input value={element.shapeBorderColor || '#000000'} onChange={(e) => onUpdate({ shapeBorderColor: e.target.value })} className="h-7 flex-1 text-xs" />
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Cores da Tabela */}

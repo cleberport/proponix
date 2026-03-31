@@ -8,7 +8,8 @@ export type ElementType =
   | 'price-field'
   | 'total-calculation'
   | 'notes'
-  | 'service';
+  | 'service'
+  | 'shape';
 
 export type FieldCategory = 'default' | 'input' | 'calculated';
 
@@ -71,6 +72,13 @@ export interface CanvasElement {
   serviceIndex?: number; // distinguishes multiple service blocks (0, 1, 2...)
   showPrice?: boolean; // toggle price visibility on service block (default true)
   bgOpacity?: number; // 0-100, default 100
+
+  // Shape properties
+  shapeColor?: string; // fill color for shape elements
+  shapeBorderRadius?: number; // border radius in px
+  shapeOpacity?: number; // 0-100, default 100
+  shapeBorderWidth?: number; // border width in px
+  shapeBorderColor?: string; // border color
 }
 
 export interface TableRow {
@@ -149,6 +157,7 @@ export const DEFAULT_TEMPLATE_VALUES: Record<string, string> = {
 export const ELEMENT_PALETTE: { type: ElementType; label: string; icon: string }[] = [
   { type: 'text', label: 'Bloco de Texto', icon: 'Type' },
   { type: 'dynamic-field', label: 'Campo Dinâmico', icon: 'Variable' },
+  { type: 'shape', label: 'Forma', icon: 'Square' },
   { type: 'image', label: 'Imagem', icon: 'Image' },
   { type: 'logo', label: 'Logo', icon: 'Stamp' },
   { type: 'divider', label: 'Divisor', icon: 'Minus' },

@@ -734,6 +734,36 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           );
         }
 
+        case 'shape': {
+          const shapeStyle: React.CSSProperties = {
+            position: 'absolute',
+            left: el.x,
+            top: el.y,
+            width: el.width,
+            height: el.height,
+            backgroundColor: el.shapeColor || '#3B82F6',
+            borderRadius: el.shapeBorderRadius || 0,
+            opacity: (el.shapeOpacity ?? 100) / 100,
+            borderWidth: el.shapeBorderWidth || 0,
+            borderStyle: (el.shapeBorderWidth || 0) > 0 ? 'solid' : 'none',
+            borderColor: el.shapeBorderColor || '#000000',
+            cursor: readOnly ? 'default' : (el.locked ? 'not-allowed' : 'grab'),
+            userSelect: 'none',
+          };
+
+          return (
+            <div
+              key={el.id}
+              style={shapeStyle}
+              className={`${selectedClass} ${hoverClass}`}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
+            >
+              {resizeHandle}
+            </div>
+          );
+        }
+
         default:
           return null;
       }

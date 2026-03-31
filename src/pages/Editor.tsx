@@ -259,8 +259,8 @@ const Editor = () => {
       type,
       x: 40 + Math.random() * 100,
       y: 40 + Math.random() * 200,
-      width: type === 'divider' ? 515 : type === 'service' ? 300 : 200,
-      height: type === 'divider' ? 2 : type === 'notes' ? 80 : type === 'service' ? 44 : 30,
+      width: type === 'divider' ? 515 : type === 'service' ? 300 : type === 'shape' ? 200 : 200,
+      height: type === 'divider' ? 2 : type === 'notes' ? 80 : type === 'service' ? 44 : type === 'shape' ? 100 : 30,
       content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? '' : type === 'total-calculation' ? 'Total:' : '',
       variable: type === 'dynamic-field' ? 'client_name' : type === 'price-field' ? 'price' : type === 'total-calculation' ? 'total' : undefined,
       fontSize: 14, fontWeight: '400', fontFamily: 'Space Grotesk', color: '#0F172A', alignment: 'left',
@@ -269,6 +269,10 @@ const Editor = () => {
       isVisible: true,
       fieldCategory: type === 'dynamic-field' ? 'input' : type === 'price-field' || type === 'total-calculation' ? 'calculated' : 'default',
       serviceIndex: type === 'service' ? getNextServiceIndex() : undefined,
+      // Shape defaults
+      shapeColor: type === 'shape' ? '#3B82F6' : undefined,
+      shapeBorderRadius: type === 'shape' ? 8 : undefined,
+      shapeOpacity: type === 'shape' ? 100 : undefined,
     };
     if (type === 'logo') {
       newEl.width = 150;
@@ -301,6 +305,47 @@ const Editor = () => {
     setElements(prev => [...prev, newEl]);
     setSelectedIds([newEl.id]);
   }, [selectedId, elements, setElements]);
+
+  // Z-index controls
+  const bringForward = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const idx = prev.findIndex(e => e.id === selectedId);
+      if (idx < 0 || idx >= prev.length - 1) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
+      return arr;
+    });
+  }, [selectedId, setElements]);
+
+  const sendBackward = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const idx = prev.findIndex(e => e.id === selectedId);
+      if (idx <= 0) return prev;
+      const arr = [...prev];
+      [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+      return arr;
+    });
+  }, [selectedId, setElements]);
+
+  const bringToFront = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const el = prev.find(e => e.id === selectedId);
+      if (!el) return prev;
+      return [...prev.filter(e => e.id !== selectedId), el];
+    });
+  }, [selectedId, setElements]);
+
+  const sendToBack = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const el = prev.find(e => e.id === selectedId);
+      if (!el) return prev;
+      return [el, ...prev.filter(e => e.id !== selectedId)];
+    });
+  }, [selectedId, setElements]);
 
   // Multi-select alignment operations
   const alignElements = useCallback((alignment: 'left' | 'center-x' | 'right' | 'top' | 'center-y' | 'bottom' | 'distribute-h' | 'distribute-v') => {
@@ -509,12 +554,13 @@ const Editor = () => {
     Type: LucideIcons.Type, Variable: LucideIcons.Variable, Image: LucideIcons.Image,
     Stamp: LucideIcons.Stamp, Minus: LucideIcons.Minus, Table: LucideIcons.Table,
     DollarSign: LucideIcons.DollarSign, Calculator: LucideIcons.Calculator, StickyNote: LucideIcons.StickyNote,
-    Package: LucideIcons.Package,
+    Package: LucideIcons.Package, Square: LucideIcons.Square,
   };
 
   const elementLabels: Record<string, string> = {
     'text': 'Texto', 'dynamic-field': 'Campo', 'image': 'Imagem', 'logo': 'Logo',
     'divider': 'Divisor', 'table': 'Tabela', 'price-field': 'Preço', 'total-calculation': 'Total', 'notes': 'Notas',
+    'shape': 'Forma',
   };
 
   const varLabels: Record<string, string> = {
@@ -1013,6 +1059,10 @@ const Editor = () => {
               variables={variables}
               onUpdate={(updates) => selectedId && updateElement(selectedId, updates)}
               onDelete={() => selectedId && deleteElement(selectedId)}
+              onBringForward={bringForward}
+              onSendBackward={sendBackward}
+              onBringToFront={bringToFront}
+              onSendToBack={sendToBack}
             />
           </aside>
         )}
@@ -1030,6 +1080,10 @@ const Editor = () => {
                   variables={variables}
                   onUpdate={(updates) => selectedId && updateElement(selectedId, updates)}
                   onDelete={() => selectedId && deleteElement(selectedId)}
+                  onBringForward={bringForward}
+                  onSendBackward={sendBackward}
+                  onBringToFront={bringToFront}
+                  onSendToBack={sendToBack}
                 />
               </div>
             </SheetContent>
