@@ -148,8 +148,10 @@ const AdminPage = () => {
     const { data, error } = await supabase.functions.invoke('admin-delete-user', {
       body: { user_id: deleteProfile.user_id },
     });
+    console.log('admin-delete-user response:', { data, error });
     if (error) {
-      toast.error('Erro ao apagar: ' + (error.message || 'Erro desconhecido'));
+      const msg = typeof error === 'object' && error.message ? error.message : String(error);
+      toast.error('Erro ao apagar: ' + msg);
     } else if (data?.error) {
       toast.error('Erro ao apagar: ' + data.error);
     } else {
