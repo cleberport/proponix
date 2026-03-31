@@ -824,12 +824,23 @@ const Generate = () => {
               <div className="flex flex-col gap-3 pt-2 border-t border-border mt-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Serviços</Label>
                 {allServiceIndices.map((idx) => (
-                  <ServiceSelector
-                    key={idx}
-                    label={`Serviço ${idx + 1}`}
-                    selectedServiceId={selectedServices[idx]?.id || ''}
-                    onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
-                  />
+                  <div key={idx} className="flex flex-col gap-1.5">
+                    <ServiceSelector
+                      label={`Serviço ${idx + 1}`}
+                      selectedServiceId={selectedServices[idx]?.id || ''}
+                      onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
+                    />
+                    <div className="flex items-center gap-2 pl-1">
+                      <Switch
+                        id={`show-price-${idx}`}
+                        checked={serviceShowPrice[idx] ?? true}
+                        onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
+                      />
+                      <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                        Mostrar preço
+                      </Label>
+                    </div>
+                  </div>
                 ))}
                 <Button
                   variant="outline"
