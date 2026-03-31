@@ -298,6 +298,10 @@ const AdminPage = () => {
         <TabsContent value="emails">
           <AdminEmailsSection />
         </TabsContent>
+
+        <TabsContent value="logs">
+          <AdminEmailLogs />
+        </TabsContent>
       </Tabs>
 
       {/* View dialog */}
