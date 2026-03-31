@@ -70,7 +70,7 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
         className="flex w-full items-center justify-between py-5 text-left text-[15px] font-medium text-white"
       >
         {q}
-        <ChevronDown className={`h-4 w-4 shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-white/60 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-40 pb-5' : 'max-h-0'}`}>
         <p className="text-sm text-white/50 leading-relaxed">{a}</p>
@@ -108,7 +108,7 @@ const Landing = () => {
               Entrar
             </Button>
             <Button size="sm" onClick={() => go()}
-              className="bg-primary text-white hover:bg-primary/90 rounded-full px-5 text-sm font-bold">
+              className="bg-primary text-[#1a0a12] hover:bg-primary/90 rounded-full px-5 text-sm font-bold">
               Começar grátis
             </Button>
           </div>
@@ -154,7 +154,7 @@ const Landing = () => {
           </motion.div>
 
           <motion.p
-            className="mt-5 text-sm text-white/30"
+            className="mt-5 text-sm text-white/60"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
           >
             Sem retrabalho. Sem complicação.
@@ -210,7 +210,7 @@ const Landing = () => {
               </div>
               <ul className="space-y-3">
                 {['Abrir arquivo antigo', 'Editar manualmente', 'Ajustar layout', 'Exportar PDF', 'Enviar'].map(t => (
-                  <li key={t} className="flex items-center gap-3 text-[15px] text-white/40">
+                  <li key={t} className="flex items-center gap-3 text-[15px] text-white/60">
                     <span className="h-1.5 w-1.5 rounded-full bg-white/20 shrink-0" />
                     {t}
                   </li>
@@ -417,21 +417,21 @@ const Landing = () => {
           <motion.div className="text-center mb-14" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
             <SectionLabel>Preços</SectionLabel>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Escolha o plano ideal</h2>
-            <p className="mt-3 text-sm text-white/40">Comece grátis. Evolua quando precisar.</p>
+            <p className="mt-3 text-sm text-white/60">Comece grátis. Evolua quando precisar.</p>
           </motion.div>
 
           <motion.div className="grid gap-5 md:grid-cols-3" initial="hidden" whileInView="show" viewport={{ once: true, margin: '-40px' }}>
             {/* FREE */}
             <motion.div variants={fade} custom={0}
               className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur flex flex-col">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">Free</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-2">Free</p>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">R$0</span>
               </div>
               <ul className="mt-4 space-y-3 flex-1">
                 {['1 template', 'Geração de PDF', 'WhatsApp sharing', 'Marca d\'água nos modelos', 'Trial de 30 dias'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-white/50">
-                    <Check className="h-4 w-4 shrink-0 text-white/30" /> {f}
+                    <Check className="h-4 w-4 shrink-0 text-white/60" /> {f}
                   </li>
                 ))}
               </ul>
@@ -444,10 +444,10 @@ const Landing = () => {
             {/* PRO */}
             <motion.div variants={fade} custom={1}
               className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur flex flex-col">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">Pro</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-2">Pro</p>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">R$19,90</span>
-                <span className="text-white/40 text-lg">/mês</span>
+                <span className="text-white/60 text-lg">/mês</span>
               </div>
               <ul className="mt-4 space-y-3 flex-1">
                 {['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'WhatsApp sharing', 'Upload de modelos'].map(f => (
@@ -471,9 +471,9 @@ const Landing = () => {
               <p className="text-xs font-semibold uppercase tracking-wider text-primary/70 mb-2">Premium</p>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="text-4xl font-bold text-white">R$59,90</span>
-                <span className="text-white/40 text-lg">/mês</span>
+                <span className="text-white/60 text-lg">/mês</span>
               </div>
-              <p className="text-xs text-white/30 mb-4">ou R$599/ano (2 meses grátis)</p>
+              <p className="text-xs text-white/60 mb-4">ou R$599/ano (2 meses grátis)</p>
               <ul className="mt-4 space-y-3 flex-1">
                 {[
                   'Tudo do Pro',
@@ -528,7 +528,7 @@ const Landing = () => {
               Seu orçamento já existe.{' '}
               <span className="text-primary">Só falta automatizar.</span>
             </h2>
-            <p className="mt-4 text-white/40 text-sm">
+            <p className="mt-4 text-white/60 text-sm">
               Use o orçamento que você já tem.
             </p>
             <Button size="lg" onClick={() => go()}
