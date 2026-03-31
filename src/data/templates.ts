@@ -123,7 +123,7 @@ const minimalElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 780, width: 515, height: 1, content: '', color: '#E4E4E7' }),
-  el({ type: 'text', x: 40, y: 794, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#D4D4D8', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 792, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#D4D4D8', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ const darkElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 778, width: 515, height: 1, content: '', color: '#374151' }),
-  el({ type: 'text', x: 40, y: 792, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#4B5563', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 790, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#4B5563', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -254,7 +254,7 @@ const colorfulElements: CanvasElement[] = [
 
   // Footer bar
   el({ type: 'text', x: 0, y: 834, width: 595, height: 8, content: '', fontSize: 1, color: '#7C3AED' }),
-  el({ type: 'text', x: 40, y: 800, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#C4B5FD', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 798, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#C4B5FD', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -313,7 +313,7 @@ const gradientElements: CanvasElement[] = [
   el({ type: 'notes', x: 60, y: 626, width: 475, height: 80, content: 'Proposta válida por 30 dias. Forma de pagamento: 50% na aprovação e 50% na entrega. Inclui garantia de 90 dias. Hospedagem e domínio não inclusos.', fontSize: 11, color: '#64748B', alignment: 'center', fieldCategory: 'default' }),
 
   // Footer
-  el({ type: 'text', x: 40, y: 790, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#BAE6FD', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 788, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#BAE6FD', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -387,7 +387,7 @@ const corporateElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 778, width: 515, height: 1, content: '', color: '#CBD5E1' }),
-  el({ type: 'text', x: 40, y: 792, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#94A3B8', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 790, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#94A3B8', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
