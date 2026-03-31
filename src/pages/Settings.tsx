@@ -213,20 +213,6 @@ const SettingsPage = () => {
               )}
             </section>
 
-            {/* Tax rate */}
-            <section className="rounded-xl border border-border bg-card p-4">
-              <h2 className="text-sm font-semibold text-foreground mb-3">Taxa de Imposto Padrão</h2>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number" step="0.01"
-                  value={decimalToPercent(settings.defaultTaxRate)}
-                  onChange={(e) => update({ defaultTaxRate: percentToDecimal(parseFloat(e.target.value) || 0) })}
-                  className="h-11 md:h-9 max-w-[120px]"
-                />
-                <span className="text-sm text-muted-foreground">%</span>
-              </div>
-              <p className="mt-1 text-[10px] text-muted-foreground">Ex: 10 = 10%, 11.29 = 11,29%</p>
-            </section>
 
             {/* Proposal validity */}
             <section className="rounded-xl border border-border bg-card p-4">
