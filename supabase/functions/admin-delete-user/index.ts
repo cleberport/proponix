@@ -17,25 +17,37 @@ Deno.serve(async (req) => {
 
     // Verify caller is admin using their JWT
     const authHeader = req.headers.get("authorization") ?? "";
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { authorization: authHeader } },
-    });
-    const { data: { user: caller } } = await callerClient.auth.getUser();
-    if (!caller) {
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+    if (!token) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check admin role
-    const { data: roleData } = await callerClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "admin")
-      .maybeSingle();
+    const callerClient = createClient(supabaseUrl, anonKey);
+    const {
+      data: { user: caller },
+      error: callerError,
+    } = await callerClient.auth.getUser(token);
 
-    if (!roleData) {
+    if (callerError || !caller) {
+      console.error("Failed to resolve caller from JWT:", callerError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Use service role for privileged checks and cleanup
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    const { data: isAdmin, error: roleError } = await adminClient.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+
+    if (roleError || !isAdmin) {
+      console.error("Admin role check failed:", roleError);
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -54,9 +66,6 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Use service role to delete app data + auth user
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     // Delete app data first (via RPC which bypasses RLS)
     await adminClient.rpc("admin_delete_profile", { _profile_user_id: user_id });
