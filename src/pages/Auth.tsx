@@ -6,7 +6,8 @@ import { fireEmailTrigger } from '@/lib/emailTriggers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sparkles, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import freeloxLogo from '@/assets/freelox_logo.png';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -78,9 +79,7 @@ const Auth = () => {
       <div className="flex flex-1 items-center justify-center px-4 pb-16">
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
+            <img src={freeloxLogo} alt="Freelox" className="mx-auto mb-0 h-12 w-12 rounded-xl" />
             <h1 className="text-2xl font-bold">{isLogin ? 'Entrar' : 'Criar conta'}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {isLogin ? 'Acesse sua conta Freelox' : 'Comece a criar propostas profissionais'}
