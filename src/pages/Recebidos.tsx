@@ -131,6 +131,7 @@ const Recebidos = () => {
   const senderDisplay = (p: ReceivedProposal) => p.sender_company || p.sender_name || 'Remetente';
 
   return (
+    <FeatureGate feature="received_full" featureLabel="Propostas Recebidas" description="Faça upgrade para Premium para gerenciar propostas recebidas." viewOnly>
     <div className="p-4 md:p-8">
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">

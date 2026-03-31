@@ -746,6 +746,7 @@ const Documents = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </FeatureGate>
   );
 };
 
