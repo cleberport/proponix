@@ -694,7 +694,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const fontSize = el.fontSize || 14;
           const itemHeight = Math.max(Math.floor(el.height / count), 20);
 
-          // Mock data for editor preview
+          // Build items: real data or mockup (mockup only in editor, not in readOnly/generate)
           const items: { name: string; desc: string; price: string }[] = [];
           for (let i = 0; i < count; i++) {
             const realName = variableValues?.[`service_${i}_name`];
@@ -702,7 +702,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             const realPrice = variableValues?.[`service_${i}_price`];
             if (realName) {
               items.push({ name: realName, desc: realDesc || '', price: realPrice || '' });
-            } else {
+            } else if (!readOnly) {
               const num = String(i + 1).padStart(2, '0');
               items.push({ name: `Item ${num}`, desc: `Descrição do item ${num}`, price: `R$ ${((i + 1) * 500).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` });
             }
