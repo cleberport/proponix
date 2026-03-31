@@ -13,15 +13,12 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-const LIFETIME_PRODUCT_ID = "prod_UDOCDQ5eI7Wlj6";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // ── Auth validation ──
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return jsonResponse({ error: "Unauthorized" }, 401);
@@ -52,7 +49,7 @@ Deno.serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      return jsonResponse({ subscribed: false, lifetime: false });
+      return jsonResponse({ subscribed: false, plan: 'free' });
     }
 
     const customerId = customers.data[0].id;
@@ -61,7 +58,7 @@ Deno.serve(async (req) => {
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
-      limit: 1,
+      limit: 10,
     });
 
     const hasActiveSub = subscriptions.data.length > 0;
@@ -76,33 +73,9 @@ Deno.serve(async (req) => {
       productId = subscription.items.data[0].price.product;
     }
 
-    // Check for lifetime one-time payment
-    let hasLifetime = false;
-    try {
-      const sessions = await stripe.checkout.sessions.list({
-        customer: customerId,
-        status: "complete",
-        limit: 20,
-      });
-      for (const session of sessions.data) {
-        if (session.mode === "payment") {
-          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
-          for (const item of lineItems.data) {
-            if (item.price?.product === LIFETIME_PRODUCT_ID) {
-              hasLifetime = true;
-              break;
-            }
-          }
-        }
-        if (hasLifetime) break;
-      }
-    } catch (e) {
-      console.error("Error checking lifetime:", e);
-    }
-
     return jsonResponse({
-      subscribed: hasActiveSub || hasLifetime,
-      lifetime: hasLifetime,
+      subscribed: hasActiveSub,
+      plan: hasActiveSub ? undefined : 'free', // plan resolved on frontend by product_id
       price_id: priceId,
       product_id: productId,
       subscription_end: subscriptionEnd,

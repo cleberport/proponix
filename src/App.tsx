@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import AppLayout from "./components/AppLayout";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 
 // Eagerly loaded (landing + auth are entry points)
 import Landing from "./pages/Landing";
