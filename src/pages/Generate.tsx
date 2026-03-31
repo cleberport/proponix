@@ -113,10 +113,10 @@ const Generate = () => {
     return { count: 0, hasService: false };
   }, [template]);
 
-  // Build service indices from serviceCount (0, 1, 2, ...)
+  // Start with just 1 service slot in generate page (user adds more as needed)
   const templateServiceIndices = useMemo(() => {
     if (!templateServiceInfo.hasService) return [];
-    return Array.from({ length: templateServiceInfo.count }, (_, i) => i);
+    return [0];
   }, [templateServiceInfo]);
 
   // All service indices = template ones + dynamically added extras
