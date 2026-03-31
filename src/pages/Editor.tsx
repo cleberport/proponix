@@ -125,6 +125,13 @@ const Editor = () => {
       const loadedPages = getTemplatePages(existing);
       const isStarterTemplate = existing.id?.startsWith('template-');
 
+      // Free users cannot edit starter templates
+      if (isStarterTemplate && isFree) {
+        toast.error('Faça upgrade para editar templates prontos');
+        navigate(`/generate/${existing.id}`, { replace: true });
+        return;
+      }
+
       if (isStarterTemplate) {
         // Starter templates follow global logo settings, but without mutating shared template objects.
         const s = getSettings();
