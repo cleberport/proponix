@@ -167,6 +167,8 @@ const Editor = () => {
     void loadTemplate();
     return () => { active = false; };
   }, [id, isNew, navigate]);
+  // Ref for duplicate (declared later) so keyboard shortcut can call it
+  const duplicateRef = useRef<() => void>(() => {});
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -176,7 +178,6 @@ const Editor = () => {
 
       if (selectedIds.length > 0) {
         const step = e.shiftKey ? 50 : GRID;
-        // Check if any selected element is locked
         const currentElements = pages[currentPage] || [];
         const hasLocked = selectedIds.some(id => currentElements.find(el => el.id === id)?.locked);
         
@@ -212,10 +213,17 @@ const Editor = () => {
         undo();
         return;
       }
+
+      // Ctrl+D / Cmd+D → duplicate
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        duplicateRef.current();
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, setElements, undo]);
+  }, [selectedIds, setElements, undo, pages, currentPage]);
 
   const handleSelect = useCallback((id: string | null) => {
     if (id) setSelectedIds([id]);
@@ -298,13 +306,25 @@ const Editor = () => {
   }, [setElements]);
 
   const duplicateSelected = useCallback(() => {
-    if (!selectedId) return;
-    const el = elements.find(e => e.id === selectedId);
-    if (!el) return;
-    const newEl = { ...el, id: uuidv4(), x: el.x + 20, y: el.y + 20 };
-    setElements(prev => [...prev, newEl]);
-    setSelectedIds([newEl.id]);
-  }, [selectedId, elements, setElements]);
+    if (selectedIds.length === 0) return;
+    const newIds: string[] = [];
+    setElements(prev => {
+      const newEls = selectedIds
+        .map(sid => prev.find(e => e.id === sid))
+        .filter(Boolean)
+        .map(el => {
+          const newId = uuidv4();
+          newIds.push(newId);
+          return { ...el!, id: newId, x: el!.x + 20, y: el!.y + 20 };
+        });
+      return [...prev, ...newEls];
+    });
+    setTimeout(() => setSelectedIds(newIds), 0);
+    toast.success(selectedIds.length > 1 ? `${selectedIds.length} elementos duplicados` : 'Elemento duplicado');
+  }, [selectedIds, setElements]);
+
+  // Keep ref in sync
+  useEffect(() => { duplicateRef.current = duplicateSelected; }, [duplicateSelected]);
 
   // Z-index controls
   const bringForward = useCallback(() => {
