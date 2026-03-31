@@ -475,7 +475,8 @@ const Landing = () => {
               <ul className="mt-4 space-y-3 flex-1">
                 {[
                   'Tudo do Pro',
-                  'Envio por link e WhatsApp',
+                  'Envio por link',
+                  'WhatsApp + link tracking',
                   'Documentos e rastreio',
                   'Propostas recebidas',
                   'Módulo financeiro',
