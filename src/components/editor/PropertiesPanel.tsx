@@ -273,6 +273,59 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
         </div>
       )}
 
+      {/* Propriedades da Forma */}
+      {element.type === 'shape' && (
+        <>
+          <Separator />
+          <div>
+            <Label className="text-xs text-muted-foreground">Cor de Preenchimento</Label>
+            <div className="flex gap-2">
+              <input type="color" value={element.shapeColor || '#3B82F6'} onChange={(e) => onUpdate({ shapeColor: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+              <Input value={element.shapeColor || '#3B82F6'} onChange={(e) => onUpdate({ shapeColor: e.target.value })} className="h-7 flex-1 text-xs" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Arredondamento ({element.shapeBorderRadius || 0}px)</Label>
+            <Slider
+              value={[element.shapeBorderRadius || 0]}
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={([v]) => onUpdate({ shapeBorderRadius: v })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Opacidade ({element.shapeOpacity ?? 100}%)</Label>
+            <Slider
+              value={[element.shapeOpacity ?? 100]}
+              min={0}
+              max={100}
+              step={5}
+              onValueChange={([v]) => onUpdate({ shapeOpacity: v })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Borda ({element.shapeBorderWidth || 0}px)</Label>
+            <Slider
+              value={[element.shapeBorderWidth || 0]}
+              min={0}
+              max={10}
+              step={1}
+              onValueChange={([v]) => onUpdate({ shapeBorderWidth: v })}
+            />
+          </div>
+          {(element.shapeBorderWidth || 0) > 0 && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Cor da Borda</Label>
+              <div className="flex gap-2">
+                <input type="color" value={element.shapeBorderColor || '#000000'} onChange={(e) => onUpdate({ shapeBorderColor: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-border" />
+                <Input value={element.shapeBorderColor || '#000000'} onChange={(e) => onUpdate({ shapeBorderColor: e.target.value })} className="h-7 flex-1 text-xs" />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       {/* Cores da Tabela */}
       {element.type === 'table' && (
         <>
