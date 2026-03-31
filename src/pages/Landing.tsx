@@ -170,8 +170,8 @@ const Landing = () => {
             <img
               src={heroMockup}
               alt="Freelox — Dashboard com templates de orçamento"
-              width={1920}
-              height={1080}
+              width={1024}
+              height={620}
               fetchPriority="high"
               decoding="sync"
               className="rounded-2xl border border-white/[0.08] shadow-2xl shadow-primary/10"
