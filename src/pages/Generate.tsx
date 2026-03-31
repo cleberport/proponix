@@ -81,6 +81,7 @@ const Generate = () => {
 
   // Show price toggle per service index (default true)
   const [serviceShowPrice, setServiceShowPrice] = useState<Record<number, boolean>>({});
+  const [serviceDimmed, setServiceDimmed] = useState<Record<number, boolean>>({});
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
