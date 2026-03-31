@@ -302,6 +302,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
               <Input value={element.shapeColor || '#3B82F6'} onChange={(e) => onUpdate({ shapeColor: e.target.value })} className="h-7 flex-1 text-xs" />
             </div>
           </div>
+          {(element.shapeVariant || 'square') === 'square' && (
           <div>
             <Label className="text-xs text-muted-foreground">Arredondamento ({element.shapeBorderRadius || 0}px)</Label>
             <Slider
@@ -312,6 +313,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
               onValueChange={([v]) => onUpdate({ shapeBorderRadius: v })}
             />
           </div>
+          )}
           <div>
             <Label className="text-xs text-muted-foreground">Opacidade ({element.shapeOpacity ?? 100}%)</Label>
             <Slider
