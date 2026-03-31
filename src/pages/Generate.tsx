@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Download, FileText, Share2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Link2, Copy, Loader2, Check, Plus, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
@@ -73,6 +74,9 @@ const Generate = () => {
 
   // Extra dynamically added service blocks
   const [extraServiceIndices, setExtraServiceIndices] = useState<number[]>([]);
+
+  // Show price toggle per service index (default true)
+  const [serviceShowPrice, setServiceShowPrice] = useState<Record<number, boolean>>({});
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
@@ -372,6 +376,12 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
+          // Apply showPrice toggle from generation form
+          if (el.type === 'service') {
+            const idx = el.serviceIndex ?? 0;
+            const show = serviceShowPrice[idx] ?? true;
+            return { ...el, showPrice: show } as CanvasElement;
+          }
           return el;
         })
     );
@@ -401,12 +411,13 @@ const Generate = () => {
           alignment: 'left' as const,
           isVisible: true,
           serviceIndex: idx,
+          showPrice: serviceShowPrice[idx] ?? true,
         }];
       });
     }
 
     return result;
-  }, [template, tableRows, hasTable, tableInfo, extraServiceIndices, templateServiceIndices]);
+  }, [template, tableRows, hasTable, tableInfo, extraServiceIndices, templateServiceIndices, serviceShowPrice]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
@@ -813,12 +824,23 @@ const Generate = () => {
               <div className="flex flex-col gap-3 pt-2 border-t border-border mt-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Serviços</Label>
                 {allServiceIndices.map((idx) => (
-                  <ServiceSelector
-                    key={idx}
-                    label={`Serviço ${idx + 1}`}
-                    selectedServiceId={selectedServices[idx]?.id || ''}
-                    onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
-                  />
+                  <div key={idx} className="flex flex-col gap-1.5">
+                    <ServiceSelector
+                      label={`Serviço ${idx + 1}`}
+                      selectedServiceId={selectedServices[idx]?.id || ''}
+                      onSelect={(svc) => setSelectedServices(prev => ({ ...prev, [idx]: svc }))}
+                    />
+                    <div className="flex items-center gap-2 pl-1">
+                      <Switch
+                        id={`show-price-${idx}`}
+                        checked={serviceShowPrice[idx] ?? true}
+                        onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
+                      />
+                      <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                        Mostrar preço
+                      </Label>
+                    </div>
+                  </div>
                 ))}
                 <Button
                   variant="outline"
