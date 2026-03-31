@@ -361,18 +361,21 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
-    // Inject service data
+    // Inject service data — only selected services, with sequential indices
+    let seqIdx = 0;
     for (const idx of allServiceIndices) {
       const svc = selectedServices[idx];
       if (svc) {
-        display[`service_${idx}_name`] = svc.name;
-        display[`service_${idx}_description`] = svc.description;
-        display[`service_${idx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
-        display[`service_${idx}_notes`] = svc.notes;
+        display[`service_${seqIdx}_name`] = svc.name;
+        display[`service_${seqIdx}_description`] = svc.description;
+        display[`service_${seqIdx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
+        display[`service_${seqIdx}_notes`] = svc.notes;
+        display[`service_${seqIdx}_dimmed`] = serviceDimmed[idx] ? '1' : '';
+        seqIdx++;
       }
     }
     return display;
-  }, [resolvedValues, selectedServices, allServiceIndices]);
+  }, [resolvedValues, selectedServices, allServiceIndices, serviceShowPrice, serviceDimmed]);
 
   // Build pages with dynamic table rows + extra service blocks injected
   const visiblePages = useMemo(() => {
