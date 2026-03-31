@@ -33,10 +33,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText } from 'lucide-react';
+import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminEmailsSection from '@/components/admin/AdminEmailsSection';
 import AdminEmailLogs from '@/components/admin/AdminEmailLogs';
+import AdminAutomations from '@/components/admin/AdminAutomations';
 
 interface Profile {
   id: string;
