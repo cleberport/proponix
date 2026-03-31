@@ -391,8 +391,9 @@ const Generate = () => {
       const lastPage = result[result.length - 1];
       // Find the last service element to position extras below
       const lastServiceEl = [...lastPage].reverse().find(e => e.type === 'service');
-      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height + 10 : 600;
+      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height + 4 : 600;
       const baseEl = lastServiceEl || lastPage[0];
+      const svcHeight = lastServiceEl?.height ?? 50;
 
       extraServiceIndices.forEach((idx, i) => {
         if (templateServiceIndices.includes(idx)) return; // already in template
@@ -400,9 +401,9 @@ const Generate = () => {
           id: `extra-service-${idx}`,
           type: 'service' as const,
           x: baseEl?.x ?? 40,
-          y: baseY + i * 90,
+          y: baseY + i * (svcHeight + 4),
           width: baseEl?.width ?? 300,
-          height: 80,
+          height: svcHeight,
           content: '',
           fontSize: baseEl?.fontSize ?? 14,
           fontWeight: '400',
