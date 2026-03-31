@@ -233,6 +233,14 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="Templates ilimitados"
+        description="Você atingiu o limite de 1 template no plano gratuito. Faça upgrade para criar templates ilimitados."
+        requiredPlan="pro"
+      />
     </div>
   );
 };
