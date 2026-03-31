@@ -188,7 +188,7 @@ const darkElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 778, width: 515, height: 1, content: '', color: '#374151' }),
-  el({ type: 'text', x: 40, y: 792, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#4B5563', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 790, width: 515, height: 18, content: 'Powered by Freelox', fontSize: 12, color: '#4B5563', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
