@@ -694,7 +694,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const fontSize = el.fontSize || 14;
           const itemHeight = Math.max(Math.floor(el.height / count), 20);
 
-          // Mock data for editor preview
+          // Build items: real data or mockup (mockup only in editor, not in readOnly/generate)
           const items: { name: string; desc: string; price: string }[] = [];
           for (let i = 0; i < count; i++) {
             const realName = variableValues?.[`service_${i}_name`];
@@ -702,7 +702,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             const realPrice = variableValues?.[`service_${i}_price`];
             if (realName) {
               items.push({ name: realName, desc: realDesc || '', price: realPrice || '' });
-            } else {
+            } else if (!readOnly) {
               const num = String(i + 1).padStart(2, '0');
               items.push({ name: `Item ${num}`, desc: `Descrição do item ${num}`, price: `R$ ${((i + 1) * 500).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` });
             }
@@ -724,6 +724,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   hasDescription: Boolean(svc.desc),
                   hasPrice: Boolean(showPrice && svc.price),
                 });
+                const isDimmed = variableValues?.[`service_${idx}_dimmed`] === '1';
                 return (
                   <div
                     key={idx}
@@ -735,6 +736,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                       height: itemHeight,
                       fontFamily: el.fontFamily || 'Space Grotesk',
                       background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
+                      opacity: isDimmed ? 0.15 : 1,
                     }}
                   >
                     <div style={{
