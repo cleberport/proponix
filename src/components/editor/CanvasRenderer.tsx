@@ -367,7 +367,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
       height: Math.abs(boxSelect.y - boxSelect.startY),
     } : null;
 
-    const renderElement = (el: CanvasElement) => {
+    const renderElement = (el: CanvasElement, elIndex: number) => {
       const elSelected = isSelected(el.id) && !readOnly;
       const lh = el.lineHeight || 1.4;
       const ls = el.letterSpacing ? `${el.letterSpacing}em` : undefined;
@@ -387,6 +387,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         textAlign: el.alignment,
         cursor: readOnly ? 'default' : (editingTextId === el.id ? 'text' : 'grab'),
         userSelect: editingTextId === el.id ? 'text' : 'none',
+        zIndex: elIndex + 1,
       };
 
       if (el.type === 'logo' || el.type === 'image') {
