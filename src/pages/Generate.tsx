@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import ExpiredOverlay from '@/components/ExpiredOverlay';
 import UpgradeModal from '@/components/UpgradeModal';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory, getSettings } from '@/lib/templateStorage';
 import { getTemplatePages, CanvasElement } from '@/types/template';
