@@ -104,9 +104,23 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Propriedades
         </h3>
-        <Button variant="ghost" size="sm" className="h-7 text-destructive" onClick={onDelete}>
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onSendToBack} title="Enviar para trás de tudo">
+            <ChevronsDown className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onSendBackward} title="Enviar para trás">
+            <ArrowDown className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onBringForward} title="Trazer para frente">
+            <ArrowUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onBringToFront} title="Trazer para frente de tudo">
+            <ChevronsUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 text-destructive" onClick={onDelete}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md bg-accent/50 px-2 py-1">
