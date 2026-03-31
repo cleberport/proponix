@@ -683,6 +683,27 @@ const Generate = () => {
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
 
+  const handleWhatsAppDirect = async () => {
+    if (!lastPdfBlob) {
+      toast.error('Gere o PDF primeiro');
+      return;
+    }
+    // On mobile, use native share with WhatsApp
+    const file = new File([lastPdfBlob], lastFileName, { type: 'application/pdf' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: lastFileName });
+      } catch (e: any) {
+        if (e.name !== 'AbortError') toast.error('Erro ao compartilhar');
+      }
+    } else {
+      // Desktop fallback: open WhatsApp Web with text
+      const message = encodeURIComponent(`Olá! Segue a proposta: ${lastFileName}`);
+      window.open(`https://wa.me/?text=${message}`, '_blank');
+      toast.info('Envie o PDF baixado na conversa do WhatsApp');
+    }
+  };
+
   if (loadingTemplate) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
