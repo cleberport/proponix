@@ -711,7 +711,7 @@ function renderPageElements(
           if (serviceLayout.description && svcDesc) {
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(serviceLayout.description.fontSize * (PDF_W / CANVAS_W));
-            pdf.setTextColor(...color);
+            pdf.setTextColor(107, 114, 128); // gray #6B7280
             const descFont = serviceLayout.description.fontSize * (PDF_W / CANVAS_W);
             const descLines = fitTextToBox(pdf, svcDesc, scaleW(serviceLayout.description.width), serviceLayout.description.maxLines);
             descLines.forEach((line, index) => {
