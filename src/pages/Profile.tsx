@@ -76,10 +76,6 @@ const Profile = () => {
                 <span className="text-foreground truncate">{item.value}</span>
               </div>
             ))}
-            <div className="flex items-center gap-3 text-sm pt-2 border-t border-border">
-              <span className="text-muted-foreground">Imposto padrão</span>
-              <span className="ml-auto text-foreground font-medium">{decimalToPercent(settings.defaultTaxRate).toFixed(1)}%</span>
-            </div>
           </div>
         )}
       </div>
