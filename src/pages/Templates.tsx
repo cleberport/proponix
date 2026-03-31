@@ -76,7 +76,13 @@ const Templates = () => {
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Templates</h1>
           <p className="text-sm text-muted-foreground">Todos os templates disponíveis</p>
         </div>
-        <Button onClick={() => navigate('/editor/new')} size="sm">
+        <Button onClick={() => {
+          if (saved.length >= maxTemplates) {
+            setUpgradeOpen(true);
+            return;
+          }
+          navigate('/editor/new');
+        }} size="sm">
           <Plus className="mr-1.5 h-4 w-4" />
           Novo Template
         </Button>
