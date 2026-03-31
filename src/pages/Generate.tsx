@@ -358,7 +358,7 @@ const Generate = () => {
       if (svc) {
         display[`service_${idx}_name`] = svc.name;
         display[`service_${idx}_description`] = svc.description;
-        display[`service_${idx}_price`] = formatCurrency(svc.price.toString());
+        display[`service_${idx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
         display[`service_${idx}_notes`] = svc.notes;
       }
     }
