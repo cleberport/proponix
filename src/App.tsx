@@ -14,12 +14,14 @@ import {
 } from "@/lib/templateStorage";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
-import AppLayout from "./components/AppLayout";
-import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+const AppLayout = lazy(() => import("./components/AppLayout"));
+const SubscriptionProviderLazy = lazy(() => import("./contexts/SubscriptionContext").then(m => ({ default: m.SubscriptionProvider })));
 
-// Eagerly loaded (landing + auth are entry points)
+// Eagerly loaded (landing is the entry point)
 import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
+
+// Auth lazy-loaded since most visitors land on "/"
+const Auth = lazy(() => import("./pages/Auth"));
 
 // Lazy-loaded pages for code splitting
 const Pricing = lazy(() => import("./pages/Pricing"));
