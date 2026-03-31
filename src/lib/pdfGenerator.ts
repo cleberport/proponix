@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { CanvasElement } from '@/types/template';
-import { resolveTextColor, parseColor, isDark } from '@/lib/colorContrast';
+import { resolveTextColor, isDark } from '@/lib/colorContrast';
+import { getMultilineTextLayout, getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
@@ -96,6 +97,63 @@ function wrapText(pdf: jsPDF, text: string, maxWidth: number): string[] {
     lines.push(...pdf.splitTextToSize(para, maxWidth));
   }
   return lines;
+}
+
+function truncateTextToWidth(pdf: jsPDF, text: string, maxWidth: number): string {
+  if (!text || pdf.getTextWidth(text) <= maxWidth) return text;
+
+  const ellipsis = '…';
+  let value = text;
+  while (value.length > 0 && pdf.getTextWidth(`${value}${ellipsis}`) > maxWidth) {
+    value = value.slice(0, -1);
+  }
+
+  return value ? `${value}${ellipsis}` : ellipsis;
+}
+
+function fitTextToBox(pdf: jsPDF, text: string, maxWidth: number, maxLines: number): string[] {
+  const safeLines = Math.max(1, maxLines);
+  const wrapped = wrapText(pdf, text, maxWidth);
+  if (wrapped.length <= safeLines) return wrapped;
+
+  const visible = wrapped.slice(0, safeLines);
+  visible[safeLines - 1] = truncateTextToWidth(pdf, visible[safeLines - 1], maxWidth);
+  return visible;
+}
+
+function drawAlignedLine(
+  pdf: jsPDF,
+  text: string,
+  left: number,
+  baseline: number,
+  width: number,
+  align: 'left' | 'center' | 'right' = 'left'
+) {
+  const textWidth = pdf.getTextWidth(text);
+  let x = left;
+
+  if (align === 'center') x = left + Math.max((width - textWidth) / 2, 0);
+  if (align === 'right') x = left + Math.max(width - textWidth, 0);
+
+  pdf.text(text, x, baseline);
+}
+
+function getColumnPixelWidths(totalWidth: number, columnCount: number, percentages?: number[]) {
+  if (columnCount <= 0) return [] as number[];
+
+  const values = percentages && percentages.length === columnCount
+    ? percentages
+    : Array.from({ length: columnCount }, () => 100 / columnCount);
+
+  const total = values.reduce((sum, value) => sum + value, 0) || columnCount;
+  let consumed = 0;
+
+  return values.map((value, index) => {
+    if (index === columnCount - 1) return Math.max(totalWidth - consumed, 0);
+    const width = Math.max(Math.round((value / total) * totalWidth), 0);
+    consumed += width;
+    return width;
+  });
 }
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
@@ -280,24 +338,26 @@ function renderPageElements(
           const h = scaleH(el.height);
           pdf.setFillColor(249, 250, 251);
           pdf.roundedRect(x, y, w, h, 3, 3, 'FD');
-          const lines = wrapText(pdf, content, w - 16);
-          lines.forEach((line, i) => pdf.text(line, x + 8, y + 12 + i * lineH));
-        } else {
-          const lines = wrapText(pdf, content, w);
-          const align = el.alignment || 'left';
-          const ascent = fontSize * 0.82;
+          const layout = getMultilineTextLayout({ width: el.width, height: el.height, fontSize: el.fontSize || 14, paddingX: 8, paddingY: 8, lineHeight: el.lineHeight || 1.4 });
+          const lines = fitTextToBox(pdf, content, scaleW(layout.width), layout.maxLines);
           lines.forEach((line, i) => {
-            let tx = x;
-            if (align === 'center') tx = x + w / 2;
-            else if (align === 'right') tx = x + w;
-            pdf.text(line, tx, y + ascent + i * lineH, { align });
+            drawAlignedLine(pdf, line, x + scaleW(layout.left), y + scaleH(layout.top) + fontSize * 0.82 + i * fontSize * (el.lineHeight || 1.4), scaleW(layout.width), el.alignment || 'left');
+          });
+        } else {
+          const layout = getMultilineTextLayout({ width: el.width, height: el.height, fontSize: el.fontSize || 14, lineHeight: el.lineHeight || 1.4 });
+          const lines = fitTextToBox(pdf, content, scaleW(layout.width), layout.maxLines);
+          const align = el.alignment || 'left';
+          lines.forEach((line, i) => {
+            const baseline = y + scaleH(layout.top) + fontSize * 0.82 + i * lineH;
+            const lineLeft = x + scaleW(layout.left);
+            drawAlignedLine(pdf, line, lineLeft, baseline, scaleW(layout.width), align);
             // Underline
             if (el.textDecoration === 'underline') {
               const textW = pdf.getTextWidth(line);
-              let ux = tx;
-              if (align === 'center') ux = tx - textW / 2;
-              else if (align === 'right') ux = tx - textW;
-              const uy = y + ascent + i * lineH + fontSize * 0.15;
+              let ux = lineLeft;
+              if (align === 'center') ux = lineLeft + Math.max((scaleW(layout.width) - textW) / 2, 0);
+              else if (align === 'right') ux = lineLeft + Math.max(scaleW(layout.width) - textW, 0);
+              const uy = baseline + fontSize * 0.15;
               pdf.setDrawColor(...color);
               pdf.setLineWidth(fontSize * 0.05);
               pdf.line(ux, uy, ux + textW, uy);
@@ -305,10 +365,10 @@ function renderPageElements(
             // Strikethrough
             if (el.textDecoration === 'line-through') {
               const textW = pdf.getTextWidth(line);
-              let ux = tx;
-              if (align === 'center') ux = tx - textW / 2;
-              else if (align === 'right') ux = tx - textW;
-              const uy = y + ascent + i * lineH - fontSize * 0.25;
+              let ux = lineLeft;
+              if (align === 'center') ux = lineLeft + Math.max((scaleW(layout.width) - textW) / 2, 0);
+              else if (align === 'right') ux = lineLeft + Math.max(scaleW(layout.width) - textW, 0);
+              const uy = baseline - fontSize * 0.25;
               pdf.setDrawColor(...color);
               pdf.setLineWidth(fontSize * 0.05);
               pdf.line(ux, uy, ux + textW, uy);
@@ -328,17 +388,17 @@ function renderPageElements(
         pdf.setTextColor(...color);
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-        const ascent = fontSize * 0.82;
-        let tx = x;
-        if (align === 'center') tx = x + w / 2;
-        else if (align === 'right') tx = x + w;
-        pdf.text(displayText, tx, y + ascent, { align });
+        const layout = getSingleLineTextLayout({ width: el.width, height: el.height, fontSize: el.fontSize || 14 });
+        const text = truncateTextToWidth(pdf, displayText, scaleW(layout.width));
+        const lineLeft = x + scaleW(layout.left);
+        const baseline = y + scaleH(layout.top) + fontSize * 0.82;
+        drawAlignedLine(pdf, text, lineLeft, baseline, scaleW(layout.width), align);
         if (el.textDecoration === 'underline') {
-          const textW = pdf.getTextWidth(displayText);
-          let ux = tx;
-          if (align === 'center') ux = tx - textW / 2;
-          else if (align === 'right') ux = tx - textW;
-          const uy = y + ascent + fontSize * 0.15;
+          const textW = pdf.getTextWidth(text);
+          let ux = lineLeft;
+          if (align === 'center') ux = lineLeft + Math.max((scaleW(layout.width) - textW) / 2, 0);
+          else if (align === 'right') ux = lineLeft + Math.max(scaleW(layout.width) - textW, 0);
+          const uy = baseline + fontSize * 0.15;
           pdf.setDrawColor(...color);
           pdf.setLineWidth(fontSize * 0.05);
           pdf.line(ux, uy, ux + textW, uy);
@@ -525,8 +585,9 @@ function renderPageElements(
       case 'table': {
         if (!el.rows?.length) break;
         const cols = el.rows[0].cells.length;
-        const colW = w / cols;
-        const rowH = scaleH(el.height) / el.rows.length;
+        const colWidths = getColumnPixelWidths(el.width, cols, el.columnWidths);
+        const rowHCanvas = el.height / el.rows.length;
+        const rowH = scaleH(rowHCanvas);
         const borderCol = el.tableBorderColor ? hexToRgb(el.tableBorderColor) : [226, 232, 240] as [number, number, number];
         const headerBgCol = el.tableHeaderBg ? hexToRgb(el.tableHeaderBg) : [241, 245, 249] as [number, number, number];
         const rowBgCol = el.tableRowBg ? hexToRgb(el.tableRowBg) : null;
@@ -537,8 +598,12 @@ function renderPageElements(
           pdf.setDrawColor(...borderCol);
           pdf.setLineWidth(0.5);
           pdf.rect(x, ry, w, rowH, 'S');
+          let cellOffset = 0;
           row.cells.forEach((cell, ci) => {
-            const cx = x + ci * colW;
+            const cellWidthCanvas = colWidths[ci] ?? 0;
+            const cellWidth = scaleW(cellWidthCanvas);
+            const cx = x + scaleW(cellOffset);
+            cellOffset += cellWidthCanvas;
             if (ci > 0) pdf.line(cx, ry, cx, ry + rowH);
             let cellText = cell;
             Object.entries(variableValues).forEach(([k, v]) => {
@@ -547,9 +612,96 @@ function renderPageElements(
             pdf.setFont('helvetica', ri === 0 ? 'bold' : 'normal');
             pdf.setFontSize(fontSize * 0.75);
             pdf.setTextColor(15, 23, 42);
-            pdf.text(cellText, cx + 6, ry + rowH / 2 + 3);
+            const cellLineHeight = fontSize * 0.95;
+            const maxLines = Math.max(1, Math.floor((rowH - 12) / Math.max(cellLineHeight, 1)));
+            const lines = fitTextToBox(pdf, cellText, Math.max(cellWidth - 12, 0), maxLines);
+            lines.forEach((line, index) => {
+              drawAlignedLine(pdf, line, cx + 6, ry + 6 + fontSize * 0.75 * 0.82 + index * cellLineHeight, Math.max(cellWidth - 12, 0), 'left');
+            });
           });
         });
+        break;
+      }
+
+      case 'service': {
+        const svcIdx = el.serviceIndex ?? 0;
+        const svcName = variableValues[`service_${svcIdx}_name`] || '';
+        const svcDesc = variableValues[`service_${svcIdx}_description`] || '';
+        const svcPrice = variableValues[`service_${svcIdx}_price`] || '';
+        const showPrice = el.showPrice !== false;
+        const hasContent = svcName || svcDesc || (showPrice && svcPrice);
+        if (!hasContent) break;
+
+        const borderColor = el.tableBorderColor ? hexToRgb(el.tableBorderColor) : [226, 232, 240] as [number, number, number];
+        const opacity = (el.bgOpacity ?? 100) / 100;
+        const serviceLayout = getServiceLayout({
+          width: el.width,
+          height: el.height,
+          fontSize: el.fontSize || 14,
+          hasDescription: Boolean(svcDesc),
+          hasPrice: Boolean(showPrice && svcPrice),
+        });
+
+        if (opacity < 1) {
+          pdf.setFillColor(255, 255, 255);
+          pdf.setGState(new (pdf as any).GState({ opacity: opacity * 0.1 }));
+          pdf.rect(x, y, w, scaleH(el.height), 'F');
+          pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+        }
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(fontSize);
+        pdf.setTextColor(...color);
+        const nameLines = fitTextToBox(pdf, svcName, scaleW(serviceLayout.name.width), serviceLayout.name.maxLines);
+        nameLines.forEach((line, index) => {
+          drawAlignedLine(
+            pdf,
+            line,
+            x + scaleW(serviceLayout.name.left),
+            y + scaleH(serviceLayout.name.top) + fontSize * 0.82 + index * fontSize * 1.25,
+            scaleW(serviceLayout.name.width),
+            'left'
+          );
+        });
+
+        if (serviceLayout.description && svcDesc) {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(serviceLayout.description.fontSize * (PDF_W / CANVAS_W));
+          pdf.setTextColor(...color);
+          const descFont = serviceLayout.description.fontSize * (PDF_W / CANVAS_W);
+          const descLines = fitTextToBox(pdf, svcDesc, scaleW(serviceLayout.description.width), serviceLayout.description.maxLines);
+          descLines.forEach((line, index) => {
+            drawAlignedLine(
+              pdf,
+              line,
+              x + scaleW(serviceLayout.description!.left),
+              y + scaleH(serviceLayout.description!.top) + descFont * 0.82 + index * descFont * 1.16,
+              scaleW(serviceLayout.description!.width),
+              'left'
+            );
+          });
+        }
+
+        if (serviceLayout.price && showPrice && svcPrice) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(fontSize);
+          pdf.setTextColor(...color);
+          const priceText = truncateTextToWidth(pdf, svcPrice, scaleW(serviceLayout.price.width));
+          drawAlignedLine(
+            pdf,
+            priceText,
+            x + scaleW(serviceLayout.price.left),
+            y + scaleH(serviceLayout.price.top) + fontSize * 0.82,
+            scaleW(serviceLayout.price.width),
+            'right'
+          );
+        }
+
+        if ((el.bgOpacity ?? 100) >= 50) {
+          pdf.setDrawColor(...borderColor);
+          pdf.setLineWidth(0.5);
+          pdf.line(x + scaleW(serviceLayout.paddingX), y + scaleH(serviceLayout.dividerY), x + w - scaleW(serviceLayout.paddingX), y + scaleH(serviceLayout.dividerY));
+        }
         break;
       }
     }
