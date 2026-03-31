@@ -304,6 +304,10 @@ const AdminPage = () => {
           <AdminEmailsSection />
         </TabsContent>
 
+        <TabsContent value="automations">
+          <AdminAutomations />
+        </TabsContent>
+
         <TabsContent value="logs">
           <AdminEmailLogs />
         </TabsContent>
