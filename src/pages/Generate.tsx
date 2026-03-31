@@ -1028,6 +1028,14 @@ const Generate = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <UpgradeModal
+        open={linkUpgradeOpen}
+        onOpenChange={setLinkUpgradeOpen}
+        feature="Enviar por Link"
+        description="Compartilhe propostas por link com seus clientes. Disponível no plano Premium."
+        requiredPlan="premium"
+      />
     </div>
   );
 };
