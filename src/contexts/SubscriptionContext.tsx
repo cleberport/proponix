@@ -21,6 +21,8 @@ interface SubscriptionState {
   subscriptionEnd: string | null;
   priceId: string | null;
   isYearly: boolean;
+  isExpired: boolean;
+  trialEnd: string | null;
 }
 
 interface SubscriptionContextType extends SubscriptionState {
@@ -28,6 +30,7 @@ interface SubscriptionContextType extends SubscriptionState {
   canUseFeature: (feature: Feature) => boolean;
   maxTemplates: number;
   showWatermark: boolean;
+  daysLeft: number | null;
 }
 
 export type Feature =
@@ -58,16 +61,28 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     subscriptionEnd: null,
     priceId: null,
     isYearly: false,
+    isExpired: false,
+    trialEnd: null,
   });
 
   const checkSubscription = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setState(s => ({ ...s, plan: 'free', loading: false }));
+        setState(s => ({ ...s, plan: 'free', loading: false, isExpired: false, trialEnd: null }));
         return;
       }
 
+      // Fetch profile for trial info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('trial_end, status')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const trialEnd = profile?.trial_end || null;
+
+      // Check Stripe subscription
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
 
@@ -80,9 +95,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         } else if (productId === PLAN_CONFIG.pro.product_id) {
           plan = 'pro';
         } else {
-          // Legacy subscribers — treat as premium
-          plan = 'premium';
+          plan = 'premium'; // Legacy subscribers
         }
+      }
+
+      // Check trial expiration for free users
+      let isExpired = false;
+      if (plan === 'free' && trialEnd) {
+        isExpired = new Date(trialEnd) < new Date();
       }
 
       setState({
@@ -91,6 +111,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         subscriptionEnd: data?.subscription_end || null,
         priceId: data?.price_id || null,
         isYearly: data?.price_id === PLAN_CONFIG.premium.yearly_price_id,
+        isExpired,
+        trialEnd,
       });
     } catch {
       setState(s => ({ ...s, loading: false }));
@@ -103,7 +125,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [checkSubscription]);
 
-  // Re-check when auth changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkSubscription();
@@ -112,12 +133,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [checkSubscription]);
 
   const canUseFeature = useCallback((feature: Feature): boolean => {
+    if (state.isExpired) return false;
     const allowed = FEATURE_ACCESS[feature];
     return allowed.includes(state.plan);
-  }, [state.plan]);
+  }, [state.plan, state.isExpired]);
 
   const maxTemplates = state.plan === 'free' ? 1 : Infinity;
   const showWatermark = state.plan === 'free';
+
+  // Calculate days left in trial
+  const daysLeft = state.trialEnd && state.plan === 'free'
+    ? Math.max(0, Math.ceil((new Date(state.trialEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   return (
     <SubscriptionContext.Provider value={{
@@ -126,6 +153,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       canUseFeature,
       maxTemplates,
       showWatermark,
+      daysLeft,
     }}>
       {children}
     </SubscriptionContext.Provider>

@@ -1,5 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { FinanceProvider } from '@/contexts/FinanceContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import ExpiredOverlay from '@/components/ExpiredOverlay';
 import { AppSidebar } from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -227,6 +229,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
       <FinanceProvider>
         <div className="min-h-screen flex flex-col w-full pb-14">
+          <ExpiredGuard />
           <main className="flex-1 overflow-auto">
             {children}
           </main>
@@ -243,6 +246,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <TopBar />
+            <ExpiredGuard />
             <main className="flex-1 overflow-auto">
               {children}
             </main>
@@ -251,4 +255,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </SidebarProvider>
     </FinanceProvider>
   );
+}
+
+function ExpiredGuard() {
+  const { isExpired } = useSubscription();
+  return <ExpiredOverlay show={isExpired} />;
 }

@@ -21,10 +21,10 @@ type SelectedPlan = 'pro_monthly' | 'premium_monthly' | 'premium_yearly';
 const PLANS = [
   {
     key: 'free' as const,
-    label: 'Free',
+    label: 'Free (Trial 30 dias)',
     price: 'R$0',
     period: '',
-    features: ['1 template', 'Geração de PDF', 'Marca d\'água nos modelos'],
+    features: ['1 template', 'Geração de PDF', 'WhatsApp sharing', 'Marca d\'água nos modelos'],
     current: false,
   },
   {
@@ -32,7 +32,7 @@ const PLANS = [
     label: 'Pro',
     price: 'R$19,90',
     period: '/mês',
-    features: ['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF'],
+    features: ['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'WhatsApp sharing'],
     badge: undefined as string | undefined,
   },
   {
@@ -65,7 +65,7 @@ const PLANS = [
 
 export default function BillingSection() {
   const [searchParams] = useSearchParams();
-  const { plan, loading, subscriptionEnd, isYearly, refresh } = useSubscription();
+  const { plan, loading, subscriptionEnd, isYearly, refresh, isExpired, daysLeft } = useSubscription();
   const [checkingOut, setCheckingOut] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -154,7 +154,9 @@ export default function BillingSection() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          {plan === 'free' && 'Você está no plano gratuito.'}
+          {plan === 'free' && isExpired && 'Seu período de teste expirou. Assine um plano para continuar.'}
+          {plan === 'free' && !isExpired && daysLeft !== null && `Você está no período de teste. ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}.`}
+          {plan === 'free' && !isExpired && daysLeft === null && 'Você está no plano gratuito.'}
           {plan !== 'free' && subEnd && `Próxima renovação em ${subEnd.toLocaleDateString('pt-BR')}.`}
           {plan !== 'free' && !subEnd && 'Seu plano está ativo.'}
         </p>

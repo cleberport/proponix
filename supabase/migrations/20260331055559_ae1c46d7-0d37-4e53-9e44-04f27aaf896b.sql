@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN trial_end SET DEFAULT (now() + '30 days'::interval);
