@@ -277,7 +277,7 @@ const Editor = () => {
       x: 40 + Math.random() * 100,
       y: 40 + Math.random() * 200,
       width: type === 'divider' ? 515 : type === 'service' ? 300 : type === 'shape' ? 200 : 200,
-      height: type === 'divider' ? 2 : type === 'notes' ? 80 : type === 'service' ? 44 : type === 'shape' ? 100 : 30,
+      height: type === 'divider' ? 2 : type === 'notes' ? 80 : type === 'service' ? 140 : type === 'shape' ? 100 : 30,
       content: type === 'text' ? 'Novo Texto' : type === 'notes' ? 'Observações...' : type === 'dynamic-field' ? '' : type === 'price-field' ? '' : type === 'total-calculation' ? 'Total:' : '',
       variable: type === 'dynamic-field' ? 'client_name' : type === 'price-field' ? 'price' : type === 'total-calculation' ? 'total' : undefined,
       fontSize: 14, fontWeight: '400', fontFamily: 'Space Grotesk', color: '#0F172A', alignment: 'left',
