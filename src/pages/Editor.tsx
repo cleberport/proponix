@@ -31,7 +31,8 @@ const Editor = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
-
+  const { showWatermark } = useSubscription();
+  const isFree = showWatermark;
   const isNew = id === 'new';
   const [loadingTemplate, setLoadingTemplate] = useState(!isNew);
   const [baseCategory, setBaseCategory] = useState('Custom');
