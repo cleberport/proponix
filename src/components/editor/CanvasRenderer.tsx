@@ -395,7 +395,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         style.height = el.height;
       }
 
-      const selectedClass = elSelected ? 'element-selected' : '';
+      const isImageType = el.type === 'image' || el.type === 'logo';
+      const selectedClass = elSelected ? (isImageType ? 'element-selected-image' : 'element-selected') : '';
       const hoverClass = readOnly ? '' : 'hover:element-hover';
 
       const resizeHandle = elSelected ? (
