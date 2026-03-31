@@ -742,7 +742,13 @@ const Generate = () => {
           <Button
             variant="outline"
             className="h-10 px-4 text-sm font-semibold"
-            onClick={handleSendByLink}
+            onClick={() => {
+              if (!canUseFeature('link_sharing')) {
+                setLinkUpgradeOpen(true);
+                return;
+              }
+              handleSendByLink();
+            }}
             disabled={sendingLink}
           >
             {sendingLink ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Link2 className="mr-1.5 h-4 w-4" />}
