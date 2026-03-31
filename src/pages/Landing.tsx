@@ -505,10 +505,11 @@ const Landing = () => {
           </motion.div>
 
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
-            <FaqItem q="Preciso cadastrar cartão?" a="Não. Teste grátis por 30 dias sem dados de pagamento." />
+            <FaqItem q="O plano Free é gratuito para sempre?" a="Sim. Você pode usar o Freelox gratuitamente com 1 template e geração de PDF. Sem necessidade de cartão." />
             <FaqItem q="Funciona no celular?" a="Sim. O Freelox foi feito para uso rápido em qualquer dispositivo." />
             <FaqItem q="Preciso saber design?" a="Não. Use o orçamento que você já tem. A IA organiza tudo." />
-            <FaqItem q="Posso enviar por link?" a="Sim. Gere o PDF e compartilhe por link, WhatsApp ou baixe direto." />
+            <FaqItem q="Posso enviar por link?" a="Sim, no plano Premium. Gere o PDF e compartilhe por link, WhatsApp ou baixe direto." />
+            <FaqItem q="Qual a diferença entre Pro e Premium?" a="O Pro inclui templates ilimitados e sem marca d'água. O Premium adiciona envio por link, rastreio de propostas, módulo financeiro e automações." />
           </motion.div>
         </div>
       </section>
