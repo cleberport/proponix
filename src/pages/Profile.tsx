@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getSettings, loadSettingsFromServer, AppSettings } from '@/lib/templateStorage';
-import { decimalToPercent } from '@/lib/calculations';
 import { User, Building2, Mail, Phone, Globe, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
