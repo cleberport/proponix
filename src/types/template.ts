@@ -8,7 +8,8 @@ export type ElementType =
   | 'price-field'
   | 'total-calculation'
   | 'notes'
-  | 'service';
+  | 'service'
+  | 'shape';
 
 export type FieldCategory = 'default' | 'input' | 'calculated';
 
