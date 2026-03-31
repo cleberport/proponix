@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import CanvasRenderer from '@/components/editor/CanvasRenderer';
 import DynamicTableInput, { DynamicRow } from '@/components/generate/DynamicTableInput';
-import { generatePdfFromDom, generateVectorPdf } from '@/lib/pdfGenerator';
+import { generateVectorPdf } from '@/lib/pdfGenerator';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DateRangePicker from '@/components/generate/DateRangePicker';
 import { saveAllInputs, getInputHistory } from '@/lib/inputHistory';
@@ -47,8 +47,6 @@ const Generate = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const pdfPagesContainerRef = useRef<HTMLDivElement>(null);
-  const pageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const editingDoc = useMemo(() => {
     return (location.state as { documentId?: string; values?: Record<string, string> }) || {};
@@ -539,25 +537,7 @@ const Generate = () => {
       const fileName = generatePdfFileName();
       const bgColor = template?.settings?.backgroundColor;
 
-      // Try DOM-based capture for pixel-perfect consistency
-      let blob: Blob | null = null;
-      const pageEls = Array.from(pageRefsMap.current.entries())
-        .sort(([a], [b]) => a - b)
-        .map(([, el]) => el)
-        .filter(Boolean);
-
-      if (pageEls.length === visiblePages.length && pageEls.length > 0) {
-        try {
-          blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
-        } catch (e) {
-          console.warn('[PDF] DOM capture failed, falling back to vector:', e);
-        }
-      }
-
-      // Fallback to vector PDF
-      if (!blob) {
-        blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true });
-      }
+      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true });
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
@@ -1016,34 +996,6 @@ const Generate = () => {
             </main>
           </div>
         )}
-      </div>
-      {/* Hidden off-screen container for PDF capture — renders all pages at native resolution */}
-      <div
-        ref={pdfPagesContainerRef}
-        aria-hidden
-        style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
-      >
-        {visiblePages.map((pageElements, idx) => (
-          <div
-            key={idx}
-            ref={(el) => {
-              if (el) pageRefsMap.current.set(idx, el);
-              else pageRefsMap.current.delete(idx);
-            }}
-            style={{ width: 595, height: 842, overflow: 'hidden' }}
-          >
-            <CanvasRenderer
-              elements={pageElements}
-              selectedId={null}
-              onSelect={() => {}}
-              onUpdate={() => {}}
-              readOnly
-              variableValues={displayValues}
-              showGrid={false}
-              backgroundColor={template?.settings?.backgroundColor}
-            />
-          </div>
-        ))}
       </div>
       {/* Link Modal */}
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
