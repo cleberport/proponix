@@ -752,6 +752,11 @@ function renderPageElements(
             pdf.setLineWidth(0.5);
             pdf.line(x + scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight), x + w - scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight));
           }
+
+          // Reset opacity after dimmed item
+          if (isDimmed) {
+            pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+          }
         }
         break;
       }
