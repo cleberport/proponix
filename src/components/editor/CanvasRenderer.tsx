@@ -686,25 +686,41 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         }
 
         case 'service': {
-          const svcIdx = el.serviceIndex ?? 0;
-          const svcName = variableValues?.[`service_${svcIdx}_name`] || '';
-          const svcDesc = variableValues?.[`service_${svcIdx}_description`] || '';
-          const svcPrice = variableValues?.[`service_${svcIdx}_price`] || '';
-          const hasContent = svcName || svcDesc || svcPrice;
+          const count = el.serviceCount || 3;
           const textColor = resolveTextColor(el.color, backgroundColor);
           const borderColor = el.tableBorderColor || (backgroundColor && backgroundColor !== '#ffffff' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
           const bgOpacity = (el.bgOpacity ?? 100) / 100;
           const showPrice = el.showPrice !== false;
           const fontSize = el.fontSize || 14;
-          const serviceLayout = getServiceLayout({
-            width: el.width,
-            height: el.height,
-            fontSize,
-            hasDescription: Boolean(svcDesc),
-            hasPrice: Boolean(showPrice && svcPrice),
-          });
+          const itemHeight = Math.max(Math.floor(el.height / count), 20);
 
-           return (
+          // Mock data for editor preview
+          const mockServices = [
+            { name: 'Fotografia Premium', desc: 'Cobertura completa do evento', price: 'R$ 2.500,00' },
+            { name: 'Edição Avançada', desc: 'Tratamento profissional das fotos', price: 'R$ 1.200,00' },
+            { name: 'Álbum Digital', desc: 'Álbum com 40 páginas', price: 'R$ 800,00' },
+            { name: 'Ensaio Pré-Evento', desc: 'Sessão de fotos preparatória', price: 'R$ 950,00' },
+            { name: 'Vídeo Highlight', desc: 'Vídeo resumo de 3 minutos', price: 'R$ 1.800,00' },
+            { name: 'Drone Aéreo', desc: 'Imagens aéreas do local', price: 'R$ 600,00' },
+            { name: 'Impressão Fine Art', desc: 'Impressão em papel especial', price: 'R$ 450,00' },
+            { name: 'Segundo Fotógrafo', desc: 'Cobertura com ângulo adicional', price: 'R$ 1.100,00' },
+            { name: 'Cabine de Fotos', desc: 'Cabine interativa para convidados', price: 'R$ 700,00' },
+            { name: 'Entrega Expressa', desc: 'Galeria online em 48h', price: 'R$ 350,00' },
+          ];
+
+          const items: { name: string; desc: string; price: string }[] = [];
+          for (let i = 0; i < count; i++) {
+            const realName = variableValues?.[`service_${i}_name`];
+            const realDesc = variableValues?.[`service_${i}_description`];
+            const realPrice = variableValues?.[`service_${i}_price`];
+            if (realName) {
+              items.push({ name: realName, desc: realDesc || '', price: realPrice || '' });
+            } else {
+              items.push(mockServices[i % mockServices.length]);
+            }
+          }
+
+          return (
             <div
               key={el.id}
               style={{ ...style, height: el.height, overflow: 'hidden' }}
@@ -712,113 +728,101 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              {hasContent ? (
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  fontFamily: el.fontFamily || 'Space Grotesk',
-                  background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: serviceLayout.name.left,
-                    top: serviceLayout.name.top,
-                    width: serviceLayout.name.width,
-                    height: serviceLayout.name.height,
-                    fontSize,
-                    fontWeight: '600',
-                    color: textColor,
-                    letterSpacing: '0.01em',
-                    overflow: 'hidden',
-                    lineHeight: `${serviceLayout.name.lineHeightPx}px`,
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: serviceLayout.name.maxLines,
-                    wordBreak: 'break-word',
-                  } as React.CSSProperties}>
-                    {svcName}
-                  </div>
-                  {svcDesc && serviceLayout.description && (
+              {items.map((svc, idx) => {
+                const svcLayout = getServiceLayout({
+                  width: el.width,
+                  height: itemHeight,
+                  fontSize,
+                  hasDescription: Boolean(svc.desc),
+                  hasPrice: Boolean(showPrice && svc.price),
+                });
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: idx * itemHeight,
+                      width: el.width,
+                      height: itemHeight,
+                      fontFamily: el.fontFamily || 'Space Grotesk',
+                      background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
+                    }}
+                  >
                     <div style={{
                       position: 'absolute',
-                      left: serviceLayout.description.left,
-                      top: serviceLayout.description.top,
-                      width: serviceLayout.description.width,
-                      height: serviceLayout.description.height,
-                      fontSize: serviceLayout.description.fontSize,
+                      left: svcLayout.name.left,
+                      top: svcLayout.name.top,
+                      width: svcLayout.name.width,
+                      height: svcLayout.name.height,
+                      fontSize,
+                      fontWeight: '600',
                       color: textColor,
-                      opacity: 0.55,
+                      letterSpacing: '0.01em',
                       overflow: 'hidden',
-                      lineHeight: `${serviceLayout.description.lineHeightPx}px`,
+                      lineHeight: `${svcLayout.name.lineHeightPx}px`,
                       display: '-webkit-box',
                       WebkitBoxOrient: 'vertical',
-                      WebkitLineClamp: serviceLayout.description.maxLines,
+                      WebkitLineClamp: svcLayout.name.maxLines,
                       wordBreak: 'break-word',
                     } as React.CSSProperties}>
-                      {svcDesc}
+                      {svc.name}
                     </div>
-                  )}
-                  {showPrice && svcPrice && serviceLayout.price && (
-                    <div style={{
-                      position: 'absolute',
-                      left: serviceLayout.price.left,
-                      top: serviceLayout.price.top,
-                      width: serviceLayout.price.width,
-                      height: serviceLayout.price.height,
-                      fontSize,
-                      fontWeight: '700',
-                      color: textColor,
-                      textAlign: 'right',
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      textOverflow: 'ellipsis',
-                      letterSpacing: '-0.01em',
-                      lineHeight: `${serviceLayout.price.lineHeightPx}px`,
-                    }}>
-                      {svcPrice}
-                    </div>
-                  )}
-                  {bgOpacity >= 0.5 && (
-                    <div
-                      style={{
+                    {svc.desc && svcLayout.description && (
+                      <div style={{
                         position: 'absolute',
-                        left: serviceLayout.paddingX,
-                        width: Math.max(el.width - serviceLayout.paddingX * 2, 0),
-                        bottom: 0,
-                        height: 1,
-                        backgroundColor: borderColor,
-                      }}
-                    />
-                  )}
-                </div>
-              ) : !readOnly ? (
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  border: bgOpacity < 0.5 ? `1.5px dashed ${borderColor}` : 'none',
-                  borderRadius: 4,
-                  opacity: 0.5,
-                }}>
-                  <span style={{
-                    position: 'absolute',
-                    left: serviceLayout.paddingX,
-                    width: Math.max(el.width - serviceLayout.paddingX * 2, 0),
-                    top: Math.max((el.height - fontSize * 1.15) / 2, 0),
-                    fontSize: fontSize - 2,
-                    lineHeight: `${fontSize * 1.15}px`,
-                    color: textColor || '#888',
-                    fontFamily: el.fontFamily || 'Space Grotesk',
-                    textAlign: 'center',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    📦 Serviço {svcIdx + 1}
-                  </span>
-                </div>
-              ) : null}
+                        left: svcLayout.description.left,
+                        top: svcLayout.description.top,
+                        width: svcLayout.description.width,
+                        height: svcLayout.description.height,
+                        fontSize: svcLayout.description.fontSize,
+                        color: textColor,
+                        opacity: 0.55,
+                        overflow: 'hidden',
+                        lineHeight: `${svcLayout.description.lineHeightPx}px`,
+                        display: '-webkit-box',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: svcLayout.description.maxLines,
+                        wordBreak: 'break-word',
+                      } as React.CSSProperties}>
+                        {svc.desc}
+                      </div>
+                    )}
+                    {showPrice && svc.price && svcLayout.price && (
+                      <div style={{
+                        position: 'absolute',
+                        left: svcLayout.price.left,
+                        top: svcLayout.price.top,
+                        width: svcLayout.price.width,
+                        height: svcLayout.price.height,
+                        fontSize,
+                        fontWeight: '700',
+                        color: textColor,
+                        textAlign: 'right',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                        letterSpacing: '-0.01em',
+                        lineHeight: `${svcLayout.price.lineHeightPx}px`,
+                      }}>
+                        {svc.price}
+                      </div>
+                    )}
+                    {bgOpacity >= 0.5 && idx < count - 1 && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: svcLayout.paddingX,
+                          width: Math.max(el.width - svcLayout.paddingX * 2, 0),
+                          bottom: 0,
+                          height: 1,
+                          backgroundColor: borderColor,
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
               {resizeHandle}
             </div>
           );
