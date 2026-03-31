@@ -81,7 +81,6 @@ const Generate = () => {
 
   // Show price toggle per service index (default true)
   const [serviceShowPrice, setServiceShowPrice] = useState<Record<number, boolean>>({});
-  const [serviceDimmed, setServiceDimmed] = useState<Record<number, boolean>>({});
 
   // Find table element info from template
   const tableInfo = useMemo(() => {
@@ -113,10 +112,10 @@ const Generate = () => {
     return { count: 0, hasService: false };
   }, [template]);
 
-  // Start with just 1 service slot in generate page (user adds more as needed)
+  // Build service indices from serviceCount (0, 1, 2, ...)
   const templateServiceIndices = useMemo(() => {
     if (!templateServiceInfo.hasService) return [];
-    return [0];
+    return Array.from({ length: templateServiceInfo.count }, (_, i) => i);
   }, [templateServiceInfo]);
 
   // All service indices = template ones + dynamically added extras
@@ -361,21 +360,18 @@ const Generate = () => {
         display[f] = formatCurrency(display[f]);
       }
     }
-    // Inject service data — only selected services, with sequential indices
-    let seqIdx = 0;
+    // Inject service data
     for (const idx of allServiceIndices) {
       const svc = selectedServices[idx];
       if (svc) {
-        display[`service_${seqIdx}_name`] = svc.name;
-        display[`service_${seqIdx}_description`] = svc.description;
-        display[`service_${seqIdx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
-        display[`service_${seqIdx}_notes`] = svc.notes;
-        display[`service_${seqIdx}_dimmed`] = serviceDimmed[idx] ? '1' : '';
-        seqIdx++;
+        display[`service_${idx}_name`] = svc.name;
+        display[`service_${idx}_description`] = svc.description;
+        display[`service_${idx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
+        display[`service_${idx}_notes`] = svc.notes;
       }
     }
     return display;
-  }, [resolvedValues, selectedServices, allServiceIndices, serviceShowPrice, serviceDimmed]);
+  }, [resolvedValues, selectedServices, allServiceIndices]);
 
   // Build pages with dynamic table rows + extra service blocks injected
   const visiblePages = useMemo(() => {
@@ -395,13 +391,12 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
-          // Service blocks: update serviceCount based on actually selected services
+          // Service blocks: update serviceCount based on total selected services
           if (el.type === 'service') {
-            const selectedCount = allServiceIndices.filter(idx => selectedServices[idx]).length;
-            const count = Math.max(selectedCount, 1);
+            const totalCount = allServiceIndices.length;
             const itemHeight = Math.max(Math.floor(el.height / (el.serviceCount || 3)), 20);
-            const newHeight = itemHeight * count;
-            return { ...el, serviceCount: count, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
+            const newHeight = itemHeight * totalCount;
+            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
           }
           return el;
         })
@@ -852,34 +847,21 @@ const Generate = () => {
                             setExtraServiceIndices(prev => prev.filter(i => i !== idx));
                             setSelectedServices(prev => { const n = { ...prev }; delete n[idx]; return n; });
                             setServiceShowPrice(prev => { const n = { ...prev }; delete n[idx]; return n; });
-                            setServiceDimmed(prev => { const n = { ...prev }; delete n[idx]; return n; });
                           }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 pl-1">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          id={`show-price-${idx}`}
-                          checked={serviceShowPrice[idx] ?? true}
-                          onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
-                        />
-                        <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
-                          Preço
-                        </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          id={`dim-${idx}`}
-                          checked={serviceDimmed[idx] ?? false}
-                          onCheckedChange={(checked) => setServiceDimmed(prev => ({ ...prev, [idx]: checked }))}
-                        />
-                        <Label htmlFor={`dim-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
-                          Destaque
-                        </Label>
-                      </div>
+                    <div className="flex items-center gap-2 pl-1">
+                      <Switch
+                        id={`show-price-${idx}`}
+                        checked={serviceShowPrice[idx] ?? true}
+                        onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
+                      />
+                      <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                        Mostrar preço
+                      </Label>
                     </div>
                   </div>
                 ))}
