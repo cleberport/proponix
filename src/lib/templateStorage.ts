@@ -540,7 +540,7 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
     companyPhone: data.company_phone ?? '',
     companyWebsite: data.company_website ?? '',
     companyAddress: data.company_address ?? '',
-    defaultTaxRate: Number(data.default_tax_rate) || 0.10,
+    defaultTaxRate: Number.isFinite(Number(data.default_tax_rate)) ? Number(data.default_tax_rate) : 0,
     logoUrl: data.logo_url ?? '',
     logoWidth: data.logo_width ?? undefined,
     logoHeight: data.logo_height ?? undefined,

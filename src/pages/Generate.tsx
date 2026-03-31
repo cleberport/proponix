@@ -888,18 +888,15 @@ const Generate = () => {
                   <Input
                     type="number"
                     step="0.01"
-                    value={(() => {
-                      const raw = userInputs.tax_rate ?? template?.defaultValues?.tax_rate ?? '0';
-                      const decimal = parseFloat(raw) || 0;
-                      return decimal <= 1 ? (decimal * 100).toFixed(1) : decimal.toFixed(1);
-                    })()}
+                    value={taxRateDisplay}
                     onChange={(e) => {
-                      const pct = parseFloat(e.target.value) || 0;
-                      const decimal = pct / 100;
-                      setUserInputs(prev => ({ ...prev, tax_rate: decimal.toString() }));
+                      const next = e.target.value;
+                      setTaxRateDisplay(next);
+                      const pct = parseFloat(next);
+                      setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
                     }}
                     className="h-12 text-base md:h-10 md:text-sm"
-                    inputMode="numeric"
+                    inputMode="decimal"
                   />
                   <span className="text-sm text-muted-foreground">%</span>
                 </div>
