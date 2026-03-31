@@ -359,7 +359,7 @@ function renderPageElements(
         const shapeColor = el.shapeColor ? hexToRgb(el.shapeColor) : [59, 130, 246] as [number, number, number];
         const opacity = (el.shapeOpacity ?? 100) / 100;
         const h = scaleH(el.height);
-        const radius = el.shapeBorderRadius ? Math.min(el.shapeBorderRadius * SF, w / 2, h / 2) : 0;
+        const radius = el.shapeBorderRadius ? Math.min(scaleW(el.shapeBorderRadius), w / 2, h / 2) : 0;
 
         pdf.setGState(new (pdf as any).GState({ opacity }));
         pdf.setFillColor(...shapeColor);
@@ -367,7 +367,7 @@ function renderPageElements(
         if ((el.shapeBorderWidth || 0) > 0) {
           const borderColor = el.shapeBorderColor ? hexToRgb(el.shapeBorderColor) : [0, 0, 0] as [number, number, number];
           pdf.setDrawColor(...borderColor);
-          pdf.setLineWidth((el.shapeBorderWidth || 1) * SF);
+          pdf.setLineWidth(scaleW(el.shapeBorderWidth || 1));
           if (radius > 0) {
             pdf.roundedRect(x, y, w, h, radius, radius, 'FD');
           } else {
