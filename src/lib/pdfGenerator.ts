@@ -328,18 +328,17 @@ function renderPageElements(
         pdf.setTextColor(...color);
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-        const h = scaleH(el.height);
-        const textBaseline = y + h / 2 + fontSize * 0.3;
+        const ascent = fontSize * 0.82;
         let tx = x;
         if (align === 'center') tx = x + w / 2;
         else if (align === 'right') tx = x + w;
-        pdf.text(displayText, tx, textBaseline, { align });
+        pdf.text(displayText, tx, y + ascent, { align });
         if (el.textDecoration === 'underline') {
           const textW = pdf.getTextWidth(displayText);
           let ux = tx;
           if (align === 'center') ux = tx - textW / 2;
           else if (align === 'right') ux = tx - textW;
-          const uy = textBaseline + fontSize * 0.15;
+          const uy = y + ascent + fontSize * 0.15;
           pdf.setDrawColor(...color);
           pdf.setLineWidth(fontSize * 0.05);
           pdf.line(ux, uy, ux + textW, uy);

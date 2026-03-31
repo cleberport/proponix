@@ -478,28 +478,30 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const varValue = resolveVariable(el);
           // In readOnly, hide the entire element label when variable has no value
           const showContent = el.content && (!readOnly || varValue);
+          const displayText = showContent
+            ? `${resolveContent(el)} ${varValue}`
+            : varValue;
           return (
             <div
               key={el.id}
               style={{
                 ...style,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
                 paddingLeft: 4,
                 paddingRight: 4,
-                overflow: 'hidden',
               }}
               className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              {showContent && <span style={{ whiteSpace: 'nowrap' }}>{resolveContent(el)}</span>}
-              <span
-                className={readOnly ? '' : 'rounded'}
-                style={readOnly ? { whiteSpace: 'nowrap' } : { color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))', background: 'hsl(var(--primary) / 0.1)', padding: '2px 6px', whiteSpace: 'nowrap' }}
-              >
-                {varValue}
+              <span style={readOnly ? {} : {
+                color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))',
+                background: 'hsl(var(--primary) / 0.1)',
+                padding: '2px 6px',
+                borderRadius: 4,
+              }}>
+                {displayText}
               </span>
               {resizeHandle}
             </div>
@@ -651,64 +653,65 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const bgOpacity = (el.bgOpacity ?? 100) / 100;
           const showPrice = el.showPrice !== false;
 
-          return (
+           return (
             <div
               key={el.id}
-              style={{ ...style, height: el.height }}
+              style={{ ...style, height: el.height, overflow: 'hidden' }}
               className={`${readOnly ? '' : 'border border-dashed border-primary/30'} ${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
               {hasContent ? (
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  position: 'relative',
+                  width: '100%',
                   height: '100%',
-                  padding: '4px 12px',
+                  padding: '2px 12px',
                   fontFamily: el.fontFamily || 'Space Grotesk',
                   background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
                   borderBottom: bgOpacity < 0.5 ? 'none' : `1px solid ${borderColor}`,
                 }}>
-                  {/* Left: Name + Description inline */}
-                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  {/* Name */}
+                  <span style={{
+                    fontSize: el.fontSize || 14,
+                    fontWeight: '600',
+                    color: textColor,
+                    letterSpacing: '0.01em',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'block',
+                    lineHeight: 1.4,
+                  }}>
+                    {svcName}
+                  </span>
+                  {/* Description */}
+                  {svcDesc && (
                     <span style={{
-                      fontSize: el.fontSize || 14,
-                      fontWeight: '600',
+                      fontSize: Math.max((el.fontSize || 14) - 2, 9),
                       color: textColor,
-                      letterSpacing: '0.01em',
+                      opacity: 0.55,
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       display: 'block',
+                      lineHeight: 1.3,
                     }}>
-                      {svcName}
+                      {svcDesc}
                     </span>
-                    {svcDesc && (
-                      <span style={{
-                        fontSize: Math.max((el.fontSize || 14) - 2, 9),
-                        color: textColor,
-                        opacity: 0.55,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: 'block',
-                        lineHeight: 1.3,
-                      }}>
-                        {svcDesc}
-                      </span>
-                    )}
-                  </div>
-                  {/* Right: Price */}
+                  )}
+                  {/* Price - absolute right */}
                   {showPrice && svcPrice && (
                     <span style={{
+                      position: 'absolute',
+                      right: 12,
+                      top: 2,
                       fontSize: el.fontSize || 14,
                       fontWeight: '700',
                       color: textColor,
-                      marginLeft: 24,
                       whiteSpace: 'nowrap',
                       letterSpacing: '-0.01em',
-                      flexShrink: 0,
+                      lineHeight: 1.4,
                     }}>
                       {svcPrice}
                     </span>
