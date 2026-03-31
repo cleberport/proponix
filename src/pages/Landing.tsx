@@ -83,7 +83,7 @@ const Landing = () => {
   const navigate = useNavigate();
   const go = (path = '/auth?tab=signup') => navigate(path);
 
-  const [yearly, setYearly] = useState(false);
+  
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white antialiased selection:bg-primary/30">
