@@ -59,12 +59,18 @@ const statusLabels: Record<string, string> = {
   trial: 'Trial',
   active: 'Ativo',
   expired: 'Expirado',
+  free: 'Free',
+  pro: 'Pro',
+  premium: 'Premium',
 };
 
 const statusColors: Record<string, string> = {
   trial: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
   expired: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  free: 'bg-muted text-muted-foreground',
+  pro: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
+  premium: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
 };
 
 const formatDate = (d: string) => {
