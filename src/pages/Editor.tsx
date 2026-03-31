@@ -167,6 +167,8 @@ const Editor = () => {
     void loadTemplate();
     return () => { active = false; };
   }, [id, isNew, navigate]);
+  // Ref for duplicate (declared later) so keyboard shortcut can call it
+  const duplicateRef = useRef<() => void>(() => {});
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -176,7 +178,6 @@ const Editor = () => {
 
       if (selectedIds.length > 0) {
         const step = e.shiftKey ? 50 : GRID;
-        // Check if any selected element is locked
         const currentElements = pages[currentPage] || [];
         const hasLocked = selectedIds.some(id => currentElements.find(el => el.id === id)?.locked);
         
@@ -216,13 +217,13 @@ const Editor = () => {
       // Ctrl+D / Cmd+D → duplicate
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
-        duplicateSelected();
+        duplicateRef.current();
         return;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, setElements, undo, duplicateSelected]);
+  }, [selectedIds, setElements, undo, pages, currentPage]);
 
   const handleSelect = useCallback((id: string | null) => {
     if (id) setSelectedIds([id]);
