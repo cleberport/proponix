@@ -387,7 +387,7 @@ const corporateElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 778, width: 515, height: 1, content: '', color: '#CBD5E1' }),
-  el({ type: 'text', x: 40, y: 792, width: 515, height: 14, content: 'Documento gerado pelo Freelox', fontSize: 8, color: '#94A3B8', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 792, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#94A3B8', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
