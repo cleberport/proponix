@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Users, Mail, Zap, ScrollText } from 'lucide-react';
 import freeloxLogo from '@/assets/freelox_logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,6 +24,13 @@ const items = [
   { title: 'Templates', url: '/dashboard', icon: LayoutGrid },
   { title: 'Documentos', url: '/documents', icon: FileText },
   { title: 'Recebidos', url: '/recebidos', icon: Inbox },
+];
+
+const adminSubItems = [
+  { title: 'Usuários', url: '/admin?section=users', section: 'users', icon: Users },
+  { title: 'Templates', url: '/admin?section=emails', section: 'emails', icon: Mail },
+  { title: 'Automações', url: '/admin?section=automations', section: 'automations', icon: Zap },
+  { title: 'Logs', url: '/admin?section=logs', section: 'logs', icon: ScrollText },
 ];
 
 export function AppSidebar() {
@@ -78,20 +85,32 @@ export function AppSidebar() {
         {/* Finanças section with nested folders/tables */}
         <FinanceSidebarSection />
 
-        {adminItems.length > 0 && (
+        {!adminLoading && isAdmin && (
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <NavLink to={item.url} end className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={currentPath === '/admin'}>
+                    <NavLink to="/admin?section=users" end={false} className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                {!collapsed && currentPath === '/admin' && adminSubItems.map((sub) => {
+                  const params = new URLSearchParams(location.search);
+                  const activeSection = params.get('section') || 'users';
+                  return (
+                    <SidebarMenuItem key={sub.section}>
+                      <SidebarMenuButton asChild isActive={activeSection === sub.section}>
+                        <NavLink to={sub.url} end={false} className="hover:bg-muted/50 pl-8" activeClassName="bg-muted text-primary font-medium">
+                          <sub.icon className="mr-2 h-3.5 w-3.5" />
+                          <span className="text-sm">{sub.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

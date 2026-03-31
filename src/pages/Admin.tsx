@@ -1,12 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { supabase } from '@/integrations/supabase/client';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText, Zap } from 'lucide-react';
+import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminEmailsSection from '@/components/admin/AdminEmailsSection';
 import AdminEmailLogs from '@/components/admin/AdminEmailLogs';
@@ -77,6 +76,8 @@ const formatDate = (d: string) => {
 };
 
 const AdminPage = () => {
+  const [searchParams] = useSearchParams();
+  const section = searchParams.get('section') || 'users';
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, trial: 0, expired: 0 });
@@ -186,27 +187,8 @@ const AdminPage = () => {
         <p className="text-sm text-muted-foreground mt-1">Gerenciamento de usuários e sistema</p>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-5 w-full grid grid-cols-4">
-          <TabsTrigger value="users" className="gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            Usuários
-          </TabsTrigger>
-          <TabsTrigger value="emails" className="gap-1.5">
-            <Mail className="h-3.5 w-3.5" />
-            Templates
-          </TabsTrigger>
-          <TabsTrigger value="automations" className="gap-1.5">
-            <Zap className="h-3.5 w-3.5" />
-            Automações
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="gap-1.5">
-            <FileText className="h-3.5 w-3.5" />
-            Logs
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users">
+      {section === 'users' && (
+        <>
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {statCards.map((s) => (
@@ -300,20 +282,12 @@ const AdminPage = () => {
               </Table>
             </div>
           </div>
-        </TabsContent>
+        </>
+      )}
 
-        <TabsContent value="emails">
-          <AdminEmailsSection />
-        </TabsContent>
-
-        <TabsContent value="automations">
-          <AdminAutomations />
-        </TabsContent>
-
-        <TabsContent value="logs">
-          <AdminEmailLogs />
-        </TabsContent>
-      </Tabs>
+      {section === 'emails' && <AdminEmailsSection />}
+      {section === 'automations' && <AdminAutomations />}
+      {section === 'logs' && <AdminEmailLogs />}
 
       {/* View dialog */}
       <Dialog open={!!viewProfile} onOpenChange={() => setViewProfile(null)}>
