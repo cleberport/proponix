@@ -411,76 +411,87 @@ const Landing = () => {
 
       {/* ─── PRICING ─── */}
       <section id="pricing" className="py-20 md:py-28">
-        <div className="mx-auto max-w-xl px-5">
+        <div className="mx-auto max-w-5xl px-5">
           <motion.div className="text-center mb-14" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
             <SectionLabel>Preços</SectionLabel>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Simples e direto</h2>
-
-            {/* Toggle */}
-            <div className="mt-8 inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
-              <button
-                onClick={() => setYearly(false)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${!yearly ? 'bg-primary text-white shadow-lg' : 'text-white/50 hover:text-white/70'}`}
-              >
-                Mensal
-              </button>
-              <button
-                onClick={() => setYearly(true)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-2 ${yearly ? 'bg-primary text-white shadow-lg' : 'text-white/50 hover:text-white/70'}`}
-              >
-                Anual
-                <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 transition-all duration-300 ${yearly ? 'bg-white/20 text-white' : 'bg-primary/20 text-primary'}`}>
-                  Economize 2 meses
-                </span>
-              </button>
-            </div>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Escolha o plano ideal</h2>
+            <p className="mt-3 text-sm text-white/40">Comece grátis. Evolua quando precisar.</p>
           </motion.div>
 
-          <motion.div
-            className={`rounded-2xl border p-8 md:p-10 backdrop-blur transition-colors duration-300 ${yearly ? 'border-primary/30 bg-primary/[0.04]' : 'border-white/[0.08] bg-white/[0.03]'}`}
-            initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}
-          >
-            <motion.div
-              key={yearly ? 'yearly' : 'monthly'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl md:text-5xl font-bold text-white">{yearly ? 'R$197' : 'R$19'}</span>
-                <span className="text-white/40 text-lg">{yearly ? '/ano' : '/mês'}</span>
+          <motion.div className="grid gap-5 md:grid-cols-3" initial="hidden" whileInView="show" viewport={{ once: true, margin: '-40px' }}>
+            {/* FREE */}
+            <motion.div variants={fade} custom={0}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur flex flex-col">
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">Free</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">R$0</span>
               </div>
-              {yearly && (
-                <p className="mt-2 text-sm text-primary/70 font-medium">R$16/mês — economia de 2 meses</p>
-              )}
-              {!yearly && (
-                <p className="mt-2 text-sm text-white/40">ou R$197/ano e economize 2 meses</p>
-              )}
+              <ul className="mt-4 space-y-3 flex-1">
+                {['1 template', 'Geração de PDF', 'Marca d\'água nos modelos'].map(f => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-white/50">
+                    <Check className="h-4 w-4 shrink-0 text-white/30" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button variant="outline" size="lg" onClick={() => go()}
+                className="mt-8 w-full h-12 rounded-full border-white/10 text-white/70 hover:text-white hover:border-white/20 text-sm font-semibold">
+                Começar grátis
+              </Button>
             </motion.div>
 
-            <ul className="mt-8 space-y-4">
-              {[
-                'Templates ilimitados',
-                'Upload de modelos',
-                'Geração de PDF',
-                'Envio por link e WhatsApp',
-                'Histórico de orçamentos',
-              ].map(f => (
-                <li key={f} className="flex items-center gap-3 text-[15px] text-white/70">
-                  <Check className="h-4 w-4 shrink-0 text-primary" />
-                  {f}
-                </li>
-              ))}
-            </ul>
+            {/* PRO */}
+            <motion.div variants={fade} custom={1}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 backdrop-blur flex flex-col">
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">Pro</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">R$19,90</span>
+                <span className="text-white/40 text-lg">/mês</span>
+              </div>
+              <ul className="mt-4 space-y-3 flex-1">
+                {['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'Upload de modelos'].map(f => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-white/60">
+                    <Check className="h-4 w-4 shrink-0 text-primary/70" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button size="lg" onClick={() => go()}
+                className="mt-8 w-full h-12 rounded-full bg-white/10 text-white hover:bg-white/15 text-sm font-semibold">
+                Assinar Pro
+              </Button>
+            </motion.div>
 
-            <Button size="lg" onClick={() => go()}
-              className="mt-10 w-full h-14 rounded-full bg-primary text-white hover:bg-primary/90 text-base font-semibold shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.4)] group">
-              Começar grátis
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <p className="mt-4 text-center text-xs text-white/30">
-              Teste grátis por 30 dias. Cancele quando quiser.
-            </p>
+            {/* PREMIUM */}
+            <motion.div variants={fade} custom={2}
+              className="rounded-2xl border border-primary/30 bg-primary/[0.04] p-8 backdrop-blur flex flex-col relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-[11px] font-semibold text-white">
+                Mais popular
+              </span>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary/70 mb-2">Premium</p>
+              <div className="flex items-baseline gap-1 mb-1">
+                <span className="text-4xl font-bold text-white">R$59,90</span>
+                <span className="text-white/40 text-lg">/mês</span>
+              </div>
+              <p className="text-xs text-white/30 mb-4">ou R$599/ano (2 meses grátis)</p>
+              <ul className="mt-4 space-y-3 flex-1">
+                {[
+                  'Tudo do Pro',
+                  'Envio por link e WhatsApp',
+                  'Documentos e rastreio',
+                  'Propostas recebidas',
+                  'Módulo financeiro',
+                  'Automações e e-mails',
+                ].map(f => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-white/70">
+                    <Check className="h-4 w-4 shrink-0 text-primary" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button size="lg" onClick={() => go()}
+                className="mt-8 w-full h-12 rounded-full bg-primary text-white hover:bg-primary/90 text-sm font-semibold shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.4)] group">
+                Assinar Premium
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </motion.div>
           </motion.div>
         </div>
       </section>
