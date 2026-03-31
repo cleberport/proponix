@@ -98,9 +98,13 @@ export function getServiceLayout({
   const gap = hasPrice ? 10 : 0;
   const contentWidth = Math.max(0, width - paddingX * 2 - priceWidth - gap);
   const availableHeight = Math.max(0, height - paddingY * 2);
-  const canShowDescription = hasDescription && availableHeight >= nameLineHeightPx + descLineHeightPx * 0.8;
-  const nameMaxLines = canShowDescription ? 1 : 2;
+  const nameMaxLines = !hasDescription
+    ? 2
+    : availableHeight >= nameLineHeightPx * 2 + descLineHeightPx * 0.8
+      ? 2
+      : 1;
   const nameHeight = Math.min(availableHeight, nameLineHeightPx * nameMaxLines);
+  const canShowDescription = hasDescription && availableHeight - nameHeight >= descLineHeightPx * 0.8;
   const descHeight = canShowDescription ? Math.max(0, availableHeight - nameHeight) : 0;
 
   return {
