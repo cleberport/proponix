@@ -40,7 +40,13 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const { isAdmin, loading: adminLoading } = useAdminCheck();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
+    { value: 'dark', label: 'Dark', icon: Moon },
+    { value: 'light', label: 'Light', icon: Sun },
+    { value: 'system', label: 'Sistema', icon: Monitor },
+  ];
 
   const isActive = (path: string) => currentPath === path;
 
