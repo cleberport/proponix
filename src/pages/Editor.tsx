@@ -519,6 +519,7 @@ const Editor = () => {
   const elementLabels: Record<string, string> = {
     'text': 'Texto', 'dynamic-field': 'Campo', 'image': 'Imagem', 'logo': 'Logo',
     'divider': 'Divisor', 'table': 'Tabela', 'price-field': 'Preço', 'total-calculation': 'Total', 'notes': 'Notas',
+    'shape': 'Forma',
   };
 
   const varLabels: Record<string, string> = {
