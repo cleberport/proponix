@@ -76,6 +76,8 @@ const formatDate = (d: string) => {
 };
 
 const AdminPage = () => {
+  const [searchParams] = useSearchParams();
+  const section = searchParams.get('section') || 'users';
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, trial: 0, expired: 0 });
