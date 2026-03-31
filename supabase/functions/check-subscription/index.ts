@@ -40,6 +40,31 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "User email not available" }, 400);
     }
 
+    // Check if profile has a manually assigned premium/pro status (admin override)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('status')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.status === 'premium') {
+      return jsonResponse({
+        subscribed: true,
+        product_id: 'manual_premium',
+        price_id: null,
+        subscription_end: null,
+      });
+    }
+
+    if (profile?.status === 'pro') {
+      return jsonResponse({
+        subscribed: true,
+        product_id: 'manual_pro',
+        price_id: null,
+        subscription_end: null,
+      });
+    }
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       return jsonResponse({ error: "Payment service not configured" }, 500);
