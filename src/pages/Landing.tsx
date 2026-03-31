@@ -448,7 +448,7 @@ const Landing = () => {
                 <span className="text-white/40 text-lg">/mês</span>
               </div>
               <ul className="mt-4 space-y-3 flex-1">
-                {['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'Upload de modelos'].map(f => (
+                {['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'WhatsApp sharing', 'Upload de modelos'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-white/60">
                     <Check className="h-4 w-4 shrink-0 text-primary/70" /> {f}
                   </li>
