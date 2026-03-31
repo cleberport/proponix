@@ -24,8 +24,9 @@ const Templates = () => {
   const starters = getStarterTemplates();
   const [saved, setSaved] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { maxTemplates } = useSubscription();
+  const { maxTemplates, showWatermark } = useSubscription();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const isFree = showWatermark;
 
   const refreshSaved = useCallback(async () => {
     const templates = await getSavedTemplates();
