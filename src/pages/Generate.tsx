@@ -217,7 +217,11 @@ const Generate = () => {
       if (!fetchedTemplate) return;
 
       if (editingDoc.values) {
-        setUserInputs({ ...editingDoc.values });
+        const values = { ...editingDoc.values };
+        setUserInputs(values);
+        const taxRaw = values.tax_rate ?? fetchedTemplate.defaultValues?.tax_rate ?? '0';
+        const taxDecimal = parseFloat(taxRaw) || 0;
+        setTaxRateDisplay(String(taxDecimal * 100));
       } else {
         const init: Record<string, string> = {};
         const pages = getTemplatePages(fetchedTemplate);
@@ -270,7 +274,10 @@ const Generate = () => {
           }
         }
 
+        const initialTaxRate = fetchedTemplate.defaultValues?.tax_rate ?? '0';
+        init.tax_rate = initialTaxRate;
         setUserInputs(init);
+        setTaxRateDisplay(String((parseFloat(initialTaxRate) || 0) * 100));
       }
     };
 
