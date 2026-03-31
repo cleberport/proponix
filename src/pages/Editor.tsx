@@ -287,9 +287,11 @@ const Editor = () => {
       fieldCategory: type === 'dynamic-field' ? 'input' : type === 'price-field' || type === 'total-calculation' ? 'calculated' : 'default',
       serviceIndex: type === 'service' ? getNextServiceIndex() : undefined,
       // Shape defaults
+      shapeVariant: type === 'shape' ? 'square' : undefined,
       shapeColor: type === 'shape' ? '#3B82F6' : undefined,
       shapeBorderRadius: type === 'shape' ? 8 : undefined,
       shapeOpacity: type === 'shape' ? 100 : undefined,
+      shapeRotation: type === 'shape' ? 0 : undefined,
     };
     if (type === 'logo') {
       newEl.width = 150;

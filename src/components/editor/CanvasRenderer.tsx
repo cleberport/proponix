@@ -825,21 +825,34 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         }
 
         case 'shape': {
+          const variant = el.shapeVariant || 'square';
+          const rotation = el.shapeRotation || 0;
           const shapeStyle: React.CSSProperties = {
             position: 'absolute',
             left: el.x,
             top: el.y,
             width: el.width,
             height: el.height,
-            backgroundColor: el.shapeColor || '#3B82F6',
-            borderRadius: el.shapeBorderRadius || 0,
             opacity: (el.shapeOpacity ?? 100) / 100,
-            borderWidth: el.shapeBorderWidth || 0,
-            borderStyle: (el.shapeBorderWidth || 0) > 0 ? 'solid' : 'none',
+            borderWidth: variant !== 'line' ? (el.shapeBorderWidth || 0) : 0,
+            borderStyle: variant !== 'line' && (el.shapeBorderWidth || 0) > 0 ? 'solid' : 'none',
             borderColor: el.shapeBorderColor || '#000000',
             cursor: readOnly ? 'default' : (el.locked ? 'not-allowed' : 'grab'),
             userSelect: 'none',
+            transform: rotation ? `rotate(${rotation}deg)` : undefined,
           };
+
+          if (variant === 'circle') {
+            shapeStyle.backgroundColor = el.shapeColor || '#3B82F6';
+            shapeStyle.borderRadius = '50%';
+          } else if (variant === 'line') {
+            shapeStyle.backgroundColor = 'transparent';
+            shapeStyle.borderBottom = `${Math.max(el.height, 2)}px solid ${el.shapeColor || '#3B82F6'}`;
+            shapeStyle.height = el.height;
+          } else {
+            shapeStyle.backgroundColor = el.shapeColor || '#3B82F6';
+            shapeStyle.borderRadius = el.shapeBorderRadius || 0;
+          }
 
           return (
             <div

@@ -74,11 +74,13 @@ export interface CanvasElement {
   bgOpacity?: number; // 0-100, default 100
 
   // Shape properties
+  shapeVariant?: 'square' | 'circle' | 'line'; // shape type
   shapeColor?: string; // fill color for shape elements
   shapeBorderRadius?: number; // border radius in px
   shapeOpacity?: number; // 0-100, default 100
   shapeBorderWidth?: number; // border width in px
   shapeBorderColor?: string; // border color
+  shapeRotation?: number; // rotation in degrees
 }
 
 export interface TableRow {
