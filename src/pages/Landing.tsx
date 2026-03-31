@@ -179,7 +179,7 @@ const Landing = () => {
 
       {/* ─── TRUST LINE ─── */}
       <section className="border-y border-white/[0.06] py-6">
-        <p className="text-center text-sm text-white/40 px-5">
+        <p className="text-center text-sm text-white/60 px-5">
           Use o orçamento que você já tem. Feito para quem precisa criar e enviar com rapidez.
         </p>
       </section>
