@@ -124,15 +124,31 @@ export function AppSidebar() {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "default"}
-          className={collapsed ? "w-full justify-center text-muted-foreground" : "w-full justify-start text-muted-foreground"}
-          onClick={toggleTheme}
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          {!collapsed && <span className="ml-2">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size={collapsed ? "icon" : "default"}
+              className={collapsed ? "w-full justify-center text-muted-foreground" : "w-full justify-start text-muted-foreground"}
+            >
+              <Palette className="h-4 w-4" />
+              {!collapsed && <span className="ml-2">Aparência</span>}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-40">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Aparência</DropdownMenuLabel>
+            {themeOptions.map((opt) => (
+              <DropdownMenuItem
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={theme === opt.value ? 'bg-primary/10 text-primary font-medium' : ''}
+              >
+                <opt.icon className="mr-2 h-4 w-4" />
+                {opt.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-destructive"
