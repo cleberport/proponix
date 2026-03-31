@@ -49,6 +49,8 @@ const Generate = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const { canUseFeature, showWatermark } = useSubscription();
+  const [linkUpgradeOpen, setLinkUpgradeOpen] = useState(false);
 
   const editingDoc = useMemo(() => {
     return (location.state as { documentId?: string; values?: Record<string, string> }) || {};
