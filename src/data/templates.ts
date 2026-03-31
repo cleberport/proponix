@@ -313,7 +313,7 @@ const gradientElements: CanvasElement[] = [
   el({ type: 'notes', x: 60, y: 626, width: 475, height: 80, content: 'Proposta válida por 30 dias. Forma de pagamento: 50% na aprovação e 50% na entrega. Inclui garantia de 90 dias. Hospedagem e domínio não inclusos.', fontSize: 11, color: '#64748B', alignment: 'center', fieldCategory: 'default' }),
 
   // Footer
-  el({ type: 'text', x: 40, y: 790, width: 515, height: 14, content: 'Documento gerado pelo Freelox', fontSize: 8, color: '#BAE6FD', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 790, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#BAE6FD', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
