@@ -51,7 +51,7 @@ function makeTemplate(
     defaultValues: overrides?.defaultValues || { ...DEFAULT_TEMPLATE_VALUES },
     inputFields: overrides?.inputFields || [...DEFAULT_INPUT_FIELDS],
     calculatedFields: overrides?.calculatedFields || { ...DEFAULT_CALCULATED_FIELDS },
-    settings: overrides?.settings || { taxRate: 0.10, showTax: true },
+    settings: overrides?.settings || { taxRate: 0, showTax: true },
   };
 }
 
