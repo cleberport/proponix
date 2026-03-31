@@ -74,6 +74,7 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
     'price-field': 'Campo de Preço',
     'total-calculation': 'Total',
     'notes': 'Observações',
+    'shape': 'Forma',
   };
 
   const addRow = () => {
