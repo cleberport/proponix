@@ -52,9 +52,7 @@ export function AppSidebar() {
       <SidebarContent>
         {/* Logo */}
         <div className={`flex items-center gap-2.5 px-4 pt-6 pb-6 ${collapsed ? 'justify-center px-2' : ''}`}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ff2e5f]">
-            <FileText className="h-4 w-4 text-white" />
-          </div>
+          <img src={freeloxLogo} alt="Freelox" className="h-8 w-8 shrink-0 rounded-lg" />
           {!collapsed && (
             <span className="text-xl font-bold tracking-tight text-foreground">Freelox</span>
           )}

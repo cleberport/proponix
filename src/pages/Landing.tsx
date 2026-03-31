@@ -93,9 +93,7 @@ const Landing = () => {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
+            <img src={freeloxLogo} alt="Freelox" className="h-8 w-8 rounded-lg" />
             <span className="text-lg font-bold tracking-tight">Freelox</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-[13px] text-white/50 font-medium">
