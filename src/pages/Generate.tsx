@@ -75,6 +75,9 @@ const Generate = () => {
   // Extra dynamically added service blocks
   const [extraServiceIndices, setExtraServiceIndices] = useState<number[]>([]);
 
+  // Show price toggle per service index (default true)
+  const [serviceShowPrice, setServiceShowPrice] = useState<Record<number, boolean>>({});
+
   // Find table element info from template
   const tableInfo = useMemo(() => {
     if (!template) return null;
