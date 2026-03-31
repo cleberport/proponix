@@ -395,7 +395,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         style.height = el.height;
       }
 
-      const selectedClass = elSelected ? 'element-selected' : '';
+      const isImageType = el.type === 'image' || el.type === 'logo';
+      const selectedClass = elSelected ? (isImageType ? 'element-selected-image' : 'element-selected') : '';
       const hoverClass = readOnly ? '' : 'hover:element-hover';
 
       const resizeHandle = elSelected ? (
@@ -575,7 +576,18 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   <span className="text-[10px] text-muted-foreground">Arraste ou clique para enviar</span>
                 </div>
               )}
-              {resizeHandle}
+              {/* Corner handles for images (Canva-style) */}
+              {elSelected && (
+                <>
+                  <div className="absolute -top-1 -left-1 h-2.5 w-2.5 rounded-sm bg-white border-2 border-primary pointer-events-none" />
+                  <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-sm bg-white border-2 border-primary pointer-events-none" />
+                  <div className="absolute -bottom-1 -left-1 h-2.5 w-2.5 rounded-sm bg-white border-2 border-primary pointer-events-none" />
+                  <div
+                    className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-sm bg-white border-2 border-primary cursor-se-resize touch-none"
+                    onPointerDown={(e) => handlePointerDown(e, el, 'resize')}
+                  />
+                </>
+              )}
             </div>
           );
         }
