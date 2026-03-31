@@ -155,13 +155,18 @@ const Generate = () => {
     }
 
     // Sum all selected service prices
-    const servicesTotal = Object.values(selectedServices).reduce((sum, svc) => {
-      return sum + (svc?.price || 0);
-    }, 0);
+    let servicesTotal = 0;
+    for (const [idxStr, svc] of Object.entries(selectedServices)) {
+      if (!svc) continue;
+      const idx = Number(idxStr);
+      // Skip services whose price is hidden
+      if (serviceShowPrice[idx] === false) continue;
+      servicesTotal += svc.price || 0;
+    }
 
     const combined = tableTotal + servicesTotal;
     setUserInputs((prev) => ({ ...prev, price: combined > 0 ? combined.toString() : (prev.price || '') }));
-  }, [tableRows, hasTable, tableInfo, selectedServices]);
+  }, [tableRows, hasTable, tableInfo, selectedServices, serviceShowPrice]);
 
   useEffect(() => {
     let active = true;
