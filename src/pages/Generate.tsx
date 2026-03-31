@@ -536,7 +536,13 @@ const Generate = () => {
       const fileName = generatePdfFileName();
       const bgColor = template?.settings?.backgroundColor;
 
-      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true, watermark: showWatermark });
+      // When watermark is enabled the PDF generator adds its own branded watermark with logo,
+      // so strip the baked-in "Powered by Freelox" text elements from starter templates to avoid duplication.
+      const pdfPages = showWatermark
+        ? visiblePages.map(page => page.filter(el => !(el.type === 'text' && el.content?.trim().toLowerCase() === 'powered by freelox')))
+        : visiblePages;
+
+      const blob = await generateVectorPdf(pdfPages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true, watermark: showWatermark });
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
