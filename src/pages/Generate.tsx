@@ -391,17 +391,17 @@ const Generate = () => {
       const lastPage = result[result.length - 1];
       // Find the last service element to position extras below
       const lastServiceEl = [...lastPage].reverse().find(e => e.type === 'service');
-      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height + 4 : 600;
+      const baseY = lastServiceEl ? lastServiceEl.y + lastServiceEl.height : 600;
       const baseEl = lastServiceEl || lastPage[0];
       const svcHeight = lastServiceEl?.height ?? 50;
 
       extraServiceIndices.forEach((idx, i) => {
-        if (templateServiceIndices.includes(idx)) return; // already in template
+        if (templateServiceIndices.includes(idx)) return;
         result[result.length - 1] = [...result[result.length - 1], {
           id: `extra-service-${idx}`,
           type: 'service' as const,
           x: baseEl?.x ?? 40,
-          y: baseY + i * (svcHeight + 4),
+          y: baseY + i * svcHeight,
           width: baseEl?.width ?? 300,
           height: svcHeight,
           content: '',
