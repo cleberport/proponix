@@ -33,10 +33,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText } from 'lucide-react';
+import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminEmailsSection from '@/components/admin/AdminEmailsSection';
 import AdminEmailLogs from '@/components/admin/AdminEmailLogs';
+import AdminAutomations from '@/components/admin/AdminAutomations';
 
 interface Profile {
   id: string;
@@ -184,7 +185,7 @@ const AdminPage = () => {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-5 w-full grid grid-cols-3">
+        <TabsList className="mb-5 w-full grid grid-cols-4">
           <TabsTrigger value="users" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
             Usuários
@@ -192,6 +193,10 @@ const AdminPage = () => {
           <TabsTrigger value="emails" className="gap-1.5">
             <Mail className="h-3.5 w-3.5" />
             Templates
+          </TabsTrigger>
+          <TabsTrigger value="automations" className="gap-1.5">
+            <Zap className="h-3.5 w-3.5" />
+            Automações
           </TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
@@ -297,6 +302,10 @@ const AdminPage = () => {
 
         <TabsContent value="emails">
           <AdminEmailsSection />
+        </TabsContent>
+
+        <TabsContent value="automations">
+          <AdminAutomations />
         </TabsContent>
 
         <TabsContent value="logs">
