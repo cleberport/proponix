@@ -254,7 +254,7 @@ const colorfulElements: CanvasElement[] = [
 
   // Footer bar
   el({ type: 'text', x: 0, y: 834, width: 595, height: 8, content: '', fontSize: 1, color: '#7C3AED' }),
-  el({ type: 'text', x: 40, y: 800, width: 515, height: 14, content: 'Documento gerado pelo Freelox', fontSize: 8, color: '#C4B5FD', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 800, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#C4B5FD', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
