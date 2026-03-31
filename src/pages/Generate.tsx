@@ -1,5 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import UpgradeModal from '@/components/UpgradeModal';
 import { getTemplateById, generatePdfFileName, addDocumentToHistory, getSettings } from '@/lib/templateStorage';
 import { getTemplatePages, CanvasElement } from '@/types/template';
 import { resolveAllValues, formatCurrency, formatEventDate } from '@/lib/calculations';
@@ -47,6 +49,8 @@ const Generate = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const { canUseFeature, showWatermark } = useSubscription();
+  const [linkUpgradeOpen, setLinkUpgradeOpen] = useState(false);
 
   const editingDoc = useMemo(() => {
     return (location.state as { documentId?: string; values?: Record<string, string> }) || {};
@@ -537,7 +541,7 @@ const Generate = () => {
       const fileName = generatePdfFileName();
       const bgColor = template?.settings?.backgroundColor;
 
-      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true });
+      const blob = await generateVectorPdf(visiblePages, displayValues, fileName, { backgroundColor: bgColor, skipDownload: true, watermark: showWatermark });
 
       setLastPdfBlob(blob || null);
       setLastFileName(fileName);
@@ -738,7 +742,13 @@ const Generate = () => {
           <Button
             variant="outline"
             className="h-10 px-4 text-sm font-semibold"
-            onClick={handleSendByLink}
+            onClick={() => {
+              if (!canUseFeature('link_sharing')) {
+                setLinkUpgradeOpen(true);
+                return;
+              }
+              handleSendByLink();
+            }}
             disabled={sendingLink}
           >
             {sendingLink ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Link2 className="mr-1.5 h-4 w-4" />}
@@ -1018,6 +1028,14 @@ const Generate = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <UpgradeModal
+        open={linkUpgradeOpen}
+        onOpenChange={setLinkUpgradeOpen}
+        feature="Enviar por Link"
+        description="Compartilhe propostas por link com seus clientes. Disponível no plano Premium."
+        requiredPlan="premium"
+      />
     </div>
   );
 };

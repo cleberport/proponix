@@ -716,7 +716,7 @@ export async function generateVectorPdf(
   elementsOrPages: CanvasElement[] | CanvasElement[][],
   variableValues: Record<string, string>,
   fileName: string,
-  options?: { backgroundColor?: string; skipDownload?: boolean }
+  options?: { backgroundColor?: string; skipDownload?: boolean; watermark?: boolean }
 ): Promise<Blob> {
   const pages: CanvasElement[][] = Array.isArray(elementsOrPages[0]) && Array.isArray((elementsOrPages as any[])[0])
     ? (elementsOrPages as CanvasElement[][])
@@ -730,6 +730,15 @@ export async function generateVectorPdf(
   for (let i = 0; i < pages.length; i++) {
     if (i > 0) pdf.addPage();
     renderPageElements(pdf, pages[i], variableValues, imageMap, options?.backgroundColor);
+
+    // Add watermark on last page if required
+    if (options?.watermark && i === pages.length - 1) {
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      pdf.setFontSize(9);
+      pdf.setTextColor(160, 160, 160);
+      pdf.text('Powered by Freelox', pageW / 2, pageH - 15, { align: 'center' });
+    }
   }
 
   const blob = pdf.output('blob');

@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import SpreadsheetView from '@/components/financas/SpreadsheetView';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FeatureGate from '@/components/FeatureGate';
 
 export default function Financas() {
   const isMobile = useIsMobile();
@@ -22,45 +23,39 @@ export default function Financas() {
     );
   }
 
-  // Mobile layout with dropdown selector
-  if (isMobile) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-64px)] pb-16">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
-          {folders.length > 0 ? (
-            <Select value={selectedTableId || ''} onValueChange={id => setSelectedTableId(id)}>
-              <SelectTrigger className="flex-1 h-9">
-                <SelectValue placeholder="Selecione uma tabela" />
-              </SelectTrigger>
-              <SelectContent>
-                {folders.map(folder => {
-                  const folderTables = tables.filter(t => t.folder_id === folder.id);
-                  return folderTables.map(t => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {folder.name} / {t.name}
-                    </SelectItem>
-                  ));
-                })}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Button variant="outline" size="sm" className="w-full" onClick={() => createFolder('Nova Pasta')}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" /> Criar Pasta
-            </Button>
-          )}
-        </div>
-
-        {selectedTable ? (
-          <SpreadsheetView table={selectedTable} onUpdate={updateTable} />
+  const content = isMobile ? (
+    <div className="flex flex-col h-[calc(100vh-64px)] pb-16">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
+        {folders.length > 0 ? (
+          <Select value={selectedTableId || ''} onValueChange={id => setSelectedTableId(id)}>
+            <SelectTrigger className="flex-1 h-9">
+              <SelectValue placeholder="Selecione uma tabela" />
+            </SelectTrigger>
+            <SelectContent>
+              {folders.map(folder => {
+                const folderTables = tables.filter(t => t.folder_id === folder.id);
+                return folderTables.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {folder.name} / {t.name}
+                  </SelectItem>
+                ));
+              })}
+            </SelectContent>
+          </Select>
         ) : (
-          <EmptyState onCreateFolder={() => createFolder('Nova Pasta')} hasFolders={folders.length > 0} />
+          <Button variant="outline" size="sm" className="w-full" onClick={() => createFolder('Nova Pasta')}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Criar Pasta
+          </Button>
         )}
       </div>
-    );
-  }
 
-  // Desktop: no left panel, folders are in sidebar
-  return (
+      {selectedTable ? (
+        <SpreadsheetView table={selectedTable} onUpdate={updateTable} />
+      ) : (
+        <EmptyState onCreateFolder={() => createFolder('Nova Pasta')} hasFolders={folders.length > 0} />
+      )}
+    </div>
+  ) : (
     <div className="flex flex-col h-[calc(100vh-64px)]">
       {selectedTable ? (
         <SpreadsheetView table={selectedTable} onUpdate={updateTable} />
@@ -68,6 +63,12 @@ export default function Financas() {
         <EmptyState onCreateFolder={() => createFolder('Nova Pasta')} hasFolders={folders.length > 0} />
       )}
     </div>
+  );
+
+  return (
+    <FeatureGate feature="finance_full" featureLabel="Módulo Financeiro" description="Faça upgrade para Premium para usar o módulo financeiro." viewOnly>
+      {content}
+    </FeatureGate>
   );
 }
 

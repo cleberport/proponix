@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SavedTemplate } from '@/types/template';
 import OnboardingTour from '@/components/OnboardingTour';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import UpgradeModal from '@/components/UpgradeModal';
 
 
 const Dashboard = () => {
@@ -22,6 +24,8 @@ const Dashboard = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'saved' | 'starter' | 'all-starters'>('saved');
   const settings = getSettings();
+  const { maxTemplates } = useSubscription();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const refreshSaved = useCallback(async () => {
     setLoadingSaved(true);
@@ -130,7 +134,13 @@ const Dashboard = () => {
             Importar com IA
           </Button>
           <div data-tour="tour-new-template">
-            <Button onClick={() => navigate('/editor/new')} size="icon" className="h-9 w-9 md:w-auto md:px-3">
+            <Button onClick={() => {
+              if (saved.length >= maxTemplates) {
+                setUpgradeOpen(true);
+                return;
+              }
+              navigate('/editor/new');
+            }} size="icon" className="h-9 w-9 md:w-auto md:px-3">
               <Plus className="h-4 w-4 md:mr-1.5" />
               <span className="hidden md:inline">Novo Template</span>
             </Button>
@@ -223,6 +233,14 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="Templates ilimitados"
+        description="Você atingiu o limite de 1 template no plano gratuito. Faça upgrade para criar templates ilimitados."
+        requiredPlan="pro"
+      />
     </div>
   );
 };

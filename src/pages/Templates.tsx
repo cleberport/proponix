@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import TemplateCard from '@/components/TemplateCard';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import UpgradeModal from '@/components/UpgradeModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +24,8 @@ const Templates = () => {
   const starters = getStarterTemplates();
   const [saved, setSaved] = useState<Awaited<ReturnType<typeof getSavedTemplates>>>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { maxTemplates } = useSubscription();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const refreshSaved = useCallback(async () => {
     const templates = await getSavedTemplates();
@@ -72,7 +76,13 @@ const Templates = () => {
           <h1 className="text-xl font-semibold text-foreground md:text-2xl">Templates</h1>
           <p className="text-sm text-muted-foreground">Todos os templates disponíveis</p>
         </div>
-        <Button onClick={() => navigate('/editor/new')} size="sm">
+        <Button onClick={() => {
+          if (saved.length >= maxTemplates) {
+            setUpgradeOpen(true);
+            return;
+          }
+          navigate('/editor/new');
+        }} size="sm">
           <Plus className="mr-1.5 h-4 w-4" />
           Novo Template
         </Button>
@@ -128,6 +138,14 @@ const Templates = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="Templates ilimitados"
+        description="Você atingiu o limite de 1 template no plano gratuito. Faça upgrade para criar templates ilimitados."
+        requiredPlan="pro"
+      />
     </div>
   );
 };
