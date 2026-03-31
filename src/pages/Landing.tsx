@@ -115,6 +115,7 @@ const Landing = () => {
         </div>
       </nav>
 
+      <main>
       {/* ─── HERO ─── */}
       <section className="relative pt-36 pb-16 md:pt-48 md:pb-24 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
