@@ -3,6 +3,7 @@ import { CanvasElement } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
 import { resolveTextColor, isDark } from '@/lib/colorContrast';
+import { getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
 
 interface Props {
   elements: CanvasElement[];
@@ -25,6 +26,27 @@ const GRID = 10;
 const SNAP_THRESHOLD = 5;
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
+
+const getColumnPixelWidths = (totalWidth: number, columnCount: number, percentages?: number[]) => {
+  if (columnCount <= 0) return [] as number[];
+
+  const raw = percentages && percentages.length === columnCount
+    ? percentages
+    : Array.from({ length: columnCount }, () => 100 / columnCount);
+
+  const sum = raw.reduce((acc, value) => acc + value, 0) || columnCount;
+  let consumed = 0;
+
+  return raw.map((value, index) => {
+    if (index === columnCount - 1) {
+      return Math.max(0, totalWidth - consumed);
+    }
+
+    const width = Math.max(0, Math.round((value / sum) * totalWidth));
+    consumed += width;
+    return width;
+  });
+};
 
 interface AlignGuide {
   pos: number;
@@ -475,34 +497,46 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         case 'dynamic-field':
         case 'price-field':
         case 'total-calculation': {
+          const fontSize = el.fontSize || 14;
+          const fieldLayout = getSingleLineTextLayout({ width: el.width, height: el.height, fontSize });
           const varValue = resolveVariable(el);
-          // In readOnly, hide the entire element label when variable has no value
           const showContent = el.content && (!readOnly || varValue);
           const displayText = showContent
             ? `${resolveContent(el)} ${varValue}`
             : varValue;
+
           return (
             <div
               key={el.id}
               style={{
                 ...style,
-                whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                paddingLeft: 4,
-                paddingRight: 4,
+                height: el.height,
+                padding: 0,
               }}
               className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              <span style={readOnly ? {} : {
-                color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))',
-                background: 'hsl(var(--primary) / 0.1)',
-                padding: '2px 6px',
-                borderRadius: 4,
-              }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: fieldLayout.left,
+                  top: fieldLayout.top,
+                  width: fieldLayout.width,
+                  height: fieldLayout.height,
+                  fontSize,
+                  lineHeight: `${fieldLayout.lineHeightPx}px`,
+                  color: resolveTextColor(el.color, backgroundColor),
+                  textAlign: el.alignment || 'left',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  pointerEvents: 'none',
+                }}
+              >
                 {displayText}
-              </span>
+              </div>
               {resizeHandle}
             </div>
           );
@@ -596,6 +630,12 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         }
 
         case 'table':
+        {
+          const rows = el.rows || [];
+          const columnCount = rows[0]?.cells.length || 0;
+          const columnWidths = getColumnPixelWidths(el.width, columnCount, el.columnWidths);
+          const rowHeight = rows.length > 0 ? el.height / rows.length : el.height;
+
           return (
             <div
               key={el.id}
@@ -604,43 +644,46 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              <table className="h-full w-full text-xs" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                {el.columnWidths && (
-                  <colgroup>
-                    {el.columnWidths.map((w, ci) => (
-                      <col key={ci} style={{ width: `${w}%` }} />
-                    ))}
-                  </colgroup>
-                )}
-                <tbody>
-                  {(el.rows || []).map((row, ri) => (
-                    <tr key={ri} style={{
-                      backgroundColor: ri === 0 ? (el.tableHeaderBg || '#DCDFE4') : (el.tableRowBg || 'transparent'),
-                      fontWeight: ri === 0 ? 600 : undefined,
-                    }}>
-                      {row.cells.map((rawCell, ci) => {
-                        const cell = typeof rawCell === 'object' && rawCell !== null ? (rawCell as any).content ?? '' : String(rawCell ?? '');
-                        return (
-                        <td
-                          key={ci}
-                          className="px-2 py-1.5"
-                          style={{
-                            borderBottom: `1px solid ${el.tableBorderColor || '#C8CCD4'}`,
-                            borderRight: ci < row.cells.length - 1 ? `1px solid ${el.tableBorderColor || '#C8CCD4'}` : 'none',
-                            color: resolveTextColor(el.color, backgroundColor),
-                          }}
-                        >
-                          {variableValues ? resolveContent({ ...el, content: cell }) : (cell || (ri > 0 ? '\u00A0' : ''))}
-                        </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {rows.map((row, ri) => {
+                let offsetX = 0;
+
+                return row.cells.map((rawCell, ci) => {
+                  const cell = typeof rawCell === 'object' && rawCell !== null ? (rawCell as any).content ?? '' : String(rawCell ?? '');
+                  const cellWidth = columnWidths[ci] ?? 0;
+                  const left = offsetX;
+                  offsetX += cellWidth;
+
+                  return (
+                    <div
+                      key={`${ri}-${ci}`}
+                      style={{
+                        position: 'absolute',
+                        left,
+                        top: ri * rowHeight,
+                        width: cellWidth,
+                        height: rowHeight,
+                        padding: '6px 8px',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden',
+                        borderRight: ci < row.cells.length - 1 ? `1px solid ${el.tableBorderColor || '#C8CCD4'}` : 'none',
+                        borderBottom: `1px solid ${el.tableBorderColor || '#C8CCD4'}`,
+                        backgroundColor: ri === 0 ? (el.tableHeaderBg || '#DCDFE4') : (el.tableRowBg || 'transparent'),
+                        color: resolveTextColor(el.color, backgroundColor),
+                        fontSize: Math.max((el.fontSize || 12) * 0.85, 10),
+                        fontWeight: ri === 0 ? 600 : 400,
+                        lineHeight: '1.25',
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      {variableValues ? resolveContent({ ...el, content: cell }) : (cell || (ri > 0 ? '\u00A0' : ''))}
+                    </div>
+                  );
+                });
+              })}
               {resizeHandle}
             </div>
           );
+        }
 
         case 'service': {
           const svcIdx = el.serviceIndex ?? 0;
@@ -652,6 +695,14 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const borderColor = el.tableBorderColor || (backgroundColor && backgroundColor !== '#ffffff' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
           const bgOpacity = (el.bgOpacity ?? 100) / 100;
           const showPrice = el.showPrice !== false;
+          const fontSize = el.fontSize || 14;
+          const serviceLayout = getServiceLayout({
+            width: el.width,
+            height: el.height,
+            fontSize,
+            hasDescription: Boolean(svcDesc),
+            hasPrice: Boolean(showPrice && svcPrice),
+          });
 
            return (
             <div
@@ -663,76 +714,111 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             >
               {hasContent ? (
                 <div style={{
-                  position: 'relative',
+                  position: 'absolute',
+                  inset: 0,
                   width: '100%',
                   height: '100%',
-                  padding: '2px 12px',
                   fontFamily: el.fontFamily || 'Space Grotesk',
                   background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
-                  borderBottom: bgOpacity < 0.5 ? 'none' : `1px solid ${borderColor}`,
                 }}>
-                  {/* Name */}
-                  <span style={{
-                    fontSize: el.fontSize || 14,
+                  <div style={{
+                    position: 'absolute',
+                    left: serviceLayout.name.left,
+                    top: serviceLayout.name.top,
+                    width: serviceLayout.name.width,
+                    height: serviceLayout.name.height,
+                    fontSize,
                     fontWeight: '600',
                     color: textColor,
                     letterSpacing: '0.01em',
-                    whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: 'block',
-                    lineHeight: 1.4,
-                  }}>
+                    lineHeight: `${serviceLayout.name.lineHeightPx}px`,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: serviceLayout.name.maxLines,
+                    wordBreak: 'break-word',
+                  } as React.CSSProperties}>
                     {svcName}
-                  </span>
-                  {/* Description */}
-                  {svcDesc && (
-                    <span style={{
-                      fontSize: Math.max((el.fontSize || 14) - 2, 9),
+                  </div>
+                  {svcDesc && serviceLayout.description && (
+                    <div style={{
+                      position: 'absolute',
+                      left: serviceLayout.description.left,
+                      top: serviceLayout.description.top,
+                      width: serviceLayout.description.width,
+                      height: serviceLayout.description.height,
+                      fontSize: serviceLayout.description.fontSize,
                       color: textColor,
                       opacity: 0.55,
-                      whiteSpace: 'nowrap',
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'block',
-                      lineHeight: 1.3,
-                    }}>
+                      lineHeight: `${serviceLayout.description.lineHeightPx}px`,
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: serviceLayout.description.maxLines,
+                      wordBreak: 'break-word',
+                    } as React.CSSProperties}>
                       {svcDesc}
-                    </span>
+                    </div>
                   )}
-                  {/* Price - absolute right */}
-                  {showPrice && svcPrice && (
-                    <span style={{
+                  {showPrice && svcPrice && serviceLayout.price && (
+                    <div style={{
                       position: 'absolute',
-                      right: 12,
-                      top: 2,
-                      fontSize: el.fontSize || 14,
+                      left: serviceLayout.price.left,
+                      top: serviceLayout.price.top,
+                      width: serviceLayout.price.width,
+                      height: serviceLayout.price.height,
+                      fontSize,
                       fontWeight: '700',
                       color: textColor,
+                      textAlign: 'right',
+                      overflow: 'hidden',
                       whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
                       letterSpacing: '-0.01em',
-                      lineHeight: 1.4,
+                      lineHeight: `${serviceLayout.price.lineHeightPx}px`,
                     }}>
                       {svcPrice}
-                    </span>
+                    </div>
+                  )}
+                  {bgOpacity >= 0.5 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: serviceLayout.paddingX,
+                        width: Math.max(el.width - serviceLayout.paddingX * 2, 0),
+                        bottom: 0,
+                        height: 1,
+                        backgroundColor: borderColor,
+                      }}
+                    />
                   )}
                 </div>
-              ) : (
+              ) : !readOnly ? (
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  gap: 6,
+                  position: 'absolute',
+                  inset: 0,
                   border: bgOpacity < 0.5 ? `1.5px dashed ${borderColor}` : 'none',
                   borderRadius: 4,
                   opacity: 0.5,
                 }}>
-                  <span style={{ fontSize: (el.fontSize || 14) - 2, color: textColor || '#888', fontFamily: el.fontFamily || 'Space Grotesk' }}>
+                  <span style={{
+                    position: 'absolute',
+                    left: serviceLayout.paddingX,
+                    width: Math.max(el.width - serviceLayout.paddingX * 2, 0),
+                    top: Math.max((el.height - fontSize * 1.15) / 2, 0),
+                    fontSize: fontSize - 2,
+                    lineHeight: `${fontSize * 1.15}px`,
+                    color: textColor || '#888',
+                    fontFamily: el.fontFamily || 'Space Grotesk',
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
                     📦 Serviço {svcIdx + 1}
                   </span>
                 </div>
-              )}
+              ) : null}
               {resizeHandle}
             </div>
           );
