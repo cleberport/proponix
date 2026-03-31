@@ -689,14 +689,14 @@ function renderPageElements(
 
           // Apply dimmed opacity
           if (isDimmed) {
-            pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: 0.85 }));
           }
 
           if (opacity < 1) {
             pdf.setFillColor(255, 255, 255);
-            pdf.setGState(new (pdf as any).GState({ opacity: (isDimmed ? 0.15 : 1) * opacity * 0.1 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: (isDimmed ? 0.85 : 1) * opacity * 0.1 }));
             pdf.rect(x, itemY, w, scaleH(itemHeight), 'F');
-            pdf.setGState(new (pdf as any).GState({ opacity: isDimmed ? 0.15 : 1 }));
+            pdf.setGState(new (pdf as any).GState({ opacity: isDimmed ? 0.85 : 1 }));
           }
 
           pdf.setFont('helvetica', 'bold');
