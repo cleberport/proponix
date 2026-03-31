@@ -56,21 +56,17 @@ interface Stats {
 }
 
 const statusLabels: Record<string, string> = {
-  trial: 'Trial',
-  active: 'Ativo',
-  expired: 'Expirado',
   free: 'Free',
   pro: 'Pro',
   premium: 'Premium',
+  expired: 'Expirado',
 };
 
 const statusColors: Record<string, string> = {
-  trial: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  expired: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   free: 'bg-muted text-muted-foreground',
   pro: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
   premium: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
+  expired: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const formatDate = (d: string) => {
@@ -173,8 +169,9 @@ const AdminPage = () => {
 
   const statCards = [
     { label: 'Total de Usuários', value: stats.total, icon: Users, color: 'text-foreground' },
-    { label: 'Ativos', value: stats.active, icon: UserCheck, color: 'text-emerald-600' },
-    { label: 'Em Trial', value: stats.trial, icon: Clock, color: 'text-amber-600' },
+    { label: 'Free', value: profiles.filter(p => p.status === 'free').length, icon: UserCheck, color: 'text-muted-foreground' },
+    { label: 'Pro', value: profiles.filter(p => p.status === 'pro').length, icon: UserCheck, color: 'text-emerald-600' },
+    { label: 'Premium', value: profiles.filter(p => p.status === 'premium').length, icon: UserCheck, color: 'text-violet-600' },
     { label: 'Expirados', value: stats.expired, icon: UserX, color: 'text-red-600' },
   ];
 
@@ -344,12 +341,10 @@ const AdminPage = () => {
               <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
                 <SelectTrigger className="mt-1 h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="trial">Trial</SelectItem>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="expired">Expirado</SelectItem>
                   <SelectItem value="free">Free</SelectItem>
                   <SelectItem value="pro">Pro</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="expired">Expirado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
