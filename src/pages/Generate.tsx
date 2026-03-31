@@ -376,6 +376,11 @@ const Generate = () => {
     return display;
   }, [resolvedValues, selectedServices, allServiceIndices, serviceShowPrice, serviceDimmed]);
 
+  const selectedServiceCount = useMemo(
+    () => Object.values(selectedServices).filter((svc): svc is Service => Boolean(svc)).length,
+    [selectedServices]
+  );
+
   // Build pages with dynamic table rows + extra service blocks injected
   const visiblePages = useMemo(() => {
     if (!template) return [[]];
@@ -394,11 +399,11 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
-          // Service blocks: update serviceCount based on all service slots
+          // Service blocks: preserve mockup spacing and only expand when selected items exceed it
           if (el.type === 'service') {
-            const totalCount = allServiceIndices.length;
-            const itemHeight = Math.max(Math.floor(el.height / (el.serviceCount || 3)), 20);
-            const newHeight = itemHeight * totalCount;
+            const baseCount = el.serviceCount || 3;
+            const totalCount = Math.max(baseCount, selectedServiceCount);
+            const newHeight = el.height * (totalCount / baseCount);
             return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
           }
           return el;
@@ -406,7 +411,7 @@ const Generate = () => {
     );
 
     return result;
-  }, [template, tableRows, hasTable, tableInfo, allServiceIndices, serviceShowPrice]);
+  }, [template, tableRows, hasTable, tableInfo, selectedServiceCount]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
