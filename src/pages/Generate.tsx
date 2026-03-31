@@ -852,21 +852,34 @@ const Generate = () => {
                             setExtraServiceIndices(prev => prev.filter(i => i !== idx));
                             setSelectedServices(prev => { const n = { ...prev }; delete n[idx]; return n; });
                             setServiceShowPrice(prev => { const n = { ...prev }; delete n[idx]; return n; });
+                            setServiceDimmed(prev => { const n = { ...prev }; delete n[idx]; return n; });
                           }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 pl-1">
-                      <Switch
-                        id={`show-price-${idx}`}
-                        checked={serviceShowPrice[idx] ?? true}
-                        onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
-                      />
-                      <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
-                        Mostrar preço
-                      </Label>
+                    <div className="flex items-center gap-4 pl-1">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id={`show-price-${idx}`}
+                          checked={serviceShowPrice[idx] ?? true}
+                          onCheckedChange={(checked) => setServiceShowPrice(prev => ({ ...prev, [idx]: checked }))}
+                        />
+                        <Label htmlFor={`show-price-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                          Preço
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id={`dim-${idx}`}
+                          checked={serviceDimmed[idx] ?? false}
+                          onCheckedChange={(checked) => setServiceDimmed(prev => ({ ...prev, [idx]: checked }))}
+                        />
+                        <Label htmlFor={`dim-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                          Destaque
+                        </Label>
+                      </div>
                     </div>
                   </div>
                 ))}
