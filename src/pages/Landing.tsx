@@ -108,7 +108,7 @@ const Landing = () => {
               Entrar
             </Button>
             <Button size="sm" onClick={() => go()}
-              className="bg-primary text-white hover:bg-primary/90 rounded-full px-5 text-xs font-semibold">
+              className="bg-primary text-white hover:bg-primary/90 rounded-full px-5 text-sm font-bold">
               Começar grátis
             </Button>
           </div>
@@ -179,7 +179,7 @@ const Landing = () => {
 
       {/* ─── TRUST LINE ─── */}
       <section className="border-y border-white/[0.06] py-6">
-        <p className="text-center text-sm text-white/40 px-5">
+        <p className="text-center text-sm text-white/60 px-5">
           Use o orçamento que você já tem. Feito para quem precisa criar e enviar com rapidez.
         </p>
       </section>
@@ -546,7 +546,7 @@ const Landing = () => {
             </div>
             <span className="text-sm font-semibold">Freelox</span>
           </div>
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} Freelox. Todos os direitos reservados.</p>
+          <p className="text-xs text-white/60">© {new Date().getFullYear()} Freelox. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
