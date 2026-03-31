@@ -305,13 +305,22 @@ const Editor = () => {
   }, [setElements]);
 
   const duplicateSelected = useCallback(() => {
-    if (!selectedId) return;
-    const el = elements.find(e => e.id === selectedId);
-    if (!el) return;
-    const newEl = { ...el, id: uuidv4(), x: el.x + 20, y: el.y + 20 };
-    setElements(prev => [...prev, newEl]);
-    setSelectedIds([newEl.id]);
-  }, [selectedId, elements, setElements]);
+    if (selectedIds.length === 0) return;
+    const newIds: string[] = [];
+    setElements(prev => {
+      const newEls = selectedIds
+        .map(sid => prev.find(e => e.id === sid))
+        .filter(Boolean)
+        .map(el => {
+          const newId = uuidv4();
+          newIds.push(newId);
+          return { ...el!, id: newId, x: el!.x + 20, y: el!.y + 20 };
+        });
+      return [...prev, ...newEls];
+    });
+    setTimeout(() => setSelectedIds(newIds), 0);
+    toast.success(selectedIds.length > 1 ? `${selectedIds.length} elementos duplicados` : 'Elemento duplicado');
+  }, [selectedIds, setElements]);
 
   // Z-index controls
   const bringForward = useCallback(() => {
