@@ -1,5 +1,5 @@
 import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Users, Mail, Zap, ScrollText } from 'lucide-react';
-import freeloxLogo from '@/assets/freelox_logo.png';
+import freeloxLogo from '@/assets/freelox_logo.webp';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
