@@ -306,6 +306,47 @@ const Editor = () => {
     setSelectedIds([newEl.id]);
   }, [selectedId, elements, setElements]);
 
+  // Z-index controls
+  const bringForward = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const idx = prev.findIndex(e => e.id === selectedId);
+      if (idx < 0 || idx >= prev.length - 1) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
+      return arr;
+    });
+  }, [selectedId, setElements]);
+
+  const sendBackward = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const idx = prev.findIndex(e => e.id === selectedId);
+      if (idx <= 0) return prev;
+      const arr = [...prev];
+      [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+      return arr;
+    });
+  }, [selectedId, setElements]);
+
+  const bringToFront = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const el = prev.find(e => e.id === selectedId);
+      if (!el) return prev;
+      return [...prev.filter(e => e.id !== selectedId), el];
+    });
+  }, [selectedId, setElements]);
+
+  const sendToBack = useCallback(() => {
+    if (!selectedId) return;
+    setElements(prev => {
+      const el = prev.find(e => e.id === selectedId);
+      if (!el) return prev;
+      return [el, ...prev.filter(e => e.id !== selectedId)];
+    });
+  }, [selectedId, setElements]);
+
   // Multi-select alignment operations
   const alignElements = useCallback((alignment: 'left' | 'center-x' | 'right' | 'top' | 'center-y' | 'bottom' | 'distribute-h' | 'distribute-v') => {
     if (selectedIds.length < 2) return;
