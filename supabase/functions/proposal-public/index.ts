@@ -119,6 +119,12 @@ Deno.serve(async (req) => {
           await supabase.from("generated_documents").update({ status: "visualizado" }).eq("id", link.document_id).eq("user_id", link.user_id);
           link.status = "visualizado";
           link.viewed_at = now;
+
+          // Fire proposal_viewed email trigger to the sender
+          fireEmailTriggerFromEdge(supabase, "proposal_viewed", link.user_id, {
+            client_name: doc.client_name || "",
+            proposal_link: `${Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app")}/p/${token}`,
+          });
         }
 
         link.view_count = newViewCount;
