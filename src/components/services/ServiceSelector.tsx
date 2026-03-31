@@ -12,8 +12,13 @@ interface Props {
 }
 
 const ServiceSelector = ({ selectedServiceId, onSelect, label }: Props) => {
-  const { services, loading } = useServices();
+  const { services, loading, reload } = useServices();
   const [libraryOpen, setLibraryOpen] = useState(false);
+
+  const handleLibraryClose = (open: boolean) => {
+    setLibraryOpen(open);
+    if (!open) reload();
+  };
 
   const handleChange = (value: string) => {
     if (value === '__manage__') {
@@ -53,7 +58,7 @@ const ServiceSelector = ({ selectedServiceId, onSelect, label }: Props) => {
           </SelectContent>
         </Select>
       </div>
-      <ServiceLibrary open={libraryOpen} onOpenChange={setLibraryOpen} />
+      <ServiceLibrary open={libraryOpen} onOpenChange={handleLibraryClose} />
     </div>
   );
 };

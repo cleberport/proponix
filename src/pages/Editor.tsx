@@ -736,20 +736,11 @@ const Editor = () => {
         <div className="border-b border-border p-3">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valores Padrão</h3>
           <div className="flex flex-col gap-2">
-            {variables.filter((v) => !inputFields.includes(v) && !Object.keys(calculatedFields).includes(v) && v !== 'data_de_hoje').map((v) => (
+            {variables.filter((v) => !inputFields.includes(v) && !Object.keys(calculatedFields).includes(v) && v !== 'data_de_hoje' && v !== 'tax_rate').map((v) => (
               <div key={v}>
                 <Label className="text-[10px] text-muted-foreground">{varLabels[v] || v.replace(/_/g, ' ')}</Label>
-                {v === 'tax_rate' ? (
-                  <div className="flex items-center gap-1">
-                    <Input type="number" step="0.01" value={decimalToPercent(parseFloat(defaultValues[v] || '0'))}
-                      onChange={(e) => { const d = percentToDecimal(parseFloat(e.target.value) || 0); updateDefaultValue(v, String(d)); }}
-                      placeholder="Ex: 10" className="h-8 text-xs" />
-                    <span className="text-xs text-muted-foreground">%</span>
-                  </div>
-                ) : (
-                  <Input value={defaultValues[v] || ''} onChange={(e) => updateDefaultValue(v, e.target.value)}
-                    placeholder={`Padrão para ${varLabels[v] || v}`} className="h-8 text-xs" />
-                )}
+                <Input value={defaultValues[v] || ''} onChange={(e) => updateDefaultValue(v, e.target.value)}
+                  placeholder={`Padrão para ${varLabels[v] || v}`} className="h-8 text-xs" />
               </div>
             ))}
           </div>
@@ -784,15 +775,6 @@ const Editor = () => {
                   }}
                 />
               ))}
-            </div>
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Taxa de Imposto Padrão (%)</Label>
-            <div className="flex items-center gap-1">
-              <Input type="number" step="0.01" value={decimalToPercent(settings.taxRate)}
-                onChange={(e) => { const p = parseFloat(e.target.value) || 0; const d = percentToDecimal(p); setSettings(prev => ({ ...prev, taxRate: d })); updateDefaultValue('tax_rate', String(d)); }}
-                className="h-8 text-xs" />
-              <span className="text-xs text-muted-foreground">%</span>
             </div>
           </div>
         </div>

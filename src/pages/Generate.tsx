@@ -856,6 +856,28 @@ const Generate = () => {
                 </Button>
               </div>
             )}
+
+            {/* Tax rate override - only shown here, not in editor */}
+            {template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')) && (
+              <div className="pt-2 border-t border-border mt-2">
+                <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={userInputs.tax_rate ? (parseFloat(userInputs.tax_rate) * 100).toFixed(1) : (template.defaultValues?.tax_rate ? (parseFloat(template.defaultValues.tax_rate) * 100).toFixed(1) : '10')}
+                    onChange={(e) => {
+                      const pct = parseFloat(e.target.value) || 0;
+                      const decimal = pct / 100;
+                      setUserInputs(prev => ({ ...prev, tax_rate: decimal.toString() }));
+                    }}
+                    className="h-12 text-base md:h-10 md:text-sm"
+                    inputMode="numeric"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+            )}
           </div>
 
 

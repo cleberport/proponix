@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getSettings, loadSettingsFromServer, AppSettings } from '@/lib/templateStorage';
-import { decimalToPercent } from '@/lib/calculations';
 import { User, Building2, Mail, Phone, Globe, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -76,10 +75,6 @@ const Profile = () => {
                 <span className="text-foreground truncate">{item.value}</span>
               </div>
             ))}
-            <div className="flex items-center gap-3 text-sm pt-2 border-t border-border">
-              <span className="text-muted-foreground">Imposto padrão</span>
-              <span className="ml-auto text-foreground font-medium">{decimalToPercent(settings.defaultTaxRate).toFixed(1)}%</span>
-            </div>
           </div>
         )}
       </div>
