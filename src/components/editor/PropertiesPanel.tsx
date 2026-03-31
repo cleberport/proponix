@@ -177,13 +177,6 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
               className="mt-1"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">Mostrar preço</Label>
-            <Switch
-              checked={element.showPrice !== false}
-              onCheckedChange={(checked) => onUpdate({ showPrice: checked })}
-            />
-          </div>
         </div>
       )}
 
