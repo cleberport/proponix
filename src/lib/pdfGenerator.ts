@@ -328,7 +328,8 @@ function renderPageElements(
         pdf.setTextColor(...color);
         const align = el.alignment || 'left';
         const displayText = label ? `${label} ${value}` : value;
-        const textBaseline = y + fontSize * 0.82;
+        const h = scaleH(el.height);
+        const textBaseline = y + h / 2 + fontSize * 0.3;
         let tx = x;
         if (align === 'center') tx = x + w / 2;
         else if (align === 'right') tx = x + w;
