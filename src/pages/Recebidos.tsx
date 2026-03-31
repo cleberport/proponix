@@ -356,6 +356,7 @@ const Recebidos = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </FeatureGate>
   );
 };
 
