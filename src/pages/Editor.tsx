@@ -1080,6 +1080,10 @@ const Editor = () => {
                   variables={variables}
                   onUpdate={(updates) => selectedId && updateElement(selectedId, updates)}
                   onDelete={() => selectedId && deleteElement(selectedId)}
+                  onBringForward={bringForward}
+                  onSendBackward={sendBackward}
+                  onBringToFront={bringToFront}
+                  onSendToBack={sendToBack}
                 />
               </div>
             </SheetContent>
