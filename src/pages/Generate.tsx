@@ -376,11 +376,12 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
-          // Apply showPrice toggle from generation form
+          // Apply showPrice toggle from generation form and compact service block height in preview
           if (el.type === 'service') {
             const idx = el.serviceIndex ?? 0;
             const show = serviceShowPrice[idx] ?? true;
-            return { ...el, showPrice: show } as CanvasElement;
+            const compactHeight = Math.min(el.height, 48);
+            return { ...el, showPrice: show, height: compactHeight } as CanvasElement;
           }
           return el;
         })
