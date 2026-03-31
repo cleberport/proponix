@@ -71,17 +71,8 @@ function TopBar() {
 
   return (
     <header className="h-14 flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-4 shrink-0">
-      <div className="flex items-center gap-3 flex-1">
+      <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-
-        {/* Search bar */}
-        <div className="relative max-w-md flex-1 hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar templates..."
-            className="pl-9 h-9 bg-muted/40 border-border/50 focus:bg-muted/60"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-1.5">
