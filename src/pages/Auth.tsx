@@ -6,7 +6,8 @@ import { fireEmailTrigger } from '@/lib/emailTriggers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sparkles, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import freeloxLogo from '@/assets/freelox_logo.png';
 import { toast } from 'sonner';
 
 const Auth = () => {
