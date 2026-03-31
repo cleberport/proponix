@@ -286,6 +286,7 @@ const Editor = () => {
       isVisible: true,
       fieldCategory: type === 'dynamic-field' ? 'input' : type === 'price-field' || type === 'total-calculation' ? 'calculated' : 'default',
       serviceIndex: type === 'service' ? getNextServiceIndex() : undefined,
+      showPrice: type === 'service' ? true : undefined,
       // Shape defaults
       shapeVariant: type === 'shape' ? 'square' : undefined,
       shapeColor: type === 'shape' ? '#3B82F6' : undefined,
