@@ -185,7 +185,7 @@ const AdminPage = () => {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-5 w-full grid grid-cols-3">
+        <TabsList className="mb-5 w-full grid grid-cols-4">
           <TabsTrigger value="users" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
             Usuários
@@ -193,6 +193,10 @@ const AdminPage = () => {
           <TabsTrigger value="emails" className="gap-1.5">
             <Mail className="h-3.5 w-3.5" />
             Templates
+          </TabsTrigger>
+          <TabsTrigger value="automations" className="gap-1.5">
+            <Zap className="h-3.5 w-3.5" />
+            Automações
           </TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
