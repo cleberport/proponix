@@ -476,33 +476,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         case 'price-field':
         case 'total-calculation': {
           const varValue = resolveVariable(el);
+          // In readOnly, hide the entire element label when variable has no value
           const showContent = el.content && (!readOnly || varValue);
-
-          if (readOnly) {
-            return (
-              <div
-                key={el.id}
-                style={{
-                  ...style,
-                  display: 'block',
-                  paddingLeft: 4,
-                  paddingRight: 4,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'visible',
-                }}
-                className={`${selectedClass} ${hoverClass}`}
-                onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
-                onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
-              >
-                {showContent && <span>{resolveContent(el)} </span>}
-                <span>{varValue}</span>
-                {resizeHandle}
-              </div>
-            );
-          }
-
           return (
             <div
               key={el.id}
@@ -513,7 +488,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                 gap: 4,
                 paddingLeft: 4,
                 paddingRight: 4,
-                overflow: 'visible',
+                overflow: 'hidden',
               }}
               className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
