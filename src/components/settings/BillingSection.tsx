@@ -21,10 +21,10 @@ type SelectedPlan = 'pro_monthly' | 'premium_monthly' | 'premium_yearly';
 const PLANS = [
   {
     key: 'free' as const,
-    label: 'Free',
+    label: 'Free (Trial 30 dias)',
     price: 'R$0',
     period: '',
-    features: ['1 template', 'Geração de PDF', 'Marca d\'água nos modelos'],
+    features: ['1 template', 'Geração de PDF', 'WhatsApp sharing', 'Marca d\'água nos modelos'],
     current: false,
   },
   {
@@ -32,7 +32,7 @@ const PLANS = [
     label: 'Pro',
     price: 'R$19,90',
     period: '/mês',
-    features: ['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF'],
+    features: ['Templates ilimitados', 'Sem marca d\'água', 'Geração ilimitada de PDF', 'WhatsApp sharing'],
     badge: undefined as string | undefined,
   },
   {
