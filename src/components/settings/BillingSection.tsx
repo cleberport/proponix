@@ -154,7 +154,9 @@ export default function BillingSection() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          {plan === 'free' && 'Você está no plano gratuito.'}
+          {plan === 'free' && isExpired && 'Seu período de teste expirou. Assine um plano para continuar.'}
+          {plan === 'free' && !isExpired && daysLeft !== null && `Você está no período de teste. ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}.`}
+          {plan === 'free' && !isExpired && daysLeft === null && 'Você está no plano gratuito.'}
           {plan !== 'free' && subEnd && `Próxima renovação em ${subEnd.toLocaleDateString('pt-BR')}.`}
           {plan !== 'free' && !subEnd && 'Seu plano está ativo.'}
         </p>
