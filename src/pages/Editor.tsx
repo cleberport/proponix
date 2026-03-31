@@ -786,15 +786,6 @@ const Editor = () => {
               ))}
             </div>
           </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Taxa de Imposto Padrão (%)</Label>
-            <div className="flex items-center gap-1">
-              <Input type="number" step="0.01" value={decimalToPercent(settings.taxRate)}
-                onChange={(e) => { const p = parseFloat(e.target.value) || 0; const d = percentToDecimal(p); setSettings(prev => ({ ...prev, taxRate: d })); updateDefaultValue('tax_rate', String(d)); }}
-                className="h-8 text-xs" />
-              <span className="text-xs text-muted-foreground">%</span>
-            </div>
-          </div>
         </div>
       </TabsContent>
     </Tabs>

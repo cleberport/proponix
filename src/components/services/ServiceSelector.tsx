@@ -58,7 +58,7 @@ const ServiceSelector = ({ selectedServiceId, onSelect, label }: Props) => {
           </SelectContent>
         </Select>
       </div>
-      <ServiceLibrary open={libraryOpen} onOpenChange={setLibraryOpen} />
+      <ServiceLibrary open={libraryOpen} onOpenChange={handleLibraryClose} />
     </div>
   );
 };
