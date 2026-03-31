@@ -142,7 +142,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SubscriptionProvider>
+          <SubscriptionProviderLazy>
             <ThemeInit>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
