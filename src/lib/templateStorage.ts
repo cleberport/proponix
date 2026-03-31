@@ -87,7 +87,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   companyPhone: '',
   companyWebsite: '',
   companyAddress: '',
-  defaultTaxRate: 0.10,
+  defaultTaxRate: 0,
   logoUrl: '',
   theme: 'light',
   pdfBaseName: 'Proposta',

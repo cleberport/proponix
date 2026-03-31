@@ -60,6 +60,7 @@ const Generate = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
+  const [taxRateDisplay, setTaxRateDisplay] = useState('0');
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
