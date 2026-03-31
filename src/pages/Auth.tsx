@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
-import freeloxLogo from '@/assets/freelox_logo.png';
+import freeloxLogo from '@/assets/freelox_logo.webp';
 import { toast } from 'sonner';
 
 const Auth = () => {
