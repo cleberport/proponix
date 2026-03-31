@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import SpreadsheetView from '@/components/financas/SpreadsheetView';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FeatureGate from '@/components/FeatureGate';
 
 export default function Financas() {
   const isMobile = useIsMobile();

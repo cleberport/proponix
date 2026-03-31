@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import FeatureGate from '@/components/FeatureGate';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentHistory, loadDocumentHistoryFromServer, deleteDocumentFromHistory, getSettings } from '@/lib/templateStorage';
 import { FileText, Trash2, Search, X, Copy, ExternalLink, Send, Link2, Eye, CheckCircle, Clock, Loader2, RefreshCw, CalendarPlus, MessageSquare, Share2 } from 'lucide-react';

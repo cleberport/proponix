@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import FeatureGate from '@/components/FeatureGate';
 import { Inbox, Search, X, Eye, CheckCircle, Clock, Send, MessageSquare, ExternalLink, User, DollarSign, CalendarDays } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
