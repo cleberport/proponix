@@ -169,8 +169,9 @@ const AdminPage = () => {
 
   const statCards = [
     { label: 'Total de Usuários', value: stats.total, icon: Users, color: 'text-foreground' },
-    { label: 'Ativos', value: stats.active, icon: UserCheck, color: 'text-emerald-600' },
-    { label: 'Em Trial', value: stats.trial, icon: Clock, color: 'text-amber-600' },
+    { label: 'Free', value: profiles.filter(p => p.status === 'free').length, icon: UserCheck, color: 'text-muted-foreground' },
+    { label: 'Pro', value: profiles.filter(p => p.status === 'pro').length, icon: UserCheck, color: 'text-emerald-600' },
+    { label: 'Premium', value: profiles.filter(p => p.status === 'premium').length, icon: UserCheck, color: 'text-violet-600' },
     { label: 'Expirados', value: stats.expired, icon: UserX, color: 'text-red-600' },
   ];
 
