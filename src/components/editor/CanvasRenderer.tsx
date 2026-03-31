@@ -478,28 +478,30 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
           const varValue = resolveVariable(el);
           // In readOnly, hide the entire element label when variable has no value
           const showContent = el.content && (!readOnly || varValue);
+          const displayText = showContent
+            ? `${resolveContent(el)} ${varValue}`
+            : varValue;
           return (
             <div
               key={el.id}
               style={{
                 ...style,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
                 paddingLeft: 4,
                 paddingRight: 4,
-                overflow: 'hidden',
               }}
               className={`${selectedClass} ${hoverClass}`}
               onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
               onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
             >
-              {showContent && <span style={{ whiteSpace: 'nowrap' }}>{resolveContent(el)}</span>}
-              <span
-                className={readOnly ? '' : 'rounded'}
-                style={readOnly ? { whiteSpace: 'nowrap' } : { color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))', background: 'hsl(var(--primary) / 0.1)', padding: '2px 6px', whiteSpace: 'nowrap' }}
-              >
-                {varValue}
+              <span style={readOnly ? {} : {
+                color: resolveTextColor(el.color, backgroundColor) || 'hsl(var(--primary))',
+                background: 'hsl(var(--primary) / 0.1)',
+                padding: '2px 6px',
+                borderRadius: 4,
+              }}>
+                {displayText}
               </span>
               {resizeHandle}
             </div>
