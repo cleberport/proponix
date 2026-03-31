@@ -123,7 +123,7 @@ const minimalElements: CanvasElement[] = [
 
   // Footer
   el({ type: 'divider', x: 40, y: 780, width: 515, height: 1, content: '', color: '#E4E4E7' }),
-  el({ type: 'text', x: 40, y: 794, width: 515, height: 14, content: 'Documento gerado pelo Freelox', fontSize: 8, color: '#D4D4D8', alignment: 'center' }),
+  el({ type: 'text', x: 40, y: 794, width: 515, height: 14, content: 'Powered by Freelox', fontSize: 8, color: '#D4D4D8', alignment: 'center' }),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
