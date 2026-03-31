@@ -664,7 +664,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   height: '100%',
-                  padding: '0 12px',
+                  padding: '4px 12px',
                   fontFamily: el.fontFamily || 'Space Grotesk',
                   background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
                   borderBottom: bgOpacity < 0.5 ? 'none' : `1px solid ${borderColor}`,
