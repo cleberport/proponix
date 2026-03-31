@@ -847,9 +847,8 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
             shapeStyle.backgroundColor = el.shapeColor || '#3B82F6';
             shapeStyle.borderRadius = '50%';
           } else if (variant === 'line') {
-            shapeStyle.backgroundColor = 'transparent';
-            shapeStyle.borderBottom = `${Math.max(el.height, 2)}px solid ${el.shapeColor || '#3B82F6'}`;
-            shapeStyle.height = el.height;
+            shapeStyle.backgroundColor = el.shapeColor || '#3B82F6';
+            shapeStyle.borderRadius = lineThickness / 2;
           } else {
             shapeStyle.backgroundColor = el.shapeColor || '#3B82F6';
             shapeStyle.borderRadius = el.shapeBorderRadius || 0;
