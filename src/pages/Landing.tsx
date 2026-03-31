@@ -12,6 +12,7 @@ import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
 import { useState } from 'react';
 
+import freeloxLogo from '@/assets/freelox_logo.png';
 import heroMockup from '@/assets/mockup-hero.jpg';
 import editorMockup from '@/assets/mockup-editor.jpg';
 import generateMockup from '@/assets/mockup-generate.jpg';
