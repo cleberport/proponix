@@ -664,83 +664,88 @@ function renderPageElements(
       }
 
       case 'service': {
-        const svcIdx = el.serviceIndex ?? 0;
-        const svcName = variableValues[`service_${svcIdx}_name`] || '';
-        const svcDesc = variableValues[`service_${svcIdx}_description`] || '';
-        const svcPrice = variableValues[`service_${svcIdx}_price`] || '';
+        const count = el.serviceCount || 3;
         const showPrice = el.showPrice !== false;
-        const hasContent = svcName || svcDesc || (showPrice && svcPrice);
-        if (!hasContent) break;
-
         const borderColor = el.tableBorderColor ? hexToRgb(el.tableBorderColor) : [226, 232, 240] as [number, number, number];
         const opacity = (el.bgOpacity ?? 100) / 100;
-        const serviceLayout = getServiceLayout({
-          width: el.width,
-          height: el.height,
-          fontSize: el.fontSize || 14,
-          hasDescription: Boolean(svcDesc),
-          hasPrice: Boolean(showPrice && svcPrice),
-        });
+        const itemHeight = el.height / count;
 
-        if (opacity < 1) {
-          pdf.setFillColor(255, 255, 255);
-          pdf.setGState(new (pdf as any).GState({ opacity: opacity * 0.1 }));
-          pdf.rect(x, y, w, scaleH(el.height), 'F');
-          pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
-        }
+        for (let svcIdx = 0; svcIdx < count; svcIdx++) {
+          const svcName = variableValues[`service_${svcIdx}_name`] || '';
+          const svcDesc = variableValues[`service_${svcIdx}_description`] || '';
+          const svcPrice = variableValues[`service_${svcIdx}_price`] || '';
+          const hasContent = svcName || svcDesc || (showPrice && svcPrice);
+          if (!hasContent) continue;
 
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(fontSize);
-        pdf.setTextColor(...color);
-        const nameLines = fitTextToBox(pdf, svcName, scaleW(serviceLayout.name.width), serviceLayout.name.maxLines);
-        nameLines.forEach((line, index) => {
-          drawAlignedLine(
-            pdf,
-            line,
-            x + scaleW(serviceLayout.name.left),
-            y + scaleH(serviceLayout.name.top) + fontSize * 0.82 + index * fontSize * 1.25,
-            scaleW(serviceLayout.name.width),
-            'left'
-          );
-        });
-
-        if (serviceLayout.description && svcDesc) {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(serviceLayout.description.fontSize * (PDF_W / CANVAS_W));
-          pdf.setTextColor(...color);
-          const descFont = serviceLayout.description.fontSize * (PDF_W / CANVAS_W);
-          const descLines = fitTextToBox(pdf, svcDesc, scaleW(serviceLayout.description.width), serviceLayout.description.maxLines);
-          descLines.forEach((line, index) => {
-            drawAlignedLine(
-              pdf,
-              line,
-              x + scaleW(serviceLayout.description!.left),
-              y + scaleH(serviceLayout.description!.top) + descFont * 0.82 + index * descFont * 1.16,
-              scaleW(serviceLayout.description!.width),
-              'left'
-            );
+          const itemY = y + scaleH(svcIdx * itemHeight);
+          const serviceLayout = getServiceLayout({
+            width: el.width,
+            height: itemHeight,
+            fontSize: el.fontSize || 14,
+            hasDescription: Boolean(svcDesc),
+            hasPrice: Boolean(showPrice && svcPrice),
           });
-        }
 
-        if (serviceLayout.price && showPrice && svcPrice) {
+          if (opacity < 1) {
+            pdf.setFillColor(255, 255, 255);
+            pdf.setGState(new (pdf as any).GState({ opacity: opacity * 0.1 }));
+            pdf.rect(x, itemY, w, scaleH(itemHeight), 'F');
+            pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+          }
+
           pdf.setFont('helvetica', 'bold');
           pdf.setFontSize(fontSize);
           pdf.setTextColor(...color);
-          const priceText = truncateTextToWidth(pdf, svcPrice, scaleW(serviceLayout.price.width));
-          drawAlignedLine(
-            pdf,
-            priceText,
-            x + scaleW(serviceLayout.price.left),
-            y + scaleH(serviceLayout.price.top) + fontSize * 0.82,
-            scaleW(serviceLayout.price.width),
-            'right'
-          );
-        }
+          const nameLines = fitTextToBox(pdf, svcName, scaleW(serviceLayout.name.width), serviceLayout.name.maxLines);
+          nameLines.forEach((line, index) => {
+            drawAlignedLine(
+              pdf,
+              line,
+              x + scaleW(serviceLayout.name.left),
+              itemY + scaleH(serviceLayout.name.top) + fontSize * 0.82 + index * fontSize * 1.25,
+              scaleW(serviceLayout.name.width),
+              'left'
+            );
+          });
 
-        if ((el.bgOpacity ?? 100) >= 50) {
-          pdf.setDrawColor(...borderColor);
-          pdf.setLineWidth(0.5);
-          pdf.line(x + scaleW(serviceLayout.paddingX), y + scaleH(serviceLayout.dividerY), x + w - scaleW(serviceLayout.paddingX), y + scaleH(serviceLayout.dividerY));
+          if (serviceLayout.description && svcDesc) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(serviceLayout.description.fontSize * (PDF_W / CANVAS_W));
+            pdf.setTextColor(...color);
+            const descFont = serviceLayout.description.fontSize * (PDF_W / CANVAS_W);
+            const descLines = fitTextToBox(pdf, svcDesc, scaleW(serviceLayout.description.width), serviceLayout.description.maxLines);
+            descLines.forEach((line, index) => {
+              drawAlignedLine(
+                pdf,
+                line,
+                x + scaleW(serviceLayout.description!.left),
+                itemY + scaleH(serviceLayout.description!.top) + descFont * 0.82 + index * descFont * 1.16,
+                scaleW(serviceLayout.description!.width),
+                'left'
+              );
+            });
+          }
+
+          if (serviceLayout.price && showPrice && svcPrice) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(fontSize);
+            pdf.setTextColor(...color);
+            const priceText = truncateTextToWidth(pdf, svcPrice, scaleW(serviceLayout.price.width));
+            drawAlignedLine(
+              pdf,
+              priceText,
+              x + scaleW(serviceLayout.price.left),
+              itemY + scaleH(serviceLayout.price.top) + fontSize * 0.82,
+              scaleW(serviceLayout.price.width),
+              'right'
+            );
+          }
+
+          if ((el.bgOpacity ?? 100) >= 50 && svcIdx < count - 1) {
+            pdf.setDrawColor(...borderColor);
+            pdf.setLineWidth(0.5);
+            pdf.line(x + scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight), x + w - scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight));
+          }
         }
         break;
       }
