@@ -395,18 +395,18 @@ const corporateElements: CanvasElement[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const starterTemplates: Template[] = [
   makeTemplate('template-minimal', 'Minimal', 'Geral', 'Layout limpo com preço em destaque centralizado, tipografia leve e espaçamento generoso.', minimalElements, allVars, {
-    defaultValues: { tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0, showTax: true },
     color: '#71717A',
   }),
 
   makeTemplate('template-dark', 'Dark', 'Premium', 'Fundo escuro com detalhes dourados e tipografia elegante. Para projetos sofisticados.', darkElements, allVars, {
-    defaultValues: { tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.05, showTax: true, backgroundColor: '#111827' },
+    settings: { taxRate: 0, showTax: true, backgroundColor: '#111827' },
     color: '#D4AF37',
   }),
 
@@ -419,18 +419,18 @@ export const starterTemplates: Template[] = [
   }),
 
   makeTemplate('template-gradient', 'Elegante', 'Tecnologia', 'Layout centralizado e limpo com tons de azul. Ideal para empresas de tecnologia e serviços digitais.', gradientElements, allVars, {
-    defaultValues: { tax_rate: '0.10' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.10, showTax: true },
+    settings: { taxRate: 0, showTax: true },
     color: '#0EA5E9',
   }),
 
   makeTemplate('template-corporate', 'Corporativo', 'Corporativo', 'Template profissional com seções estruturadas, área de assinatura e diagramação formal.', corporateElements, allVars, {
-    defaultValues: { tax_rate: '0.05' },
+    defaultValues: { tax_rate: '0' },
     inputFields: ['client_name', 'event_name', 'location', 'event_date', 'price'],
     calculatedFields: { subtotal: 'price', tax: 'price * tax_rate', total: 'price + tax' },
-    settings: { taxRate: 0.05, showTax: true },
+    settings: { taxRate: 0, showTax: true },
     color: '#1E3A5F',
   }),
 ];
