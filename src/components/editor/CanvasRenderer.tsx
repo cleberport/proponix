@@ -724,6 +724,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   hasDescription: Boolean(svc.desc),
                   hasPrice: Boolean(showPrice && svc.price),
                 });
+                const isDimmed = variableValues?.[`service_${idx}_dimmed`] === '1';
                 return (
                   <div
                     key={idx}
@@ -735,6 +736,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                       height: itemHeight,
                       fontFamily: el.fontFamily || 'Space Grotesk',
                       background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
+                      opacity: isDimmed ? 0.5 : 1,
                     }}
                   >
                     <div style={{
