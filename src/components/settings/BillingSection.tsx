@@ -65,7 +65,7 @@ const PLANS = [
 
 export default function BillingSection() {
   const [searchParams] = useSearchParams();
-  const { plan, loading, subscriptionEnd, isYearly, refresh } = useSubscription();
+  const { plan, loading, subscriptionEnd, isYearly, refresh, isExpired, daysLeft } = useSubscription();
   const [checkingOut, setCheckingOut] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
