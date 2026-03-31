@@ -171,6 +171,8 @@ const Landing = () => {
               alt="Freelox — Dashboard com templates de orçamento"
               width={1920}
               height={1080}
+              fetchPriority="high"
+              decoding="sync"
               className="rounded-2xl border border-white/[0.08] shadow-2xl shadow-primary/10"
             />
           </motion.div>
