@@ -122,7 +122,32 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkSubscription();
     const interval = setInterval(checkSubscription, 60000);
-    return () => clearInterval(interval);
+
+    // Listen for realtime profile changes (e.g. admin status update)
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user?.id) return;
+      channel = supabase
+        .channel('profile-status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `user_id=eq.${session.user.id}`,
+          },
+          () => {
+            checkSubscription();
+          }
+        )
+        .subscribe();
+    });
+
+    return () => {
+      clearInterval(interval);
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [checkSubscription]);
 
   useEffect(() => {
