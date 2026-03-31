@@ -280,7 +280,7 @@ const Generate = () => {
           }
         }
 
-        const initialTaxRate = fetchedTemplate.defaultValues?.tax_rate ?? '0';
+        const initialTaxRate = '0';
         init.tax_rate = initialTaxRate;
         setUserInputs(init);
         setTaxRateDisplay(String((parseFloat(initialTaxRate) || 0) * 100));
