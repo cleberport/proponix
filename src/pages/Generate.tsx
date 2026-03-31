@@ -358,7 +358,7 @@ const Generate = () => {
       if (svc) {
         display[`service_${idx}_name`] = svc.name;
         display[`service_${idx}_description`] = svc.description;
-        display[`service_${idx}_price`] = formatCurrency(svc.price.toString());
+        display[`service_${idx}_price`] = (serviceShowPrice[idx] ?? true) ? formatCurrency(svc.price.toString()) : '';
         display[`service_${idx}_notes`] = svc.notes;
       }
     }
@@ -388,7 +388,7 @@ const Generate = () => {
             const totalCount = allServiceIndices.length;
             const itemHeight = Math.max(Math.floor(el.height / (el.serviceCount || 3)), 20);
             const newHeight = itemHeight * totalCount;
-            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight) } as CanvasElement;
+            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
           }
           return el;
         })
