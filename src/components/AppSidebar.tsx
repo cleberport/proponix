@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme, type ThemeMode } from '@/hooks/useTheme';
 import {
   Sidebar,
   SidebarContent,
