@@ -513,7 +513,7 @@ const Editor = () => {
     Type: LucideIcons.Type, Variable: LucideIcons.Variable, Image: LucideIcons.Image,
     Stamp: LucideIcons.Stamp, Minus: LucideIcons.Minus, Table: LucideIcons.Table,
     DollarSign: LucideIcons.DollarSign, Calculator: LucideIcons.Calculator, StickyNote: LucideIcons.StickyNote,
-    Package: LucideIcons.Package,
+    Package: LucideIcons.Package, Square: LucideIcons.Square,
   };
 
   const elementLabels: Record<string, string> = {
