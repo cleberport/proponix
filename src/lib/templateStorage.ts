@@ -63,7 +63,7 @@ export interface AppSettings {
   logoWidth?: number;
   logoHeight?: number;
   logoAspectRatio?: number;
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
   pdfBaseName: string;
   defaultTemplateId: string;
   proposalValidityDays: number;

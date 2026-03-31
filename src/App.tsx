@@ -51,11 +51,11 @@ const queryClient = new QueryClient();
 const ThemeInit = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const settings = getSettings();
-    if (settings.theme === 'light') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const mode = settings.theme || 'light';
+    const resolved = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode;
+    document.documentElement.classList.toggle('dark', resolved === 'light');
   }, []);
   return <>{children}</>;
 };
@@ -121,7 +121,11 @@ const App = () => {
     void Promise.allSettled([
       loadSettingsFromServer().then(() => {
         const s = getSettings();
-        document.documentElement.classList.toggle('dark', s.theme === 'light');
+        const mode = s.theme || 'light';
+        const resolved = mode === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : mode;
+        document.documentElement.classList.toggle('dark', resolved === 'light');
       }),
       getSavedTemplates(),
       loadDocumentHistoryFromServer(),

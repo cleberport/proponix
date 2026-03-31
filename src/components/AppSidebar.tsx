@@ -1,11 +1,11 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Users, Mail, Zap, ScrollText } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Monitor, Users, Mail, Zap, ScrollText, Palette } from 'lucide-react';
 import freeloxLogo from '@/assets/freelox_logo.webp';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme, type ThemeMode } from '@/hooks/useTheme';
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import FinanceSidebarSection from '@/components/financas/FinanceSidebarSection';
 
 const items = [
@@ -40,7 +41,13 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const { isAdmin, loading: adminLoading } = useAdminCheck();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
+    { value: 'dark', label: 'Dark', icon: Moon },
+    { value: 'light', label: 'Light', icon: Sun },
+    { value: 'system', label: 'Sistema', icon: Monitor },
+  ];
 
   const isActive = (path: string) => currentPath === path;
 
@@ -117,15 +124,31 @@ export function AppSidebar() {
         )}
       </SidebarContent>
       <SidebarFooter>
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "default"}
-          className={collapsed ? "w-full justify-center text-muted-foreground" : "w-full justify-start text-muted-foreground"}
-          onClick={toggleTheme}
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          {!collapsed && <span className="ml-2">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size={collapsed ? "icon" : "default"}
+              className={collapsed ? "w-full justify-center text-muted-foreground" : "w-full justify-start text-muted-foreground"}
+            >
+              <Palette className="h-4 w-4" />
+              {!collapsed && <span className="ml-2">Aparência</span>}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-40">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Aparência</DropdownMenuLabel>
+            {themeOptions.map((opt) => (
+              <DropdownMenuItem
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={theme === opt.value ? 'bg-primary/10 text-primary font-medium' : ''}
+              >
+                <opt.icon className="mr-2 h-4 w-4" />
+                {opt.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-destructive"
