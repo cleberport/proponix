@@ -380,7 +380,7 @@ const Generate = () => {
           if (el.type === 'service') {
             const idx = el.serviceIndex ?? 0;
             const show = serviceShowPrice[idx] ?? true;
-            const compactHeight = el.description ? Math.min(el.height, 56) : Math.min(el.height, 44);
+            const compactHeight = Math.min(el.height, 48);
             return { ...el, showPrice: show, height: compactHeight } as CanvasElement;
           }
           return el;
