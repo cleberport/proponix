@@ -736,7 +736,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                       height: itemHeight,
                       fontFamily: el.fontFamily || 'Space Grotesk',
                       background: bgOpacity < 1 ? `rgba(255,255,255,${bgOpacity * 0.1})` : undefined,
-                      opacity: isDimmed ? 0.85 : 1,
+                      opacity: isDimmed ? 0.6 : 1,
                     }}
                   >
                     <div style={{
