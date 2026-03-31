@@ -827,12 +827,13 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         case 'shape': {
           const variant = el.shapeVariant || 'square';
           const rotation = el.shapeRotation || 0;
+          const lineThickness = variant === 'line' ? Math.max(el.shapeBorderWidth || 2, 1) : 0;
           const shapeStyle: React.CSSProperties = {
             position: 'absolute',
             left: el.x,
-            top: el.y,
+            top: el.y + (variant === 'line' ? (el.height / 2 - lineThickness / 2) : 0),
             width: el.width,
-            height: el.height,
+            height: variant === 'line' ? lineThickness : el.height,
             opacity: (el.shapeOpacity ?? 100) / 100,
             borderWidth: variant !== 'line' ? (el.shapeBorderWidth || 0) : 0,
             borderStyle: variant !== 'line' && (el.shapeBorderWidth || 0) > 0 ? 'solid' : 'none',
