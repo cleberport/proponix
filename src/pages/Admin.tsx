@@ -33,9 +33,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail } from 'lucide-react';
+import { Users, UserCheck, Clock, UserX, Search, Pencil, Trash2, Eye, Mail, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminEmailsSection from '@/components/admin/AdminEmailsSection';
+import AdminEmailLogs from '@/components/admin/AdminEmailLogs';
 
 interface Profile {
   id: string;
@@ -183,14 +184,18 @@ const AdminPage = () => {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-5 w-full grid grid-cols-2">
+        <TabsList className="mb-5 w-full grid grid-cols-3">
           <TabsTrigger value="users" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
             Usuários
           </TabsTrigger>
           <TabsTrigger value="emails" className="gap-1.5">
             <Mail className="h-3.5 w-3.5" />
-            E-mails
+            Templates
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            Logs
           </TabsTrigger>
         </TabsList>
 
@@ -292,6 +297,10 @@ const AdminPage = () => {
 
         <TabsContent value="emails">
           <AdminEmailsSection />
+        </TabsContent>
+
+        <TabsContent value="logs">
+          <AdminEmailLogs />
         </TabsContent>
       </Tabs>
 
