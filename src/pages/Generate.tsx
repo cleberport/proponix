@@ -411,6 +411,7 @@ const Generate = () => {
           alignment: 'left' as const,
           isVisible: true,
           serviceIndex: idx,
+          showPrice: serviceShowPrice[idx] ?? true,
         }];
       });
     }
