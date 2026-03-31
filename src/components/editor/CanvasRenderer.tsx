@@ -784,7 +784,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {elements.map(renderElement)}
+        {elements.map((el, idx) => renderElement(el, idx))}
 
         {/* Alignment guide lines */}
         {guides.map((guide, i) => (
