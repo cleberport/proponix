@@ -418,25 +418,65 @@ function renderPageElements(
         const shapeColor = el.shapeColor ? hexToRgb(el.shapeColor) : [59, 130, 246] as [number, number, number];
         const opacity = (el.shapeOpacity ?? 100) / 100;
         const h = scaleH(el.height);
-        const radius = el.shapeBorderRadius ? Math.min(scaleW(el.shapeBorderRadius), w / 2, h / 2) : 0;
+        const variant = el.shapeVariant || 'square';
+        const rotation = el.shapeRotation || 0;
 
         pdf.setGState(new (pdf as any).GState({ opacity }));
-        pdf.setFillColor(...shapeColor);
 
-        if ((el.shapeBorderWidth || 0) > 0) {
-          const borderColor = el.shapeBorderColor ? hexToRgb(el.shapeBorderColor) : [0, 0, 0] as [number, number, number];
-          pdf.setDrawColor(...borderColor);
-          pdf.setLineWidth(scaleW(el.shapeBorderWidth || 1));
-          if (radius > 0) {
-            pdf.roundedRect(x, y, w, h, radius, radius, 'FD');
+        // Apply rotation if needed
+        if (rotation) {
+          const cx = x + w / 2;
+          const cy = y + h / 2;
+          const rad = (rotation * Math.PI) / 180;
+          (pdf as any).internal.write(`q`);
+          (pdf as any).internal.write(`${Math.cos(rad).toFixed(6)} ${Math.sin(rad).toFixed(6)} ${(-Math.sin(rad)).toFixed(6)} ${Math.cos(rad).toFixed(6)} ${(cx * 72 / 25.4).toFixed(2)} ${((297 - cy) * 72 / 25.4).toFixed(2)} cm`);
+          // Adjust drawing position to be relative to center
+          const dx = -w / 2;
+          const dy = -h / 2;
+          
+          pdf.setFillColor(...shapeColor);
+          if (variant === 'circle') {
+            pdf.ellipse(0 + dx + w / 2, 0 + dy + h / 2, w / 2, h / 2, 'F');
+          } else if (variant === 'line') {
+            pdf.setDrawColor(...shapeColor);
+            pdf.setLineWidth(Math.max(h, 0.5));
+            pdf.line(0 + dx, 0, 0 + dx + w, 0);
           } else {
-            pdf.rect(x, y, w, h, 'FD');
+            const radius = el.shapeBorderRadius ? Math.min(scaleW(el.shapeBorderRadius), w / 2, h / 2) : 0;
+            if (radius > 0) {
+              pdf.roundedRect(0 + dx, 0 + dy, w, h, radius, radius, 'F');
+            } else {
+              pdf.rect(0 + dx, 0 + dy, w, h, 'F');
+            }
           }
+          (pdf as any).internal.write(`Q`);
         } else {
-          if (radius > 0) {
-            pdf.roundedRect(x, y, w, h, radius, radius, 'F');
+          pdf.setFillColor(...shapeColor);
+          
+          if (variant === 'circle') {
+            pdf.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, (el.shapeBorderWidth || 0) > 0 ? 'FD' : 'F');
+          } else if (variant === 'line') {
+            pdf.setDrawColor(...shapeColor);
+            pdf.setLineWidth(Math.max(h, 0.5));
+            pdf.line(x, y + h / 2, x + w, y + h / 2);
           } else {
-            pdf.rect(x, y, w, h, 'F');
+            const radius = el.shapeBorderRadius ? Math.min(scaleW(el.shapeBorderRadius), w / 2, h / 2) : 0;
+            if ((el.shapeBorderWidth || 0) > 0) {
+              const borderColor = el.shapeBorderColor ? hexToRgb(el.shapeBorderColor) : [0, 0, 0] as [number, number, number];
+              pdf.setDrawColor(...borderColor);
+              pdf.setLineWidth(scaleW(el.shapeBorderWidth || 1));
+              if (radius > 0) {
+                pdf.roundedRect(x, y, w, h, radius, radius, 'FD');
+              } else {
+                pdf.rect(x, y, w, h, 'FD');
+              }
+            } else {
+              if (radius > 0) {
+                pdf.roundedRect(x, y, w, h, radius, radius, 'F');
+              } else {
+                pdf.rect(x, y, w, h, 'F');
+              }
+            }
           }
         }
 
