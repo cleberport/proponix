@@ -376,6 +376,12 @@ const Generate = () => {
             const newHeight = Math.max(el.height, allRows.length * rowHeight);
             return { ...el, rows: allRows, height: newHeight } as CanvasElement;
           }
+          // Apply showPrice toggle from generation form
+          if (el.type === 'service') {
+            const idx = el.serviceIndex ?? 0;
+            const show = serviceShowPrice[idx] ?? true;
+            return { ...el, showPrice: show } as CanvasElement;
+          }
           return el;
         })
     );
