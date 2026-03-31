@@ -735,9 +735,30 @@ export async function generateVectorPdf(
     if (options?.watermark && i === pages.length - 1) {
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
+      const wmY = pageH - 15;
+      const logoSize = 10;
+      const textStr = 'Powered by Freelox';
       pdf.setFontSize(9);
       pdf.setTextColor(160, 160, 160);
-      pdf.text('Powered by Freelox', pageW / 2, pageH - 15, { align: 'center' });
+      const textW = pdf.getTextWidth(textStr);
+      const totalW = logoSize + 3 + textW;
+      const startX = (pageW - totalW) / 2;
+
+      // Try to add the logo image
+      try {
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve) => {
+          logoImg.onload = () => resolve();
+          logoImg.onerror = () => resolve();
+          logoImg.src = '/freelox_logo.png';
+        });
+        if (logoImg.naturalWidth > 0) {
+          pdf.addImage(logoImg, 'PNG', startX, wmY - logoSize + 2, logoSize, logoSize);
+        }
+      } catch { /* skip logo on error */ }
+
+      pdf.text(textStr, startX + logoSize + 3, wmY, { align: 'left' });
     }
   }
 

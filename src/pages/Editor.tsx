@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { optimizeTemplatePagesForSave } from '@/lib/imageOptimization';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const GRID = 10;
 const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -30,7 +31,8 @@ const Editor = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
-
+  const { showWatermark } = useSubscription();
+  const isFree = showWatermark;
   const isNew = id === 'new';
   const [loadingTemplate, setLoadingTemplate] = useState(!isNew);
   const [baseCategory, setBaseCategory] = useState('Custom');
@@ -122,6 +124,13 @@ const Editor = () => {
       setTemplateName(existing.name || 'Template sem título');
       const loadedPages = getTemplatePages(existing);
       const isStarterTemplate = existing.id?.startsWith('template-');
+
+      // Free users cannot edit starter templates
+      if (isStarterTemplate && isFree) {
+        toast.error('Faça upgrade para editar templates prontos');
+        navigate(`/generate/${existing.id}`, { replace: true });
+        return;
+      }
 
       if (isStarterTemplate) {
         // Starter templates follow global logo settings, but without mutating shared template objects.
