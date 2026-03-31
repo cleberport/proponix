@@ -115,7 +115,13 @@ const Templates = () => {
             <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
               <TemplateCard
                 template={t}
-                onEdit={() => navigate(`/editor/${t.id}`)}
+                onEdit={() => {
+                  if (isFree) {
+                    toast.error('Faça upgrade para editar templates prontos');
+                    return;
+                  }
+                  navigate(`/editor/${t.id}`);
+                }}
                 onDuplicate={() => { void handleDuplicate(t.id); }}
               />
             </motion.div>
