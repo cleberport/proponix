@@ -52,7 +52,7 @@ const Landing = () => {
       <main>
 
       {/* ═══════════ SECTION 1 — HERO ═══════════ */}
-      <section className="relative pt-24 pb-14 md:pt-36 md:pb-20 overflow-hidden">
+      <section className="relative pt-24 pb-10 md:pt-36 md:pb-20 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/10 blur-[120px]" />
         </div>
@@ -65,7 +65,7 @@ const Landing = () => {
                 className="text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] font-bold leading-[1.1] tracking-[-0.03em]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               >
-                Feche mais trabalhos com orçamentos profissionais{' '}
+                Feche mais trabalhos com orçamentos{' '}
                 <span className="text-primary">pelo celular.</span>
               </motion.h1>
 
@@ -108,7 +108,7 @@ const Landing = () => {
               transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] md:w-[380px] md:h-[380px] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
-              <div className="relative w-[75vw] max-w-[300px] md:w-[280px]">
+              <div className="relative w-[65vw] max-w-[260px] md:w-[280px]">
                 <PhoneMockup />
               </div>
             </motion.div>
