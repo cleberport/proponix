@@ -69,7 +69,7 @@ function TopBar() {
   };
 
   return (
-    <header className="h-auto flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-4 shrink-0 pt-[env(safe-area-inset-top)] min-h-[3.5rem]">
+    <header className="h-auto flex items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-4 shrink-0 min-h-[3.5rem]">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
       </div>
@@ -218,7 +218,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isMobile) {
     return (
       <FinanceProvider>
-        <div className="min-h-screen flex flex-col w-full pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+        <div className="min-h-screen flex flex-col w-full pb-14">
           <ExpiredGuard />
           <main className="flex-1 overflow-auto">
             {children}
