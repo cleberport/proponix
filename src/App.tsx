@@ -34,7 +34,18 @@ const Generate = lazy(() => import("./pages/Generate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Import = lazy(() => import("./pages/Import"));
 const Emails = lazy(() => import("./pages/Emails"));
-const Admin = lazy(() => import("./pages/Admin"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminDocuments = lazy(() => import("./pages/admin/AdminDocuments"));
+const AdminTemplates = lazy(() => import("./pages/admin/AdminTemplates"));
+const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
+const AdminEmailLogsPage = lazy(() => import("./pages/admin/AdminEmailLogsPage"));
+const AdminEvents = lazy(() => import("./pages/admin/AdminEvents"));
+const AdminWebhooks = lazy(() => import("./pages/admin/AdminWebhooks"));
+const AdminWebhookLogs = lazy(() => import("./pages/admin/AdminWebhookLogs"));
+const AdminAutomationsPage = lazy(() => import("./pages/admin/AdminAutomationsPage"));
+const AdminPlans = lazy(() => import("./pages/admin/AdminPlans"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const Billing = lazy(() => import("./pages/Billing"));
 const ProposalView = lazy(() => import("./pages/ProposalView"));
 const Recebidos = lazy(() => import("./pages/Recebidos"));
@@ -167,7 +178,18 @@ const App = () => {
                   <Route path="/import" element={<ProtectedRoute session={session}><AppLayout><Import /></AppLayout></ProtectedRoute>} />
                   <Route path="/recebidos" element={<ProtectedRoute session={session}><AppLayout><Recebidos /></AppLayout></ProtectedRoute>} />
                   <Route path="/financas" element={<ProtectedRoute session={session}><AppLayout><Financas /></AppLayout></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><Admin /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute session={session}><AppLayout><AdminDashboard /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute session={session}><AppLayout><AdminUsers /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/documents" element={<ProtectedRoute session={session}><AppLayout><AdminDocuments /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/templates" element={<ProtectedRoute session={session}><AppLayout><AdminTemplates /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/emails" element={<ProtectedRoute session={session}><AppLayout><AdminEmails /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/email-logs" element={<ProtectedRoute session={session}><AppLayout><AdminEmailLogsPage /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/events" element={<ProtectedRoute session={session}><AppLayout><AdminEvents /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/webhooks" element={<ProtectedRoute session={session}><AppLayout><AdminWebhooks /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/webhook-logs" element={<ProtectedRoute session={session}><AppLayout><AdminWebhookLogs /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/automations" element={<ProtectedRoute session={session}><AppLayout><AdminAutomationsPage /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/plans" element={<ProtectedRoute session={session}><AppLayout><AdminPlans /></AppLayout></ProtectedRoute>} />
+                  <Route path="/admin/settings" element={<ProtectedRoute session={session}><AppLayout><AdminSettings /></AppLayout></ProtectedRoute>} />
                   <Route path="/billing" element={<ProtectedRoute session={session}><Navigate to="/settings?tab=billing" replace /></ProtectedRoute>} />
                   <Route path="/editor/:id" element={<ProtectedRoute session={session}><Editor /></ProtectedRoute>} />
                   <Route path="/generate/:id" element={<ProtectedRoute session={session}><Generate /></ProtectedRoute>} />
