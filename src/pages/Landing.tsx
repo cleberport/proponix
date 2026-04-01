@@ -69,12 +69,6 @@ const Landing = () => {
                 <span className="text-primary">pelo celular.</span>
               </motion.h1>
 
-              <motion.p
-                className="mt-5 text-lg text-white/50 font-medium"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              >
-                Em minutos, sem complicação.
-              </motion.p>
 
               {/* CTA — early on mobile, normal on desktop */}
               <motion.div
