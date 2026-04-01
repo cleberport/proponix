@@ -18,7 +18,7 @@ const professions = [
   { icon: Share2, name: 'Social media' },
   { icon: Code, name: 'Desenvolvedores' },
   { icon: Building2, name: 'Arquitetos' },
-  { icon: Briefcase, name: 'Freelancers em geral' },
+  
 ];
 
 const TargetUsersSection = () => (
