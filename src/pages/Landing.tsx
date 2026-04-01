@@ -104,24 +104,18 @@ const Landing = () => {
               </motion.div>
             </div>
 
-            {/* Right — Mobile Mockup (large, overflowing) */}
+            {/* Right — Dynamic Phone Mockup */}
             <motion.div
-              className="relative flex justify-center md:justify-end md:-mr-16 lg:-mr-24"
+              className="relative flex justify-center md:justify-end md:-mr-8 lg:-mr-16"
               initial={{ opacity: 0, y: 50, rotate: -3 }}
               animate={{ opacity: 1, y: 0, rotate: -1.5 }}
               transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
               {/* Glow behind mockup */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] md:w-[500px] md:h-[500px] rounded-full bg-primary/15 blur-[80px] pointer-events-none" />
-              <img
-                src={mobileMockup}
-                alt="Freelox — Crie orçamentos pelo celular"
-                width={800}
-                height={1024}
-                fetchPriority="high"
-                decoding="sync"
-                className="relative w-[340px] sm:w-[380px] md:w-[480px] lg:w-[540px] max-w-none drop-shadow-[0_30px_80px_rgba(0,0,0,0.7)]"
-              />
+              <div className="relative w-[260px] sm:w-[280px] md:w-[320px] lg:w-[360px]">
+                <PhoneMockup />
+              </div>
             </motion.div>
           </div>
 
