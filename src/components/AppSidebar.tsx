@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Monitor, Users, Mail, Zap, ScrollText, Palette } from 'lucide-react';
+import { LayoutGrid, FileText, Inbox, LogOut, Shield, Sun, Moon, Monitor, Palette } from 'lucide-react';
 import freeloxLogo from '@/assets/freelox_logo.webp';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
