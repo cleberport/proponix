@@ -419,6 +419,13 @@ const ProposalView = () => {
       }
     }
 
+    // Format service price fields
+    for (const [k, v] of Object.entries(result)) {
+      if (/^service_\d+_price$/.test(k) && v && !isNaN(parseFloat(v))) {
+        result[k] = formatCurrency(v);
+      }
+    }
+
     if (proposal.company?.logoUrl) {
       result['__logo_url__'] = proposal.company.logoUrl;
     }
