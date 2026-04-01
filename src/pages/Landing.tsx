@@ -52,7 +52,7 @@ const Landing = () => {
       <main>
 
       {/* ═══════════ SECTION 1 — HERO ═══════════ */}
-      <section className="relative pt-24 pb-14 md:pt-36 md:pb-20 overflow-hidden">
+      <section className="relative pt-24 pb-10 md:pt-36 md:pb-20 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/10 blur-[120px]" />
         </div>
