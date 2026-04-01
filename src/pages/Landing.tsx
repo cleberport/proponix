@@ -59,8 +59,8 @@ const Landing = () => {
 
         <div className="relative mx-auto max-w-5xl px-6">
           <div className="grid md:grid-cols-2 items-center gap-10 md:gap-16">
-            {/* Left — Copy */}
-            <div className="text-center md:text-left">
+            {/* Left / Top — Copy */}
+            <div className="text-center md:text-left order-1">
               <motion.h1
                 className="text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] font-bold leading-[1.1] tracking-[-0.03em]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -76,9 +76,22 @@ const Landing = () => {
                 Em minutos, sem complicação.
               </motion.p>
 
-              <motion.ul
-                className="mt-7 space-y-3 text-left mx-auto md:mx-0 max-w-xs md:max-w-none"
+              {/* CTA — early on mobile, normal on desktop */}
+              <motion.div
+                className="mt-8 flex justify-center md:justify-start"
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              >
+                <Button size="lg" onClick={() => go()}
+                  className="h-13 px-9 text-[15px] font-semibold rounded-full bg-primary text-white hover:bg-primary/90 shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.5)] group">
+                  Começar grátis
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
+
+              {/* Benefits — desktop only (below CTA) */}
+              <motion.ul
+                className="mt-8 space-y-3 text-left mx-auto md:mx-0 max-w-xs md:max-w-none hidden md:block"
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
               >
                 {[
                   { icon: Smartphone, text: 'Funciona 100% no celular' },
@@ -91,31 +104,37 @@ const Landing = () => {
                   </li>
                 ))}
               </motion.ul>
-
-              <motion.div
-                className="mt-9 flex justify-center md:justify-start"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              >
-                <Button size="lg" onClick={() => go()}
-                  className="h-13 px-9 text-[15px] font-semibold rounded-full bg-primary text-white hover:bg-primary/90 shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.5)] group">
-                  Começar grátis
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </motion.div>
             </div>
 
-            {/* Right — Mockup */}
+            {/* Mockup */}
             <motion.div
-              className="relative flex justify-center"
+              className="relative flex justify-center order-2"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] md:w-[380px] md:h-[380px] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
-              <div className="relative w-[240px] sm:w-[260px] md:w-[280px]">
+              <div className="relative w-[75vw] max-w-[300px] md:w-[280px]">
                 <PhoneMockup />
               </div>
             </motion.div>
+
+            {/* Benefits — mobile only (below mockup) */}
+            <motion.ul
+              className="space-y-3 text-left mx-auto max-w-xs order-3 md:hidden"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            >
+              {[
+                { icon: Smartphone, text: 'Funciona 100% no celular' },
+                { icon: MessageCircle, text: 'Envie por WhatsApp em segundos' },
+                { icon: Eye, text: 'Veja quando o cliente visualizar' },
+              ].map(item => (
+                <li key={item.text} className="flex items-center gap-3 text-[15px] text-white/60">
+                  <item.icon className="h-4 w-4 shrink-0 text-primary" />
+                  {item.text}
+                </li>
+              ))}
+            </motion.ul>
           </div>
         </div>
       </section>
