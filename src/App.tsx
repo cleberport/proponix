@@ -60,14 +60,8 @@ const PageLoader = () => (
 const queryClient = new QueryClient();
 
 const ThemeInit = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {
-    const settings = getSettings();
-    const mode = settings.theme || 'light';
-    const resolved = mode === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : mode;
-    document.documentElement.classList.toggle('dark', resolved === 'light');
-  }, []);
+  // Theme is applied by inline script in index.html before React mounts.
+  // This wrapper is kept for structural compatibility.
   return <>{children}</>;
 };
 
