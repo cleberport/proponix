@@ -51,9 +51,6 @@ export function AppSidebar() {
     navigate('/');
   };
 
-  const adminItems = (!adminLoading && isAdmin)
-    ? [{ title: 'Admin', url: '/admin', icon: Shield }]
-    : [];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
