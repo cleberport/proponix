@@ -30,7 +30,7 @@ const Landing = () => {
     <div className="min-h-screen bg-[#09090b] text-white antialiased selection:bg-primary/30">
 
       {/* ─── NAV ─── */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
             <img src={freeloxLogo} alt="Freelox" className="h-7 w-7 rounded-lg" />
