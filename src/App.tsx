@@ -60,14 +60,8 @@ const PageLoader = () => (
 const queryClient = new QueryClient();
 
 const ThemeInit = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {
-    const settings = getSettings();
-    const mode = settings.theme || 'light';
-    const resolved = mode === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : mode;
-    document.documentElement.classList.toggle('dark', resolved === 'light');
-  }, []);
+  // Theme is applied by inline script in index.html before React mounts.
+  // This wrapper is kept for structural compatibility.
   return <>{children}</>;
 };
 
@@ -132,11 +126,15 @@ const App = () => {
     void Promise.allSettled([
       loadSettingsFromServer().then(() => {
         const s = getSettings();
-        const mode = s.theme || 'light';
-        const resolved = mode === 'system'
-          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-          : mode;
-        document.documentElement.classList.toggle('dark', resolved === 'light');
+        const serverTheme = s.theme;
+        if (serverTheme && (serverTheme === 'light' || serverTheme === 'dark' || serverTheme === 'system')) {
+          // Sync server preference to localStorage for future fast loads
+          localStorage.setItem('theme_preference', serverTheme);
+          const resolved = serverTheme === 'system'
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : serverTheme;
+          document.documentElement.classList.toggle('dark', resolved === 'light');
+        }
       }),
       getSavedTemplates(),
       loadDocumentHistoryFromServer(),
