@@ -27,12 +27,6 @@ const items = [
   { title: 'Recebidos', url: '/recebidos', icon: Inbox },
 ];
 
-const adminSubItems = [
-  { title: 'Usuários', url: '/admin?section=users', section: 'users', icon: Users },
-  { title: 'Templates', url: '/admin?section=emails', section: 'emails', icon: Mail },
-  { title: 'Automações', url: '/admin?section=automations', section: 'automations', icon: Zap },
-  { title: 'Logs', url: '/admin?section=logs', section: 'logs', icon: ScrollText },
-];
 
 export function AppSidebar() {
   const { state } = useSidebar();
