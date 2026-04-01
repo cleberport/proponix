@@ -64,7 +64,7 @@ const Landing = () => {
                 className="text-[2rem] sm:text-[2.5rem] md:text-[3.25rem] font-bold leading-[1.1] tracking-[-0.03em]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               >
-                Crie e envie orçamentos profissionais{' '}
+                Feche mais trabalhos com orçamentos profissionais{' '}
                 <span className="text-primary">pelo celular.</span>
               </motion.h1>
 
