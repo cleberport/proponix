@@ -108,7 +108,7 @@ const Landing = () => {
               transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] md:w-[380px] md:h-[380px] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
-              <div className="relative w-[75vw] max-w-[300px] md:w-[280px]">
+              <div className="relative w-[65vw] max-w-[260px] md:w-[280px]">
                 <PhoneMockup />
               </div>
             </motion.div>
