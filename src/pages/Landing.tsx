@@ -52,67 +52,71 @@ const Landing = () => {
       <main>
 
       {/* ═══════════ SECTION 1 — HERO ═══════════ */}
-      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden">
+      <section className="relative pt-24 pb-14 md:pt-36 md:pb-20 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/10 blur-[120px]" />
         </div>
 
-        <div className="relative mx-auto max-w-3xl px-5 text-center">
-          <motion.h1
-            className="text-[2rem] sm:text-[2.5rem] md:text-[3.25rem] font-bold leading-[1.1] tracking-[-0.03em]"
-            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-          >
-            Feche mais trabalhos com orçamentos profissionais{' '}
-            <span className="text-primary">pelo celular.</span>
-          </motion.h1>
+        <div className="relative mx-auto max-w-5xl px-6">
+          <div className="grid md:grid-cols-2 items-center gap-10 md:gap-16">
+            {/* Left — Copy */}
+            <div className="text-center md:text-left">
+              <motion.h1
+                className="text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] font-bold leading-[1.1] tracking-[-0.03em]"
+                initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+              >
+                Feche mais trabalhos com orçamentos profissionais{' '}
+                <span className="text-primary">pelo celular.</span>
+              </motion.h1>
 
-          <motion.p
-            className="mt-4 text-lg md:text-xl text-white/50 font-medium"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          >
-            Em minutos, sem complicação.
-          </motion.p>
+              <motion.p
+                className="mt-5 text-lg text-white/50 font-medium"
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              >
+                Em minutos, sem complicação.
+              </motion.p>
 
-          <motion.ul
-            className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          >
-            {[
-              { icon: Smartphone, text: 'Funciona 100% no celular' },
-              { icon: MessageCircle, text: 'Envie por WhatsApp em segundos' },
-              { icon: Eye, text: 'Veja quando o cliente visualizar' },
-            ].map(item => (
-              <li key={item.text} className="flex items-center gap-2 text-[14px] text-white/60">
-                <item.icon className="h-4 w-4 shrink-0 text-primary" />
-                {item.text}
-              </li>
-            ))}
-          </motion.ul>
+              <motion.ul
+                className="mt-7 space-y-3 text-left mx-auto md:mx-0 max-w-xs md:max-w-none"
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              >
+                {[
+                  { icon: Smartphone, text: 'Funciona 100% no celular' },
+                  { icon: MessageCircle, text: 'Envie por WhatsApp em segundos' },
+                  { icon: Eye, text: 'Veja quando o cliente visualizar' },
+                ].map(item => (
+                  <li key={item.text} className="flex items-center gap-3 text-[15px] text-white/60">
+                    <item.icon className="h-4 w-4 shrink-0 text-primary" />
+                    {item.text}
+                  </li>
+                ))}
+              </motion.ul>
 
-          {/* Mockup — centered, large, no rotation */}
-          <motion.div
-            className="relative mt-10 flex justify-center"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] md:w-[500px] md:h-[500px] rounded-full bg-primary/15 blur-[80px] pointer-events-none" />
-            <div className="relative w-[280px] sm:w-[320px] md:w-[360px] lg:w-[400px]">
-              <PhoneMockup />
+              <motion.div
+                className="mt-9 flex justify-center md:justify-start"
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+              >
+                <Button size="lg" onClick={() => go()}
+                  className="h-13 px-9 text-[15px] font-semibold rounded-full bg-primary text-white hover:bg-primary/90 shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.5)] group">
+                  Começar grátis
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </motion.div>
             </div>
-          </motion.div>
 
-          {/* CTA */}
-          <motion.div
-            className="mt-8 flex justify-center"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          >
-            <Button size="lg" onClick={() => go()}
-              className="h-14 w-full max-w-xs sm:w-auto px-10 text-base font-semibold rounded-full bg-primary text-white hover:bg-primary/90 shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.5)] group">
-              Começar grátis
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </motion.div>
+            {/* Right — Mockup */}
+            <motion.div
+              className="relative flex justify-center"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] md:w-[380px] md:h-[380px] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
+              <div className="relative w-[240px] sm:w-[260px] md:w-[280px]">
+                <PhoneMockup />
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
