@@ -91,27 +91,13 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={currentPath === '/admin'}>
-                    <NavLink to="/admin?section=users" end={false} className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
+                  <SidebarMenuButton asChild isActive={currentPath.startsWith('/admin')}>
+                    <NavLink to="/admin" end={false} className="hover:bg-muted/50" activeClassName="bg-muted text-primary font-medium">
                       <Shield className="mr-2 h-4 w-4" />
                       {!collapsed && <span>Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {!collapsed && currentPath === '/admin' && adminSubItems.map((sub) => {
-                  const params = new URLSearchParams(location.search);
-                  const activeSection = params.get('section') || 'users';
-                  return (
-                    <SidebarMenuItem key={sub.section}>
-                      <SidebarMenuButton asChild isActive={activeSection === sub.section}>
-                        <NavLink to={sub.url} end={false} className="hover:bg-muted/50 pl-8" activeClassName="bg-muted text-primary font-medium">
-                          <sub.icon className="mr-2 h-3.5 w-3.5" />
-                          <span className="text-sm">{sub.title}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
