@@ -119,9 +119,18 @@
     @apply border-border;
   }
 
+  html {
+    /* Global iOS safe area: background extends behind system UI */
+    background: hsl(var(--background));
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    /* Centralised safe-area padding – applied ONCE here */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-height: 100vh;
   }
 }
 

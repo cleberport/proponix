@@ -218,7 +218,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isMobile) {
     return (
       <FinanceProvider>
-        <div className="min-h-screen flex flex-col w-full pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+        <div className="min-h-screen flex flex-col w-full pb-14">
           <ExpiredGuard />
           <main className="flex-1 overflow-auto">
             {children}
