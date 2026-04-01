@@ -686,7 +686,7 @@ const Generate = () => {
     } finally {
       setSendingLink(false);
     }
-  }, [template, userInputs]);
+  }, [template, userInputs, allServiceIndices, selectedServices, serviceShowPrice, serviceDimmed]);
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(generatedLink);
