@@ -51,15 +51,15 @@ const Landing = () => {
       <main>
 
       {/* ═══════════ SECTION 1 — HERO ═══════════ */}
-      <section className="relative pt-28 pb-12 md:pt-40 md:pb-20 overflow-hidden">
+      <section className="relative pt-24 pb-0 md:pt-36 md:pb-0 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/10 blur-[120px]" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-5">
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div className="grid md:grid-cols-[1fr_1.1fr] gap-6 md:gap-8 items-center">
             {/* Left — Copy */}
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left pt-4 md:pt-0">
               <motion.h1
                 className="text-[2rem] sm:text-[2.5rem] md:text-[3.25rem] font-bold leading-[1.1] tracking-[-0.03em]"
                 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -91,8 +91,9 @@ const Landing = () => {
                 ))}
               </motion.ul>
 
+              {/* CTA — hidden on mobile, shown after mockup below */}
               <motion.div
-                className="mt-10 flex flex-col sm:flex-row items-center md:items-start gap-3"
+                className="mt-10 hidden md:flex flex-col sm:flex-row items-center md:items-start gap-3"
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
               >
                 <Button size="lg" onClick={() => go()}
@@ -103,13 +104,15 @@ const Landing = () => {
               </motion.div>
             </div>
 
-            {/* Right — Mobile Mockup */}
+            {/* Right — Mobile Mockup (large, overflowing) */}
             <motion.div
-              className="flex justify-center md:justify-end"
-              initial={{ opacity: 0, y: 40, rotate: -2 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              transition={{ delay: 0.3, duration: 0.7 }}
+              className="relative flex justify-center md:justify-end md:-mr-16 lg:-mr-24"
+              initial={{ opacity: 0, y: 50, rotate: -3 }}
+              animate={{ opacity: 1, y: 0, rotate: -1.5 }}
+              transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
+              {/* Glow behind mockup */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] md:w-[500px] md:h-[500px] rounded-full bg-primary/15 blur-[80px] pointer-events-none" />
               <img
                 src={mobileMockup}
                 alt="Freelox — Crie orçamentos pelo celular"
@@ -117,10 +120,22 @@ const Landing = () => {
                 height={1024}
                 fetchPriority="high"
                 decoding="sync"
-                className="w-[280px] sm:w-[320px] md:w-[380px] drop-shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+                className="relative w-[340px] sm:w-[380px] md:w-[480px] lg:w-[540px] max-w-none drop-shadow-[0_30px_80px_rgba(0,0,0,0.7)]"
               />
             </motion.div>
           </div>
+
+          {/* CTA — mobile only, after mockup */}
+          <motion.div
+            className="mt-8 mb-12 flex md:hidden justify-center"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          >
+            <Button size="lg" onClick={() => go()}
+              className="h-14 w-full max-w-xs px-10 text-base font-semibold rounded-full bg-primary text-white hover:bg-primary/90 shadow-[0_0_40px_-8px_hsl(346_100%_59%/0.5)] group">
+              Começar grátis
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </motion.div>
         </div>
       </section>
 
