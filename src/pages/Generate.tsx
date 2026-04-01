@@ -626,6 +626,23 @@ const Generate = () => {
       const fileName = generatePdfFileName();
       const docId = crypto.randomUUID();
 
+      // Merge service variables into saved values so they persist for link viewing
+      const savedValues: Record<string, string> = { ...userInputs };
+      for (let seqIdx = 0; seqIdx < allServiceIndices.length; seqIdx++) {
+        const idx = allServiceIndices[seqIdx];
+        const svc = selectedServices[idx];
+        if (svc) {
+          savedValues[`service_${seqIdx}_name`] = svc.name;
+          savedValues[`service_${seqIdx}_description`] = svc.description || '';
+          savedValues[`service_${seqIdx}_price`] = (serviceShowPrice[idx] ?? true) ? svc.price.toString() : '';
+          savedValues[`service_${seqIdx}_notes`] = svc.notes || '';
+          savedValues[`service_${seqIdx}_dimmed`] = serviceDimmed[idx] ? '1' : '';
+        }
+      }
+      if (Object.values(selectedServices).some(Boolean)) {
+        savedValues['__service_count__'] = String(allServiceIndices.length);
+      }
+
       // Save document to history
       saveAllInputs(userInputs);
       addDocumentToHistory({
@@ -635,7 +652,7 @@ const Generate = () => {
         clientName: userInputs.client_name || '',
         fileName,
         generatedAt: new Date().toISOString(),
-        values: { ...userInputs },
+        values: savedValues,
       });
 
       // Generate proposal link with custom validity
@@ -669,7 +686,7 @@ const Generate = () => {
     } finally {
       setSendingLink(false);
     }
-  }, [template, userInputs]);
+  }, [template, userInputs, allServiceIndices, selectedServices, serviceShowPrice, serviceDimmed]);
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(generatedLink);

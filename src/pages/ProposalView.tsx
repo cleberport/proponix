@@ -419,6 +419,13 @@ const ProposalView = () => {
       }
     }
 
+    // Format service price fields
+    for (const [k, v] of Object.entries(result)) {
+      if (/^service_\d+_price$/.test(k) && v && !isNaN(parseFloat(v))) {
+        result[k] = formatCurrency(v);
+      }
+    }
+
     if (proposal.company?.logoUrl) {
       result['__logo_url__'] = proposal.company.logoUrl;
     }
@@ -427,20 +434,38 @@ const ProposalView = () => {
 
   const templatePages = useMemo(() => {
     // First try from API template data
-    const apiPages = normalizeTemplatePages(proposal?.template?.elements);
-    if (apiPages.some(p => p.length > 0)) return apiPages;
-
-    // Fallback: try starter templates by template ID
-    const templateId = proposal?.document?.templateId;
-    if (templateId) {
-      const starter = starterTemplates.find(t => t.id === templateId);
-      if (starter) {
-        if (starter.pages && starter.pages.length > 0) return starter.pages;
-        if (starter.elements && starter.elements.length > 0) return [starter.elements];
+    let pages = normalizeTemplatePages(proposal?.template?.elements);
+    if (!pages.some(p => p.length > 0)) {
+      // Fallback: try starter templates by template ID
+      const templateId = proposal?.document?.templateId;
+      if (templateId) {
+        const starter = starterTemplates.find(t => t.id === templateId);
+        if (starter) {
+          if (starter.pages && starter.pages.length > 0) pages = starter.pages;
+          else if (starter.elements && starter.elements.length > 0) pages = [starter.elements];
+        }
       }
     }
-    return apiPages;
-  }, [proposal?.template?.elements, proposal?.document?.templateId]);
+
+    // Expand service blocks based on saved service count
+    const vals = (proposal?.document?.values || {}) as Record<string, any>;
+    const savedCount = parseInt(vals['__service_count__'] || '0', 10);
+    if (savedCount > 0) {
+      pages = pages.map(pageEls =>
+        pageEls.map(el => {
+          if (el.type === 'service') {
+            const baseCount = el.serviceCount || 3;
+            const totalCount = Math.max(baseCount, savedCount);
+            const newHeight = el.height * (totalCount / baseCount);
+            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
+          }
+          return el;
+        })
+      );
+    }
+
+    return pages;
+  }, [proposal?.template?.elements, proposal?.document?.templateId, proposal?.document?.values]);
 
   const bgColor = useMemo(() => {
     if (proposal?.template?.settings?.backgroundColor) return proposal.template.settings.backgroundColor;
