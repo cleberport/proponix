@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -20,6 +21,19 @@ function getSavedTheme(): ThemeMode {
   return 'dark';
 }
 
+async function syncThemePreference(theme: ThemeMode) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase
+    .from('user_settings')
+    .upsert({ user_id: user.id, theme }, { onConflict: 'user_id' });
+
+  if (error) {
+    console.error('Erro ao sincronizar tema:', error);
+  }
+}
+
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemeMode>(getSavedTheme);
 
@@ -27,6 +41,7 @@ export function useTheme() {
     setThemeState(newTheme);
     localStorage.setItem(STORAGE_KEY, newTheme);
     applyTheme(newTheme);
+    void syncThemePreference(newTheme);
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -34,7 +49,6 @@ export function useTheme() {
     setTheme(next);
   }, [theme, setTheme]);
 
-  // Listen for system preference changes when in "system" mode
   useEffect(() => {
     if (theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');

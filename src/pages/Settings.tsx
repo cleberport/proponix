@@ -4,15 +4,21 @@ import { decimalToPercent, percentToDecimal } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle, Clock, CreditCard, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Save, Upload, X, Moon, Sun, RotateCcw, Star, HelpCircle, Clock, CreditCard, Settings as SettingsIcon, LogOut, Monitor } from 'lucide-react';
 import { resetTour } from '@/components/OnboardingTour';
 import { toast } from 'sonner';
 import BillingSection from '@/components/settings/BillingSection';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme, type ThemeMode } from '@/hooks/useTheme';
+
+const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
+  { value: 'light', label: 'Claro', icon: Sun },
+  { value: 'dark', label: 'Escuro', icon: Moon },
+  { value: 'system', label: 'Sistema', icon: Monitor },
+];
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
@@ -20,6 +26,7 @@ const SettingsPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { setTheme } = useTheme();
 
   const defaultTab = searchParams.get('tab') === 'billing' ? 'billing' : 'general';
 
@@ -45,8 +52,7 @@ const SettingsPage = () => {
 
   const handleSave = () => {
     saveSettings(settings);
-    if (settings.theme === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    setTheme(settings.theme);
     toast.success('Configurações salvas');
   };
 
@@ -54,7 +60,6 @@ const SettingsPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read dimensions first
     const url = await new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onload = (ev) => resolve(ev.target?.result as string);
@@ -67,7 +72,6 @@ const SettingsPage = () => {
       img.src = url;
     });
 
-    // Upload to public storage
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return;
@@ -95,13 +99,8 @@ const SettingsPage = () => {
     toast.success('Logo atualizado');
   };
 
-  const toggleTheme = () => {
-    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
-    update({ theme: newTheme });
-    if (newTheme === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-    saveSettings({ ...settings, theme: newTheme });
-  };
+  const selectedThemeOption = themeOptions.find((option) => option.value === settings.theme) ?? themeOptions[0];
+  const SelectedThemeIcon = selectedThemeOption.icon;
 
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto">
@@ -130,18 +129,28 @@ const SettingsPage = () => {
           </div>
 
           <div className="flex flex-col gap-5">
-            {/* Theme */}
             <section className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  {settings.theme === 'dark' ? <Moon className="h-5 w-5 text-muted-foreground" /> : <Sun className="h-5 w-5 text-muted-foreground" />}
-                  <span className="text-sm font-medium text-foreground">{settings.theme === 'dark' ? 'Modo Escuro' : 'Modo Claro'}</span>
+                  <SelectedThemeIcon className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <span className="text-sm font-medium text-foreground">Aparência</span>
+                    <p className="text-xs text-muted-foreground">{selectedThemeOption.label}</p>
+                  </div>
                 </div>
-                <Switch checked={settings.theme === 'dark'} onCheckedChange={toggleTheme} />
+                <Select value={settings.theme} onValueChange={(value: ThemeMode) => update({ theme: value })}>
+                  <SelectTrigger className="h-10 w-[140px]">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {themeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </section>
 
-            {/* Default template */}
             <section className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="h-4 w-4 text-warning" />
@@ -157,7 +166,6 @@ const SettingsPage = () => {
               </Select>
             </section>
 
-            {/* Company */}
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="text-sm font-semibold text-foreground mb-4">Empresa</h2>
               <div className="flex flex-col gap-3">
@@ -190,7 +198,6 @@ const SettingsPage = () => {
               </div>
             </section>
 
-            {/* Logo */}
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="text-sm font-semibold text-foreground mb-3">Logo</h2>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
@@ -213,8 +220,6 @@ const SettingsPage = () => {
               )}
             </section>
 
-
-            {/* Proposal validity */}
             <section className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -232,14 +237,12 @@ const SettingsPage = () => {
               </div>
             </section>
 
-            {/* PDF name */}
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="text-sm font-semibold text-foreground mb-3">Nome Padrão do PDF</h2>
               <Input value={settings.pdfBaseName} onChange={(e) => update({ pdfBaseName: e.target.value })} placeholder="Ex: Proposta PlayPort" className="h-11 md:h-9" />
               <p className="mt-1 text-[10px] text-muted-foreground">{settings.pdfBaseName || 'Proposta'} 001.pdf, {settings.pdfBaseName || 'Proposta'} 002.pdf...</p>
             </section>
 
-            {/* Restore */}
             <section className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
               <Button variant="outline" size="sm" className="h-10 md:h-9 w-fit" onClick={() => { restoreDefaultTemplates(); toast.success('Templates restaurados'); }}>
                 <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restaurar Templates Padrão
@@ -252,7 +255,6 @@ const SettingsPage = () => {
               </Button>
             </section>
 
-            {/* Logout */}
             <section className="space-y-3 pt-4 border-t border-border/50">
               <Button
                 variant="destructive"
