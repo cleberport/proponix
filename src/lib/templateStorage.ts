@@ -519,18 +519,26 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
   const userId = await resolveCurrentUserId();
   if (!userId) return getSettings();
 
+  const savedTheme = localStorage.getItem('theme_preference');
+  const fallbackTheme: AppSettings['theme'] = savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system'
+    ? savedTheme
+    : 'dark';
+
   const { data, error } = await db
     .from('user_settings')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
 
-  // If no server data exists for this user, return defaults (NOT stale local cache)
   if (error || !data) {
-    const defaults = { ...DEFAULT_SETTINGS };
+    const defaults = { ...DEFAULT_SETTINGS, theme: fallbackTheme };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaults));
     return defaults;
   }
+
+  const remoteTheme: AppSettings['theme'] = data.theme === 'light' || data.theme === 'dark' || data.theme === 'system'
+    ? data.theme
+    : fallbackTheme;
 
   const remote: AppSettings = {
     profileName: data.profile_name ?? '',
@@ -545,13 +553,12 @@ export async function loadSettingsFromServer(): Promise<AppSettings> {
     logoWidth: data.logo_width ?? undefined,
     logoHeight: data.logo_height ?? undefined,
     logoAspectRatio: data.logo_aspect_ratio ? Number(data.logo_aspect_ratio) : undefined,
-    theme: (data.theme === 'dark' ? 'dark' : 'light'),
+    theme: remoteTheme,
     pdfBaseName: data.pdf_base_name ?? 'Proposta',
     defaultTemplateId: data.default_template_id ?? '',
     proposalValidityDays: Number(data.proposal_validity_days) || 5,
   };
 
-  // Update local cache with server data
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(remote));
   return remote;
 }
