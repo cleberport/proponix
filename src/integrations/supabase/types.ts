@@ -256,6 +256,30 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       finance_folders: {
         Row: {
           created_at: string
@@ -666,6 +690,96 @@ export type Database = {
           theme?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          event_id: string | null
+          event_type: string
+          id: string
+          next_retry_at: string | null
+          request_payload: Json
+          response_body: string | null
+          status: string
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          event_id?: string | null
+          event_type: string
+          id?: string
+          next_retry_at?: string | null
+          request_payload?: Json
+          response_body?: string | null
+          status?: string
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          event_id?: string | null
+          event_type?: string
+          id?: string
+          next_retry_at?: string | null
+          request_payload?: Json
+          response_body?: string | null
+          status?: string
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhooks: {
+        Row: {
+          active: boolean
+          created_at: string
+          events: string[]
+          id: string
+          name: string
+          secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          id?: string
+          name?: string
+          secret?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          id?: string
+          name?: string
+          secret?: string
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }
