@@ -134,7 +134,10 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ═══════════ SECTION 2 — PROBLEM + SOLUTION ═══════════ */}
+      {/* ═══════════ SECTION 2 — TARGET USERS ═══════════ */}
+      <TargetUsersSection />
+
+      {/* ═══════════ SECTION 3 — PROBLEM + SOLUTION ═══════════ */}
       <section className="py-16 md:py-24 border-t border-white/[0.06]">
         <div className="mx-auto max-w-3xl px-5">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
