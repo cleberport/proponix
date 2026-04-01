@@ -11,7 +11,7 @@ import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
 
 import freeloxLogo from '@/assets/freelox_logo.webp';
-import mobileMockup from '@/assets/mobile-mockup-hero.png';
+import PhoneMockup from '@/components/landing/PhoneMockup';
 
 const fade = {
   hidden: { opacity: 0, y: 28 },
