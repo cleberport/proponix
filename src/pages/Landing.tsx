@@ -30,7 +30,8 @@ const Landing = () => {
     <div className="min-h-screen bg-[#09090b] text-white antialiased selection:bg-primary/30">
 
       {/* ─── NAV ─── */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 top-[env(safe-area-inset-top,0px)] z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
+        <div className="absolute inset-x-0 top-[calc(-1*env(safe-area-inset-top,0px))] h-[env(safe-area-inset-top,0px)] bg-[#09090b]" />
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
             <img src={freeloxLogo} alt="Freelox" className="h-7 w-7 rounded-lg" />
@@ -52,7 +53,7 @@ const Landing = () => {
       <main>
 
       {/* ═══════════ SECTION 1 — HERO ═══════════ */}
-      <section className="relative pt-24 pb-10 md:pt-36 md:pb-20 overflow-hidden">
+      <section className="relative pt-[calc(6rem+env(safe-area-inset-top,0px))] pb-10 md:pt-[calc(9rem+env(safe-area-inset-top,0px))] md:pb-20 overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/10 blur-[120px]" />
         </div>
