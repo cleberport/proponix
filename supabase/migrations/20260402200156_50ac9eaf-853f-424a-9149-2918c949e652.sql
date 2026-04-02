@@ -1,0 +1,1 @@
+ALTER TABLE public.received_proposals ADD COLUMN IF NOT EXISTS token text NOT NULL DEFAULT '';

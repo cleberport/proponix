@@ -504,6 +504,7 @@ export type Database = {
           sender_user_id: string
           status: string
           template_name: string
+          token: string
           total_value: string
           updated_at: string
           user_id: string
@@ -522,6 +523,7 @@ export type Database = {
           sender_user_id: string
           status?: string
           template_name?: string
+          token?: string
           total_value?: string
           updated_at?: string
           user_id: string
@@ -540,6 +542,7 @@ export type Database = {
           sender_user_id?: string
           status?: string
           template_name?: string
+          token?: string
           total_value?: string
           updated_at?: string
           user_id?: string
