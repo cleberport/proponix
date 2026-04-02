@@ -117,14 +117,10 @@ const Recebidos = () => {
     return `${days}d atrás`;
   };
 
-  const handleOpenProposal = async (p: ReceivedProposal) => {
-    const { data } = await supabase
-      .from('proposal_links')
-      .select('token')
-      .eq('id', p.proposal_link_id)
-      .maybeSingle();
-    if (data?.token) {
-      window.open(`/p/${data.token}`, '_blank');
+  const handleOpenProposal = (p: ReceivedProposal) => {
+    const t = (p as any).token;
+    if (t) {
+      window.open(`/p/${t}`, '_blank');
     }
   };
 

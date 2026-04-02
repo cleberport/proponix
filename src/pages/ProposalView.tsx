@@ -246,6 +246,7 @@ const ProposalView = () => {
           last_action: p.status === 'visualizado' ? 'Visualizado' : p.status === 'aprovado' ? 'Aprovado' : p.status === 'negociacao' ? 'Negociação' : 'Recebido',
           last_action_at: new Date().toISOString(),
           received_at: new Date().toISOString(),
+          token: token || '',
         } as any,
         { onConflict: 'user_id,proposal_link_id' }
       );
