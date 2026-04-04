@@ -4,6 +4,7 @@ import { CanvasElement } from '@/types/template';
 import { resolveTextColor, isDark } from '@/lib/colorContrast';
 import { getMultilineTextLayout, getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
 import { computeTotalBlockLines } from '@/lib/totalBlockCalc';
+import { computeServiceTotalLines } from '@/lib/serviceTotalCalc';
 
 const CANVAS_W = 595;
 const CANVAS_H = 842;
