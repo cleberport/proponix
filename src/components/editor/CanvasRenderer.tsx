@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
 import { resolveTextColor, isDark } from '@/lib/colorContrast';
 import { getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
+import { computeTotalBlockLines } from '@/lib/totalBlockCalc';
 
 interface Props {
   elements: CanvasElement[];
