@@ -82,6 +82,13 @@ export interface CanvasElement {
   shapeBorderWidth?: number; // border width in px
   shapeBorderColor?: string; // border color
   shapeRotation?: number; // rotation in degrees
+
+  // Total block (auto-calculation) properties
+  totalShowTax?: boolean;
+  totalTaxPercent?: number;
+  totalShowFee?: boolean;
+  totalFeeName?: string;
+  totalFeePercent?: number;
 }
 
 export interface TableRow {

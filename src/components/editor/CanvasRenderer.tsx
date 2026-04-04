@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { optimizeImageFile } from '@/lib/imageOptimization';
 import { resolveTextColor, isDark } from '@/lib/colorContrast';
 import { getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
+import { computeTotalBlockLines } from '@/lib/totalBlockCalc';
 
 interface Props {
   elements: CanvasElement[];
@@ -495,8 +496,7 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
         }
 
         case 'dynamic-field':
-        case 'price-field':
-        case 'total-calculation': {
+        case 'price-field': {
           const fontSize = el.fontSize || 14;
           const fieldLayout = getSingleLineTextLayout({ width: el.width, height: el.height, fontSize });
           const varValue = resolveVariable(el);
@@ -537,6 +537,54 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
               >
                 {displayText}
               </div>
+              {resizeHandle}
+            </div>
+          );
+        }
+
+        case 'total-calculation': {
+          const fontSize = el.fontSize || 14;
+          const textColor = resolveTextColor(el.color, backgroundColor);
+          const totalLines = computeTotalBlockLines(el, variableValues || {});
+          const lineH = fontSize * 1.8;
+
+          return (
+            <div
+              key={el.id}
+              style={{
+                ...style,
+                overflow: 'hidden',
+                height: el.height,
+                padding: 0,
+              }}
+              className={`${selectedClass} ${hoverClass}`}
+              onPointerDown={(e) => handlePointerDown(e, el, 'drag')}
+              onClick={(e) => { e.stopPropagation(); onSelect(el.id); }}
+            >
+              {totalLines.map((line, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: 4,
+                    right: 4,
+                    top: i * lineH,
+                    height: lineH,
+                    fontSize: line.bold ? fontSize * 1.1 : fontSize * 0.9,
+                    fontWeight: line.bold ? 700 : 400,
+                    color: textColor,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    pointerEvents: 'none',
+                    borderTop: i > 0 && line.bold ? `1px solid ${textColor}33` : 'none',
+                    paddingTop: i > 0 && line.bold ? 2 : 0,
+                  }}
+                >
+                  <span>{line.label}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{line.value}</span>
+                </div>
+              ))}
               {resizeHandle}
             </div>
           );

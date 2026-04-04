@@ -191,6 +191,65 @@ const PropertiesPanel = ({ element, variables, onUpdate, onDelete, onBringForwar
         </div>
       )}
 
+      {/* Total block configuration */}
+      {element.type === 'total-calculation' && (
+        <div className="space-y-3">
+          <Separator />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cálculo Automático</span>
+
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">Imposto</Label>
+            <Switch
+              checked={element.totalShowTax ?? false}
+              onCheckedChange={(checked) => onUpdate({ totalShowTax: checked })}
+            />
+          </div>
+          {element.totalShowTax && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Porcentagem (%)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={element.totalTaxPercent ?? 0}
+                onChange={(e) => onUpdate({ totalTaxPercent: parseFloat(e.target.value) || 0 })}
+                className="h-7 text-xs"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">Taxa extra</Label>
+            <Switch
+              checked={element.totalShowFee ?? false}
+              onCheckedChange={(checked) => onUpdate({ totalShowFee: checked })}
+            />
+          </div>
+          {element.totalShowFee && (
+            <>
+              <div>
+                <Label className="text-xs text-muted-foreground">Nome da taxa</Label>
+                <Input
+                  value={element.totalFeeName ?? 'Comissão'}
+                  onChange={(e) => onUpdate({ totalFeeName: e.target.value })}
+                  className="h-7 text-xs"
+                  placeholder="Comissão"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Porcentagem (%)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={element.totalFeePercent ?? 0}
+                  onChange={(e) => onUpdate({ totalFeePercent: parseFloat(e.target.value) || 0 })}
+                  className="h-7 text-xs"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {isLogoOrImage && (
         <div>
           <Label className="text-xs text-muted-foreground">
