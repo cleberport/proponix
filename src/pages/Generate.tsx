@@ -408,8 +408,14 @@ const Generate = () => {
           if (el.type === 'service') {
             const baseCount = el.serviceCount || 3;
             const totalCount = Math.max(baseCount, selectedServiceCount);
-            const newHeight = el.height * (totalCount / baseCount);
-            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
+            const itemsHeight = el.height * (totalCount / baseCount);
+            // Add space for built-in totals
+            const hasTax = el.totalShowTax && (el.totalTaxPercent || 0) > 0;
+            const hasFee = el.totalShowFee && (el.totalFeePercent || 0) > 0;
+            const totalLinesCount = 1 + (hasTax ? 1 : 0) + (hasFee ? 1 : 0) + ((hasTax || hasFee) ? 1 : 0);
+            const totalAreaHeight = totalLinesCount * (el.fontSize || 14) * 1.8;
+            const newHeight = Math.max(el.height, itemsHeight) + totalAreaHeight;
+            return { ...el, serviceCount: totalCount, height: newHeight, showPrice: true } as CanvasElement;
           }
           return el;
         })
