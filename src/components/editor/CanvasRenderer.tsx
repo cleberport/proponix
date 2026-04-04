@@ -861,6 +861,40 @@ const CanvasRenderer = forwardRef<HTMLDivElement, Props>(
                   </div>
                 );
               })}
+              {/* Built-in totals */}
+              {(() => {
+                const totalLines = computeServiceTotalLines(el, variableValues || {});
+                if (totalLines.length === 0) return null;
+                const totalAreaTop = items.length * itemHeight;
+                const totalLineH = (fontSize || 14) * 1.8;
+                const padX = 8;
+                return (
+                  <div style={{ position: 'absolute', left: 0, top: totalAreaTop, width: el.width }}>
+                    {totalLines.map((line, li) => (
+                      <div
+                        key={li}
+                        style={{
+                          position: 'relative',
+                          height: totalLineH,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          paddingLeft: padX,
+                          paddingRight: padX,
+                          fontFamily: el.fontFamily || 'Space Grotesk',
+                          fontSize: line.bold ? fontSize * 1.1 : fontSize * 0.9,
+                          fontWeight: line.bold ? '700' : '400',
+                          color: textColor,
+                          borderTop: li === 0 || line.bold ? `1px solid ${borderColor}` : 'none',
+                        }}
+                      >
+                        <span>{line.label}</span>
+                        <span>{line.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               {resizeHandle}
             </div>
           );

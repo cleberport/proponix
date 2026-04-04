@@ -791,6 +791,36 @@ function renderPageElements(
             pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
           }
         }
+
+        // Built-in totals for service block
+        {
+          const totalLines = computeServiceTotalLines(el, variableValues);
+          if (totalLines.length > 0) {
+            const totalAreaY = y + scaleH(count * itemHeight);
+            const totalLineH = fontSize * 1.8;
+            const padX = 8 * (PDF_W / CANVAS_W);
+
+            totalLines.forEach((line, li) => {
+              const fs = line.bold ? (el.fontSize || 14) * 1.1 : (el.fontSize || 14) * 0.9;
+              const scaledFs = fs * (PDF_W / CANVAS_W);
+              pdf.setFont('helvetica', line.bold ? 'bold' : 'normal');
+              pdf.setFontSize(scaledFs);
+              pdf.setTextColor(...color);
+
+              const lineY = totalAreaY + li * totalLineH + totalLineH * 0.6;
+
+              // Separator before bold total
+              if (li === 0 || line.bold) {
+                pdf.setDrawColor(...borderColor);
+                pdf.setLineWidth(0.5);
+                pdf.line(x + padX, totalAreaY + li * totalLineH, x + w - padX, totalAreaY + li * totalLineH);
+              }
+
+              pdf.text(line.label, x + padX, lineY, { align: 'left' });
+              pdf.text(line.value, x + w - padX, lineY, { align: 'right' });
+            });
+          }
+        }
         break;
       }
     }
