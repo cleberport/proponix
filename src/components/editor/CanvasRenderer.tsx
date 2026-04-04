@@ -5,6 +5,7 @@ import { optimizeImageFile } from '@/lib/imageOptimization';
 import { resolveTextColor, isDark } from '@/lib/colorContrast';
 import { getServiceLayout, getSingleLineTextLayout } from '@/lib/absoluteLayout';
 import { computeTotalBlockLines } from '@/lib/totalBlockCalc';
+import { computeServiceTotalLines } from '@/lib/serviceTotalCalc';
 
 interface Props {
   elements: CanvasElement[];
