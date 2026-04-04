@@ -380,8 +380,7 @@ function renderPageElements(
       }
 
       case 'dynamic-field':
-      case 'price-field':
-      case 'total-calculation': {
+      case 'price-field': {
         const label = resolveContent(el, variableValues);
         const value = resolveVariable(el, variableValues);
         pdf.setFont('helvetica', fontStyle);
@@ -404,6 +403,38 @@ function renderPageElements(
           pdf.setLineWidth(fontSize * 0.05);
           pdf.line(ux, uy, ux + textW, uy);
         }
+        break;
+      }
+
+      case 'total-calculation': {
+        const totalLines = computeTotalBlockLines(el, variableValues);
+        const lineH = (el.fontSize || 14) * 1.8 * (PDF_W / CANVAS_W);
+        const padX = 4 * (PDF_W / CANVAS_W);
+
+        totalLines.forEach((line, i) => {
+          const fs = line.bold ? (el.fontSize || 14) * 1.1 : (el.fontSize || 14) * 0.9;
+          const scaledFs = fs * (PDF_W / CANVAS_W);
+          pdf.setFont('helvetica', line.bold ? 'bold' : 'normal');
+          pdf.setFontSize(scaledFs);
+          pdf.setTextColor(...color);
+
+          const lineY = y + i * lineH + lineH * 0.6;
+
+          // Draw separator before bold total line
+          if (i > 0 && line.bold) {
+            pdf.setDrawColor(...color);
+            pdf.setLineWidth(0.3);
+            const oldOpacity = 0.2;
+            pdf.setGState(new (pdf as any).GState({ opacity: oldOpacity }));
+            pdf.line(x + padX, y + i * lineH, x + w - padX, y + i * lineH);
+            pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+          }
+
+          // Label on left
+          pdf.text(line.label, x + padX, lineY, { align: 'left' });
+          // Value on right
+          pdf.text(line.value, x + w - padX, lineY, { align: 'right' });
+        });
         break;
       }
 
