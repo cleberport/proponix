@@ -61,6 +61,8 @@ const Generate = () => {
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [taxRateDisplay, setTaxRateDisplay] = useState('0');
+  const [feePercentDisplay, setFeePercentDisplay] = useState('0');
+  const [feeName, setFeeName] = useState('Comissão');
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [lastPdfBlob, setLastPdfBlob] = useState<Blob | null>(null);
@@ -413,20 +415,25 @@ const Generate = () => {
             const taxPct = parseFloat(userInputs.tax_rate || '0') * 100;
             const effectiveTaxShow = taxPct > 0 ? true : el.totalShowTax;
             const effectiveTaxPercent = taxPct > 0 ? taxPct : (el.totalTaxPercent || 0);
+            // Apply fee from Generate inputs to service block
+            const feePct = parseFloat(feePercentDisplay) || 0;
+            const effectiveFeeShow = feePct > 0 ? true : el.totalShowFee;
+            const effectiveFeePercent = feePct > 0 ? feePct : (el.totalFeePercent || 0);
+            const effectiveFeeName = feePct > 0 ? (feeName || 'Comissão') : (el.totalFeeName || 'Comissão');
             // Add space for built-in totals
             const hasTax = effectiveTaxShow && effectiveTaxPercent > 0;
-            const hasFee = el.totalShowFee && (el.totalFeePercent || 0) > 0;
+            const hasFee = effectiveFeeShow && effectiveFeePercent > 0;
             const totalLinesCount = 1 + (hasTax ? 1 : 0) + (hasFee ? 1 : 0) + ((hasTax || hasFee) ? 1 : 0);
             const totalAreaHeight = totalLinesCount * (el.fontSize || 14) * 1.8;
             const newHeight = Math.max(el.height, itemsHeight) + totalAreaHeight;
-            return { ...el, serviceCount: totalCount, height: newHeight, showPrice: true, totalShowTax: effectiveTaxShow, totalTaxPercent: effectiveTaxPercent } as CanvasElement;
+            return { ...el, serviceCount: totalCount, height: newHeight, showPrice: true, totalShowTax: effectiveTaxShow, totalTaxPercent: effectiveTaxPercent, totalShowFee: effectiveFeeShow, totalFeePercent: effectiveFeePercent, totalFeeName: effectiveFeeName } as CanvasElement;
           }
           return el;
         })
     );
 
     return result;
-  }, [template, tableRows, hasTable, tableInfo, selectedServiceCount, userInputs.tax_rate]);
+  }, [template, tableRows, hasTable, tableInfo, selectedServiceCount, userInputs.tax_rate, feePercentDisplay, feeName]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
@@ -941,23 +948,49 @@ const Generate = () => {
 
             {/* Tax rate override */}
             {(hasServices || (template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')))) && (
-              <div className="pt-2 border-t border-border mt-2">
-                <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
-                <div className="flex items-center gap-1.5">
+              <div className="pt-2 border-t border-border mt-2 space-y-3">
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxRateDisplay}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setTaxRateDisplay(next);
+                        const pct = parseFloat(next);
+                        setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
+                      }}
+                      className="h-12 text-base md:h-10 md:text-sm"
+                      inputMode="decimal"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comissão (%)</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={feePercentDisplay}
+                      onChange={(e) => setFeePercentDisplay(e.target.value)}
+                      className="h-12 text-base md:h-10 md:text-sm"
+                      inputMode="decimal"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome da comissão</Label>
                   <Input
-                    type="number"
-                    step="0.01"
-                    value={taxRateDisplay}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setTaxRateDisplay(next);
-                      const pct = parseFloat(next);
-                      setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
-                    }}
+                    type="text"
+                    value={feeName}
+                    onChange={(e) => setFeeName(e.target.value)}
+                    placeholder="Comissão"
                     className="h-12 text-base md:h-10 md:text-sm"
-                    inputMode="decimal"
                   />
-                  <span className="text-sm text-muted-foreground">%</span>
                 </div>
               </div>
             )}
