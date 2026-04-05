@@ -940,7 +940,7 @@ const Generate = () => {
             )}
 
             {/* Tax rate override */}
-            {template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')) && (
+            {(hasServices || (template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')))) && (
               <div className="pt-2 border-t border-border mt-2">
                 <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
                 <div className="flex items-center gap-1.5">
