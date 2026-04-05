@@ -433,7 +433,7 @@ const Generate = () => {
     );
 
     return result;
-  }, [template, tableRows, hasTable, tableInfo, selectedServiceCount, userInputs.tax_rate]);
+  }, [template, tableRows, hasTable, tableInfo, selectedServiceCount, userInputs.tax_rate, feePercentDisplay, feeName]);
 
   // Map each variable to the page index where it first appears
   const fieldToPage = useMemo(() => {
