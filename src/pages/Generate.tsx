@@ -659,6 +659,16 @@ const Generate = () => {
       if (Object.values(selectedServices).some(Boolean)) {
         savedValues['__service_count__'] = String(allServiceIndices.length);
       }
+      // Persist tax/fee config so PDF and link can reproduce totals
+      const taxPctSave = parseFloat(userInputs.tax_rate || '0') * 100;
+      if (taxPctSave > 0) {
+        savedValues['__tax_percent__'] = String(taxPctSave);
+      }
+      const feePctSave = parseFloat(feePercentDisplay) || 0;
+      if (feePctSave > 0) {
+        savedValues['__fee_percent__'] = String(feePctSave);
+        savedValues['__fee_name__'] = feeName || 'Comissão';
+      }
 
       // Save document to history
       saveAllInputs(userInputs);

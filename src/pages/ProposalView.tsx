@@ -448,17 +448,37 @@ const ProposalView = () => {
       }
     }
 
-    // Expand service blocks based on saved service count
+    // Expand service blocks based on saved service count and inject tax/fee config
     const vals = (proposal?.document?.values || {}) as Record<string, any>;
     const savedCount = parseInt(vals['__service_count__'] || '0', 10);
+    const savedTaxPct = parseFloat(vals['__tax_percent__'] || '0');
+    const savedFeePct = parseFloat(vals['__fee_percent__'] || '0');
+    const savedFeeName = vals['__fee_name__'] || 'Comissão';
     if (savedCount > 0) {
       pages = pages.map(pageEls =>
         pageEls.map(el => {
           if (el.type === 'service') {
             const baseCount = el.serviceCount || 3;
             const totalCount = Math.max(baseCount, savedCount);
-            const newHeight = el.height * (totalCount / baseCount);
-            return { ...el, serviceCount: totalCount, height: Math.max(el.height, newHeight), showPrice: true } as CanvasElement;
+            // Compute height including total lines
+            const itemHeight = (el.fontSize || 14) * 3.2;
+            const itemsHeight = totalCount * itemHeight;
+            let totalLinesCount = 1; // always "Total"
+            if (savedTaxPct > 0) totalLinesCount += 2; // subtotal + tax
+            if (savedFeePct > 0) { totalLinesCount += 1; if (savedTaxPct <= 0) totalLinesCount += 1; } // fee + maybe subtotal
+            const totalAreaHeight = totalLinesCount * (el.fontSize || 14) * 1.8;
+            const newHeight = Math.max(el.height, itemsHeight) + totalAreaHeight;
+            return {
+              ...el,
+              serviceCount: totalCount,
+              height: newHeight,
+              showPrice: true,
+              totalShowTax: savedTaxPct > 0,
+              totalTaxPercent: savedTaxPct,
+              totalShowFee: savedFeePct > 0,
+              totalFeePercent: savedFeePct,
+              totalFeeName: savedFeeName,
+            } as CanvasElement;
           }
           return el;
         })
