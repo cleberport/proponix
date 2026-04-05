@@ -948,23 +948,49 @@ const Generate = () => {
 
             {/* Tax rate override */}
             {(hasServices || (template?.calculatedFields && Object.values(template.calculatedFields).some(f => f.includes('tax_rate')))) && (
-              <div className="pt-2 border-t border-border mt-2">
-                <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
-                <div className="flex items-center gap-1.5">
+              <div className="pt-2 border-t border-border mt-2 space-y-3">
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imposto (%)</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxRateDisplay}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setTaxRateDisplay(next);
+                        const pct = parseFloat(next);
+                        setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
+                      }}
+                      className="h-12 text-base md:h-10 md:text-sm"
+                      inputMode="decimal"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comissão (%)</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={feePercentDisplay}
+                      onChange={(e) => setFeePercentDisplay(e.target.value)}
+                      className="h-12 text-base md:h-10 md:text-sm"
+                      inputMode="decimal"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome da comissão</Label>
                   <Input
-                    type="number"
-                    step="0.01"
-                    value={taxRateDisplay}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setTaxRateDisplay(next);
-                      const pct = parseFloat(next);
-                      setUserInputs(prev => ({ ...prev, tax_rate: Number.isFinite(pct) ? String(pct / 100) : '0' }));
-                    }}
+                    type="text"
+                    value={feeName}
+                    onChange={(e) => setFeeName(e.target.value)}
+                    placeholder="Comissão"
                     className="h-12 text-base md:h-10 md:text-sm"
-                    inputMode="decimal"
                   />
-                  <span className="text-sm text-muted-foreground">%</span>
                 </div>
               </div>
             )}
