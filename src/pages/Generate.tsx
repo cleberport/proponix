@@ -415,13 +415,18 @@ const Generate = () => {
             const taxPct = parseFloat(userInputs.tax_rate || '0') * 100;
             const effectiveTaxShow = taxPct > 0 ? true : el.totalShowTax;
             const effectiveTaxPercent = taxPct > 0 ? taxPct : (el.totalTaxPercent || 0);
+            // Apply fee from Generate inputs to service block
+            const feePct = parseFloat(feePercentDisplay) || 0;
+            const effectiveFeeShow = feePct > 0 ? true : el.totalShowFee;
+            const effectiveFeePercent = feePct > 0 ? feePct : (el.totalFeePercent || 0);
+            const effectiveFeeName = feePct > 0 ? (feeName || 'Comissão') : (el.totalFeeName || 'Comissão');
             // Add space for built-in totals
             const hasTax = effectiveTaxShow && effectiveTaxPercent > 0;
-            const hasFee = el.totalShowFee && (el.totalFeePercent || 0) > 0;
+            const hasFee = effectiveFeeShow && effectiveFeePercent > 0;
             const totalLinesCount = 1 + (hasTax ? 1 : 0) + (hasFee ? 1 : 0) + ((hasTax || hasFee) ? 1 : 0);
             const totalAreaHeight = totalLinesCount * (el.fontSize || 14) * 1.8;
             const newHeight = Math.max(el.height, itemsHeight) + totalAreaHeight;
-            return { ...el, serviceCount: totalCount, height: newHeight, showPrice: true, totalShowTax: effectiveTaxShow, totalTaxPercent: effectiveTaxPercent } as CanvasElement;
+            return { ...el, serviceCount: totalCount, height: newHeight, showPrice: true, totalShowTax: effectiveTaxShow, totalTaxPercent: effectiveTaxPercent, totalShowFee: effectiveFeeShow, totalFeePercent: effectiveFeePercent, totalFeeName: effectiveFeeName } as CanvasElement;
           }
           return el;
         })
