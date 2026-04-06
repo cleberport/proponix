@@ -748,6 +748,7 @@ const ProposalView = () => {
         {/* Hidden off-screen container for PDF capture */}
         {hasTemplate && (
           <div
+            data-pdf-capture
             aria-hidden
             style={{ position: 'fixed', left: '-9999px', top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}
           >
