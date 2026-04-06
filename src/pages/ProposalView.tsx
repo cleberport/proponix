@@ -337,37 +337,55 @@ const ProposalView = () => {
     try {
       const fileName = proposal!.document.fileName;
 
-      // Always use DOM-based capture for pixel-perfect consistency
+      // Find the hidden PDF container and temporarily make it visible so
+      // html2canvas can correctly render fonts and text decorations.
+      const hiddenContainers = document.querySelectorAll<HTMLDivElement>('[data-pdf-capture]');
+      hiddenContainers.forEach((c) => {
+        c.style.opacity = '1';
+        c.style.left = '0';
+        c.style.zIndex = '-1';
+      });
+
+      // Allow a brief paint cycle so the browser lays out the text properly
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
       const pageEls = Array.from(pageRefsMap.current.entries())
         .sort(([a], [b]) => a - b)
         .map(([, el]) => el)
         .filter(Boolean);
 
+      let blob: Blob | null = null;
       if (pageEls.length > 0) {
-        const blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
-        if (blob) {
-          let shared = false;
-          // On mobile, try native share first
-          if (isMobile && navigator.share) {
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            try {
-              if (navigator.canShare?.({ files: [file] })) {
-                await navigator.share({ files: [file], title: fileName });
-                shared = true;
-              }
-            } catch { /* user cancelled or failed — fall through to download */ }
-          }
-          // Fallback: download
-          if (!shared) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }
+        blob = await generatePdfFromDom(pageEls, fileName, { skipDownload: true });
+      }
+
+      // Re-hide the containers
+      hiddenContainers.forEach((c) => {
+        c.style.opacity = '0';
+        c.style.left = '-9999px';
+        c.style.zIndex = '-1';
+      });
+
+      if (blob) {
+        let shared = false;
+        if (isMobile && navigator.share) {
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          try {
+            if (navigator.canShare?.({ files: [file] })) {
+              await navigator.share({ files: [file], title: fileName });
+              shared = true;
+            }
+          } catch { /* user cancelled or failed */ }
+        }
+        if (!shared) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         }
       }
     } catch {
