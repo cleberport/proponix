@@ -300,6 +300,61 @@ async function preloadImages(elements: CanvasElement[]): Promise<Map<string, HTM
   return imageMap;
 }
 
+/**
+ * Pre-calculate the actual rendered height of a service block,
+ * accounting for text wrapping per service row + total lines.
+ * Returns the overflow (extra height beyond the element's original height).
+ */
+function computeServiceBlockOverflow(
+  pdf: jsPDF,
+  el: CanvasElement,
+  variableValues: Record<string, string>,
+): number {
+  const count = el.serviceCount || 3;
+  const showPrice = el.showPrice !== false;
+  const fontSize = (el.fontSize || 14) * (PDF_W / CANVAS_W);
+  const minRowH = scaleH(Math.max(40, fontSize * 2.5 * (CANVAS_W / PDF_W)));
+
+  let totalServiceH = 0;
+  for (let svcIdx = 0; svcIdx < count; svcIdx++) {
+    const svcName = variableValues[`service_${svcIdx}_name`] || '';
+    const svcDesc = variableValues[`service_${svcIdx}_description`] || '';
+    const svcPrice = variableValues[`service_${svcIdx}_price`] || '';
+    const hasContent = svcName || svcDesc || (showPrice && svcPrice);
+    if (!hasContent) continue;
+
+    const priceWidth = showPrice ? Math.min(Math.max(el.width * 0.26, fontSize * 5.5 * (CANVAS_W / PDF_W)), el.width * 0.38) : 0;
+    const gap = showPrice ? 10 : 0;
+    const contentWidth = Math.max(0, el.width - 16 - priceWidth - gap);
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(fontSize);
+    const nameLines = wrapText(pdf, svcName, scaleW(contentWidth));
+    const nameH = nameLines.length * fontSize * 1.25;
+
+    let descH = 0;
+    if (svcDesc) {
+      const descFontSize = Math.max((el.fontSize || 14) - 2, 9) * (PDF_W / CANVAS_W);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(descFontSize);
+      const descLines = wrapText(pdf, svcDesc, scaleW(contentWidth));
+      descH = descLines.length * descFontSize * 1.16;
+    }
+
+    const rowH = Math.max(minRowH, scaleH(4) + nameH + descH + scaleH(4));
+    totalServiceH += rowH;
+  }
+
+  // Total lines area
+  const totalLines = computeServiceTotalLines(el, variableValues);
+  const totalLineH = fontSize * 1.8;
+  const totalAreaH = totalLines.length > 0 ? totalLines.length * totalLineH + scaleH(4) : 0;
+
+  const actualHeight = totalServiceH + totalAreaH;
+  const originalHeight = scaleH(el.height);
+  return Math.max(0, actualHeight - originalHeight);
+}
+
 function renderPageElements(
   pdf: jsPDF,
   elements: CanvasElement[],
@@ -311,9 +366,32 @@ function renderPageElements(
   pdf.setFillColor(...bg);
   pdf.rect(0, 0, PDF_W, PDF_H, 'F');
 
+  // Pre-pass: compute vertical shifts from service blocks that overflow
+  const yShifts: { belowY: number; shift: number }[] = [];
+  for (const el of elements) {
+    if (el.type === 'service') {
+      const overflow = computeServiceBlockOverflow(pdf, el, variableValues);
+      if (overflow > 0) {
+        yShifts.push({ belowY: scaleY(el.y) + scaleH(el.height), shift: overflow });
+      }
+    }
+  }
+
+  // Helper to get adjusted Y for an element
+  const getAdjustedY = (elY: number): number => {
+    let adjusted = elY;
+    for (const s of yShifts) {
+      if (elY >= s.belowY - 1) { // small tolerance
+        adjusted += s.shift;
+      }
+    }
+    return adjusted;
+  };
+
   for (const el of elements) {
     const x = scaleX(el.x);
-    const y = scaleY(el.y);
+    const rawY = scaleY(el.y);
+    const y = el.type === 'service' ? rawY : getAdjustedY(rawY);
     const w = scaleW(el.width);
     const effectiveColor = resolveTextColor(el.color, bgColor);
     const color = hexToRgb(effectiveColor);
@@ -701,7 +779,9 @@ function renderPageElements(
         const showPrice = el.showPrice !== false;
         const borderColor = el.tableBorderColor ? hexToRgb(el.tableBorderColor) : [226, 232, 240] as [number, number, number];
         const opacity = (el.bgOpacity ?? 100) / 100;
-        const itemHeight = el.height / count;
+        const minRowH = scaleH(Math.max(40, fontSize * 2.5 * (CANVAS_W / PDF_W)));
+
+        let currentY = y; // dynamic cursor
 
         for (let svcIdx = 0; svcIdx < count; svcIdx++) {
           const svcName = variableValues[`service_${svcIdx}_name`] || '';
@@ -711,14 +791,28 @@ function renderPageElements(
           const hasContent = svcName || svcDesc || (showPrice && svcPrice);
           if (!hasContent) continue;
 
-          const itemY = y + scaleH(svcIdx * itemHeight);
-          const serviceLayout = getServiceLayout({
-            width: el.width,
-            height: itemHeight,
-            fontSize: el.fontSize || 14,
-            hasDescription: Boolean(svcDesc),
-            hasPrice: Boolean(showPrice && svcPrice),
-          });
+          // Calculate dynamic row height based on wrapped text
+          const priceWidth = showPrice ? Math.min(Math.max(el.width * 0.26, (el.fontSize || 14) * 5.5), el.width * 0.38) : 0;
+          const gap = showPrice ? 10 : 0;
+          const contentWidth = Math.max(0, el.width - 16 - priceWidth - gap);
+          const padY = scaleH(4);
+
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(fontSize);
+          const nameLines = wrapText(pdf, svcName, scaleW(contentWidth));
+          const nameH = nameLines.length * fontSize * 1.25;
+
+          let descH = 0;
+          let descLines: string[] = [];
+          const descFontSize = Math.max((el.fontSize || 14) - 2, 9) * (PDF_W / CANVAS_W);
+          if (svcDesc) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(descFontSize);
+            descLines = wrapText(pdf, svcDesc, scaleW(contentWidth));
+            descH = descLines.length * descFontSize * 1.16;
+          }
+
+          const rowH = Math.max(minRowH, padY + nameH + (descH > 0 ? scaleH(2) + descH : 0) + padY);
 
           // Apply dimmed opacity
           if (isDimmed) {
@@ -728,77 +822,74 @@ function renderPageElements(
           if (opacity < 1) {
             pdf.setFillColor(255, 255, 255);
             pdf.setGState(new (pdf as any).GState({ opacity: (isDimmed ? 0.6 : 1) * opacity * 0.1 }));
-            pdf.rect(x, itemY, w, scaleH(itemHeight), 'F');
+            pdf.rect(x, currentY, w, rowH, 'F');
             pdf.setGState(new (pdf as any).GState({ opacity: isDimmed ? 0.6 : 1 }));
           }
 
+          // Render name
           pdf.setFont('helvetica', 'bold');
           pdf.setFontSize(fontSize);
           pdf.setTextColor(...color);
-          const nameLines = fitTextToBox(pdf, svcName, scaleW(serviceLayout.name.width), serviceLayout.name.maxLines);
           nameLines.forEach((line, index) => {
             drawAlignedLine(
-              pdf,
-              line,
-              x + scaleW(serviceLayout.name.left),
-              itemY + scaleH(serviceLayout.name.top) + fontSize * 0.82 + index * fontSize * 1.25,
-              scaleW(serviceLayout.name.width),
-              'left'
+              pdf, line,
+              x + scaleW(8),
+              currentY + padY + fontSize * 0.82 + index * fontSize * 1.25,
+              scaleW(contentWidth), 'left'
             );
           });
 
-          if (serviceLayout.description && svcDesc) {
+          // Render description
+          if (descLines.length > 0) {
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(serviceLayout.description.fontSize * (PDF_W / CANVAS_W));
-            pdf.setTextColor(107, 114, 128); // gray #6B7280
-            const descFont = serviceLayout.description.fontSize * (PDF_W / CANVAS_W);
-            const descLines = fitTextToBox(pdf, svcDesc, scaleW(serviceLayout.description.width), serviceLayout.description.maxLines);
+            pdf.setFontSize(descFontSize);
+            pdf.setTextColor(107, 114, 128);
             descLines.forEach((line, index) => {
               drawAlignedLine(
-                pdf,
-                line,
-                x + scaleW(serviceLayout.description!.left),
-                itemY + scaleH(serviceLayout.description!.top) + descFont * 0.82 + index * descFont * 1.16,
-                scaleW(serviceLayout.description!.width),
-                'left'
+                pdf, line,
+                x + scaleW(8),
+                currentY + padY + nameH + scaleH(2) + descFontSize * 0.82 + index * descFontSize * 1.16,
+                scaleW(contentWidth), 'left'
               );
             });
           }
 
-          if (serviceLayout.price && showPrice && svcPrice) {
+          // Render price
+          if (showPrice && svcPrice) {
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(fontSize);
             pdf.setTextColor(...color);
-            const priceText = truncateTextToWidth(pdf, svcPrice, scaleW(serviceLayout.price.width));
+            const priceText = truncateTextToWidth(pdf, svcPrice, scaleW(priceWidth));
             drawAlignedLine(
-              pdf,
-              priceText,
-              x + scaleW(serviceLayout.price.left),
-              itemY + scaleH(serviceLayout.price.top) + fontSize * 0.82,
-              scaleW(serviceLayout.price.width),
-              'right'
+              pdf, priceText,
+              x + scaleW(el.width - 8 - priceWidth),
+              currentY + padY + fontSize * 0.82,
+              scaleW(priceWidth), 'right'
             );
           }
 
-          if ((el.bgOpacity ?? 100) >= 50 && svcIdx < count - 1) {
+          // Divider between rows
+          if ((el.bgOpacity ?? 100) >= 50) {
             pdf.setDrawColor(...borderColor);
             pdf.setLineWidth(0.5);
-            pdf.line(x + scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight), x + w - scaleW(serviceLayout.paddingX), itemY + scaleH(itemHeight));
+            pdf.line(x + scaleW(8), currentY + rowH, x + w - scaleW(8), currentY + rowH);
           }
 
           // Reset opacity after dimmed item
           if (isDimmed) {
             pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
           }
+
+          currentY += rowH;
         }
 
         // Built-in totals for service block
         {
           const totalLines = computeServiceTotalLines(el, variableValues);
           if (totalLines.length > 0) {
-            const totalAreaY = y + scaleH(count * itemHeight);
             const totalLineH = fontSize * 1.8;
             const padX = 8 * (PDF_W / CANVAS_W);
+            const totalAreaY = currentY + scaleH(4);
 
             totalLines.forEach((line, li) => {
               const fs = line.bold ? (el.fontSize || 14) * 1.1 : (el.fontSize || 14) * 0.9;
@@ -809,7 +900,7 @@ function renderPageElements(
 
               const lineY = totalAreaY + li * totalLineH + totalLineH * 0.6;
 
-              // Separator before bold total
+              // Separator before first line and bold total
               if (li === 0 || line.bold) {
                 pdf.setDrawColor(...borderColor);
                 pdf.setLineWidth(0.5);
